@@ -16,7 +16,7 @@ clear_httk <- function(
       delete.table$Rblood2plasma <- NA
       delete.table$Clint.pValue <- NA
       chem.physical_and_invitro.data <- 
-        add_chemtable(delete.table,
+        suppressWarnings(add_chemtable(delete.table,
           current.table=chem.physical_and_invitro.data,
           data.list=list(
           Compound="Compound",
@@ -29,7 +29,7 @@ clear_httk <- function(
           species=this.species,
           reference="Deleted",
           overwrite=T,
-          allow.na=T)      
+          allow.na=T))      
     }
   }
     

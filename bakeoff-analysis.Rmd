@@ -47,19 +47,25 @@ output.prefix <- toupper(format(Sys.Date(),"%Y%b%d"))
 
 Load the CvTdb in vivo data from Sayre et al. (2020):
 ```{r load_data, eval = TRUE}
-load("res_for_invivopkfit.Rdata")
+series_res_set <- read.csv("cvt_query_for_john_27may2021.csv")
+colnames(series_res_set)[colnames(series_res_set)=="species"] <- "Species"
+colnames(series_res_set)[colnames(series_res_set)=="conc_medium_normalized"] <- "Media"
+colnames(series_res_set)[colnames(series_res_set)=="conc"] <- "Value"
+colnames(series_res_set)[colnames(series_res_set)=="time_hr"] <- "Time"
+colnames(series_res_set)[colnames(series_res_set)=="dose_level_normalized"] <- "Dose"
+colnames(series_res_set)[colnames(series_res_set)=="administration_route_normalized"] <- "Route"
+colnames(series_res_set)[colnames(series_res_set)=="dsstox_casrn"] <- "CAS"
+colnames(series_res_set)[colnames(series_res_set)=="dsstox_substance_id"] <- "DTXSID"
+colnames(series_res_set)[colnames(series_res_set)=="analyte_name_original"] <- "Compound"
+colnames(series_res_set)[colnames(series_res_set)=="fk_study_id"] <- "Source"
+
 
 # A list of the chemcials in the evaluation:
 # There are 101 chemicals with CvT data for which the collaborators have been asked
 # to make predictions
 eval.cas <- unique(series_res_set$CAS)
 length(eval.cas)
-write.csv(eval.cas,file="eval-chems.csv",row.names=F)
-# Get DTXSID's from CompTox dashboard batch search:
-chem.tab <- read_excel( "eval-chems.xls")
 
-# Everything is in hours:
-unique(series_res_set$hr)
 # We have both human and rat:
 series_res_set$Species <- tolower(series_res_set$Species)
 unique(series_res_set$Species)
@@ -68,24 +74,39 @@ series_res_set$Media <- tolower(series_res_set$Media)
 unique(series_res_set$Media)
 
 # Significant figures:
-series_res_set$Time <- signif(series_res_set$Time,2)
-series_res_set$Value <- signif(series_res_set$Value,4)
+series_res_set$Time <- signif(as.numeric(series_res_set$Time),2)
+series_res_set$Value <- signif(as.numeric(series_res_set$Value),4)
 
-# Add DTXSID:
-series_res_set <-
-  merge(series_res_set,chem.tab[,c("CASRN","DTXSID")],by.x="CAS",by.y="CASRN")
-length(unique(series_res_set$CAS))
 CvT.data <- series_res_set
 CvT.chems <- unique(CvT.data$DTXSID)
 
 CvT.data[,"Dose"] <- as.numeric(CvT.data[,"Dose"])
 
-# Dose units for Source 1223 were ug total not mg/kg:
-CvT.data[CvT.data$Source=="1223","Dose"] <-
-  CvT.data[CvT.data$Source=="1223","Dose"] / 1000 /
-  CvT.data[CvT.data$Source=="1223","Species.Weight"]
+CvT.data <- subset(CvT.data,Time>0)
 ```
+Calculate a limit of quantification (90% of lowest observation)
+```{r calc_loq, eval = TRUE}
+for (this.study in unique(CvT.data$Source))
+{
+  this.subset1 <- subset(CvT.data,Source==this.study)
+  for (this.chem in unique(this.subset1$CAS))
+  {
+    this.subset2 <- subset(this.subset1,CAS==this.chem)
+    for (this.media in unique(this.subset2$Media))
+    {
+      this.subset3 <- subset(this.subset2,Media==this.media)
+      this.loq <- min(this.subset3$Value,na.rm=TRUE)
+      this.loq <- this.loq*0.9
+      CvT.data[
+        CvT.data$Source==this.study & 
+        CvT.data$CAS==this.chem & 
+        CvT.data$Media==this.media,"calc_loq"] <- this.loq
+    }
+  }
+}
+CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
 
+```
 
 ```{r load_physchem, eval = TRUE}
 CvT.chems <-read_excel("eval-chems3.xls")
@@ -750,7 +771,7 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="InVitro",
   overwrite=T)
-level2tab.invitro.list <- makeCvTpreds("HTTK-InVitro")
+level2tab.invitro.list <- suppressWarnings(makeCvTpreds("HTTK-InVitro"))
 level2tab.invitro <- level2tab.invitro.list$cvt
 level2tab.invitro.stats <- level2tab.invitro.list$stats
 level3tab.invitro <- maketkstatpreds("HTTK-InVitro")

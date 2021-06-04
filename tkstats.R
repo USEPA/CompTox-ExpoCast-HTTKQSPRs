@@ -42,6 +42,7 @@ makeCvTpreds <- function(label)
             for (this.time in obs.times)
             {
               this.subset5 <- subset(this.subset4,signif(Time,4)==this.time)
+  #            print(this.subset5)
               new.row <- data.frame(
                 Compound=this.compound,
                 DTXSID=this.dtxsid,
