@@ -6,7 +6,8 @@ clear_httk <- function(
 {
   for (this.species in species)
   {
-    delete.table <- get_cheminfo(info="all",species=this.species)
+    delete.table <- get_cheminfo(info="all",species=this.species,
+      suppress.messages=TRUE)
     if (!is.null(target.dtxsids)) delete.table <- subset(delete.table,
       DTXSID %in% target.dtxsids)
     if (dim(delete.table)[1]>0)

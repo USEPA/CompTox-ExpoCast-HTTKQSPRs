@@ -1,5 +1,5 @@
                            # This function does the level II concentration comparisons:
-makeCvTpreds <- function(label)
+makeCvTpreds <- function(CvT.data,label)
 {
   cvt.table <- NULL
   stats.table <- NULL
@@ -32,12 +32,15 @@ makeCvTpreds <- function(label)
               suppress.messages=TRUE))
             pred <- subset(pred,pred[,"time"]>0.0001)
             # Convert from uM to ug/mL:
-            pred[,"Cven"] <- pred[,"Cven"]*parameterize_pbtk(chem.cas=this.cas)$MW/1000
+            pred[,"Cven"] <- pred[,"Cven"]*suppressWarnings(parameterize_pbtk(
+              chem.cas=this.cas,
+              suppress.messages=TRUE))$MW/1000
             if (any(tolower(unlist(this.subset4[,"Media"]))=="blood"))
             {
-              Rb2p <- available_rblood2plasma(
+              Rb2p <- suppressWarnings(available_rblood2plasma(
                 chem.cas=this.cas,
-                species=this.species)
+                species=this.species,
+                suppress.messages = TRUE))
             }
             this.subset4means <- NULL
             for (this.time in obs.times)
@@ -100,7 +103,7 @@ makeCvTpreds <- function(label)
 
 
 # This function does the level II concentration comparisons:
-makeCvTpredsfromfits <- function(label)
+makeCvTpredsfromfits <- function(CvT.data,label)
 {
   cvt.table <- NULL
   stats.table <- NULL

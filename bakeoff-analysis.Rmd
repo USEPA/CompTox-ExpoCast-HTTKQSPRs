@@ -97,7 +97,7 @@ for (this.study in unique(CvT.data$Source))
     {
       this.subset3 <- subset(this.subset2,Media==this.media & !is.na(Value))
       this.subset3 <- subset(this.subset3,Value>0)
-      this.loq <- min(this.subset3$Value,na.rm=TRUE)
+      this.loq <- suppressWarnings(min(this.subset3$Value,na.rm=TRUE))
       this.loq <- this.loq*0.9
       CvT.data[
         CvT.data$Source==this.study & 
@@ -186,7 +186,9 @@ In Vitro Measured:
 reset_httk()
 invitro <- subset(get_cheminfo(info="all"),DTXSID %in% CvT.chems$DTXSID)
 invitro$Human.Clint <- sapply(invitro$Human.Clint,function(x) signif(as.numeric(strsplit(x,",")[[1]][[1]]),4))
+invitro$Human.Funbound.plasma[invitro$Human.Funbound.plasma==0.005] <- NA
 invitro$Human.Funbound.plasma <- sapply(invitro$Human.Funbound.plasma,function(x) signif(as.numeric(strsplit(x,",")[[1]][[1]]),4))
+paste(dim(invitro)[1],"chemicals with in vitro measured data")
 
 ```
 
@@ -553,7 +555,8 @@ FigLev1b<-ggplot(data=level1tab, aes(x=QSAR, y=Human.Clint.RPE)) +
          legend.title = element_text(size=8))
 print(FigLev1b) 
 ggsave(paste("FigLev1b_Clint_boxplot_wtable",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
-
+```
+```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 FigLev1c <- ggplot(data=level1tab) +
   geom_point(size=3,aes(x=Human.Fup.pred,y=Human.Fup.httk,shape=QSAR,color=QSAR))+
@@ -567,7 +570,8 @@ FigLev1c <- ggplot(data=level1tab) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1c)
-
+```
+```{r fup_rpe_boxwhisker_faceted, eval = TRUE}
 
 ## faceted
 FigLev1c <- ggplot(data=level1tab) +
@@ -593,7 +597,8 @@ print(FigLev1c)
 ggsave(paste("FigLev1c_Fub_obsVpred_facet",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
 #ggsave(paste("FigLev1c_Fub_obsVpred_facet_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
 
-
+```
+```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 FigLev1d <- ggplot(data=level1tab, aes(x=QSAR, y=Human.Fup.RPE)) + 
   geom_boxplot(outlier.colour="red",    
     outlier.size=2,
@@ -606,9 +611,8 @@ FigLev1d <- ggplot(data=level1tab, aes(x=QSAR, y=Human.Fup.RPE)) +
 print(FigLev1d)  
 
 
-#################################################################################################
-library(gridExtra)
-
+```
+```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 #### add AAFE & RMSLE to the table
 
@@ -688,7 +692,7 @@ for (this.cas in eval.cas)
 if (this.cas %in% all_study_1c_fits.mean$CAS)
 {
   this.subset <- subset(all_study_1c_fits.mean, CAS == this.cas)
-  print(this.subset)
+  #print(this.subset)
   # If there was just one data set:
   if (dim(this.subset)[1]==1)
   {
@@ -727,16 +731,74 @@ hist(cvtfits$kelim)
 cvtfits <- subset(cvtfits,kelim<100)
 hist(cvtfits$kelim)
 ```
+There are ten chemicals where only opera could make predictions:
+```{r separate_out_opera_only, eval=TRUE}
+CvT.chems.opera <- subset(CvT.chems,DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992"))
+CvT.chems <- subset(CvT.chems,!(DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992")))
+CvT.data.opera <- subset(CvT.data,DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992"))
+CvT.data <- subset(CvT.data,!(DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992")))
+```
 
-Make a version of the prediciton matrix where we've smoothed out missing data:
+Make a version of the prediction matrix where we've smoothed out missing data:
 ```{r remove_missing_predictions, eval = TRUE}
 CvT.chems.nona <- CvT.chems
+clint.cols <- c(12,14,16,18,20)
+fup.cols <- c(13,15,17,19,21)
+# Can't run PBTK for fup=0
+for (this.col in fup.cols)
+  CvT.chems.nona[is.na(CvT.chems.nona[,this.col]),this.col]<-0
+for (this.col in fup.cols)
+  CvT.chems.nona[CvT.chems.nona[,this.col]==0,this.col]<-NA
+
+
 for (this.chem in CvT.chems.nona$DTXSID)
 {
   this.row <- which(CvT.chems.nona$DTXSID==this.chem)
 # Check Clints:
-  clint.cols <- c(12,14,16,18,20) 
-  if (any(is.na(CvT.chems.nona[this.row,clint.cols])))
+  if (all(is.na(CvT.chems.nona[this.row,clint.cols])))
+  {
+    CvT.chems.nona <- subset(CvT.chems.nona,DTXSID!=this.chem)
+  } else if (any(is.na(CvT.chems.nona[this.row,clint.cols])))
   {
     this.mean <- mean(as.numeric(CvT.chems.nona[this.row,clint.cols]),na.rm=T)
     for (this.col in clint.cols)
@@ -744,12 +806,16 @@ for (this.chem in CvT.chems.nona$DTXSID)
         CvT.chems.nona[this.row,this.col] <- this.mean
   }
 # Check fups:
-  fup.cols <- c(13,15,17,19,21)
-  if (any(is.na(CvT.chems.nona[this.row,fup.cols])))
+  if (all(is.na(CvT.chems.nona[this.row,fup.cols])))
+  {
+    CvT.chems.nona <- subset(CvT.chems.nona,DTXSID!=this.chem)
+  } else if (any(is.na(CvT.chems.nona[this.row,fup.cols])) |
+      any(sapply(CvT.chems.nona[this.row,fup.cols],is.nan)))
   {
     this.mean <- mean(as.numeric(CvT.chems.nona[this.row,fup.cols]),na.rm=T)
     for (this.col in fup.cols)
-      if (is.na(CvT.chems.nona[this.row,this.col])) 
+      if (is.na(CvT.chems.nona[this.row,this.col]) |
+          is.nan(CvT.chems.nona[this.row,this.col])) 
         CvT.chems.nona[this.row,this.col] <- this.mean
   }
 }
@@ -773,10 +839,11 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="InVitro",
   overwrite=TRUE)
-level2tab.invitro.list <- suppressWarnings(makeCvTpreds("HTTK-InVitro"))
+print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+level2tab.invitro.list <- makeCvTpreds(CvT.data,"HTTK-InVitro")
 level2tab.invitro <- level2tab.invitro.list$cvt
 level2tab.invitro.stats <- level2tab.invitro.list$stats
-level3tab.invitro <- maketkstatpreds("HTTK-InVitro")
+level3tab.invitro <- maketkstatpreds(CvT.data,"HTTK-InVitro")
 ```
 
 ```{r cvt_compare_admet, eval = TRUE}
@@ -793,10 +860,11 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="SPlus",
   overwrite=TRUE)
-level2tab.admet.list <- makeCvTpreds("HTTK-ADmet")
+print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+level2tab.admet.list <- makeCvTpreds(CvT.data,"HTTK-ADmet")
 level2tab.admet <- level2tab.admet.list$cvt
 level2tab.admet.stats <- level2tab.admet.list$stats
-level3tab.admet <- maketkstatpreds("HTTK-ADmet")
+level3tab.admet <- maketkstatpreds(CvT.data,"HTTK-ADmet")
 ```
 
 ```{r cvt_compare_dawson, eval = TRUE}
@@ -813,10 +881,11 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="Dawson",
   overwrite=TRUE)
-level2tab.dawson.list <- makeCvTpreds("HTTK-Dawson")
+print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+level2tab.dawson.list <- makeCvTpreds(CvT.data,"HTTK-Dawson")
 level2tab.dawson <- level2tab.dawson.list$cvt
 level2tab.dawson.stats <- level2tab.dawson.list$stats
-level3tab.dawson <- maketkstatpreds("HTTK-Dawson")
+level3tab.dawson <- maketkstatpreds(CvT.data,"HTTK-Dawson")
 ```
 
 ```{r cvt_compare_pradeep, eval = TRUE}
@@ -833,10 +902,11 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="Pradeep",
   overwrite=TRUE)
-level2tab.pradeep.list <- makeCvTpreds("HTTK-Pradeep")
+print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+level2tab.pradeep.list <- makeCvTpreds(CvT.data,"HTTK-Pradeep")
 level2tab.pradeep <- level2tab.pradeep.list$cvt
 level2tab.pradeep.stats <- level2tab.pradeep.list$stats
-level3tab.pradeep <- maketkstatpreds("HTTK-Pradeep")
+level3tab.pradeep <- maketkstatpreds(CvT.data,"HTTK-Pradeep")
 
 ```
 
@@ -855,10 +925,11 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="OPERA",
   overwrite=T)
-level2tab.opera.list <- makeCvTpreds("HTTK-OPERA")
+print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+level2tab.opera.list <- makeCvTpreds(CvT.data,"HTTK-OPERA")
 level2tab.opera <- level2tab.opera.list$cvt
 level2tab.opera.stats <- level2tab.opera.list$stats
-level3tab.opera <- maketkstatpreds("HTTK-OPERA")
+level3tab.opera <- maketkstatpreds(CvT.data,"HTTK-OPERA")
 ```
 
 # The performance of actual 1 compartment model fits provides an upper limit
@@ -877,6 +948,7 @@ level2tab <- rbind(
   level2tab.pradeep,
   level2tab.opera,
   level2tab.fits)
+level2tab <- subset(level2tab,!duplicated(level2tab))
 
 level2tab.stats <- rbind(
   level2tab.invitro.stats,
@@ -885,6 +957,7 @@ level2tab.stats <- rbind(
   level2tab.pradeep.stats,
   level2tab.opera.stats,
   level2tab.fits.stats)
+level2tab.stats <- subset(level2tab,!duplicated(level2tab))
 ```
 
 Assign average to missing predictions:
@@ -1208,12 +1281,47 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
   axis.title.y=element_text(size=16))
 print(FigLev2RMSE) 
 ```
+```{r analyze_admet1,eval=TRUE}
+admet.better <-NULL
+invitro.better <-NULL
+for (this.cas in unique(level2tab$CAS))
+{
+  this.subset1 <- subset(level2tab,CAS==this.cas)
+  for (this.source in unique(this.subset1$Source))
+  {
+    this.subset2 <- subset(this.subset1,Source==this.source)  
+    for (this.time in unique(this.subset2$Time))
+    {
+      this.subset3 <- subset(this.subset2,Time==this.time)
+      this.subset3.invitro <- subset(this.subset3, QSAR=="HTTK-InVitro")
+      this.subset3.admet <- subset(this.subset3, QSAR=="HTTK-ADmet")
+      this.subset3 <- cbind(this.subset3.invitro,
+        this.subset3.admet[,c("Conc.pred","RPE","AbsFE")])
+      colnames(this.subset3)[16:18] <- paste(
+        colnames(this.subset3)[16:18],"ADmet",sep=".")
+      admet.better <- rbind(admet.better,
+        subset(this.subset3,abs(RPE.ADmet) < abs(RPE)))
+      invitro.better <- rbind(invitro.better,
+        subset(this.subset3,abs(RPE.ADmet) > abs(RPE)))
+    }
+  }
+}
+```
+      
+    
+  }
+  
+}
 
+```
 ```{r analyze_admet, eval = TRUE}
 qsarbychem.table <- dcast(qsarbychem.table,Compound~QSAR)
 chems <- qsarbychem.table$Compound
 qsarbychem.table <- apply(qsarbychem.table[,2:(1+length(QSARs))],2,as.numeric)
 rownames(qsarbychem.table) <- chems
+
+
+
 
 
 
