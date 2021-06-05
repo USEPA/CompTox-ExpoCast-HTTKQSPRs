@@ -22,13 +22,14 @@ makeCvTpreds <- function(label)
           {
             this.subset4 <- subset(this.subset3,Dose==this.dose)
             obs.times <- signif(sort(unique(this.subset4$Time)),4)
-            pred <- solve_pbtk(
+            pred <- suppressWarnings(solve_pbtk(
               chem.cas=this.cas,
               times=sort(unique(c(seq(0,2,0.05),obs.times))),
               species=this.species,
               iv.dose=(this.route=="iv"),
               dose=this.dose,
-              default.to.human=T)
+              default.to.human=TRUE,
+              suppress.messages=TRUE))
             pred <- subset(pred,pred[,"time"]>0.0001)
             # Convert from uM to ug/mL:
             pred[,"Cven"] <- pred[,"Cven"]*parameterize_pbtk(chem.cas=this.cas)$MW/1000
@@ -117,10 +118,11 @@ makeCvTpredsfromfits <- function(label)
       for (this.species in unique(this.subset1$Species))
         if (tolower(this.species) %in% tolower(this.fit$Species))
         {
-          params <- parameterize_1comp(
+          params <- suppressWarnings(parameterize_1comp(
             chem.cas=this.cas,
             species=this.species,
-            default.to.human=TRUE)
+            default.to.human=TRUE,
+            suppress.messages=TRUE))
           fit.index <- tolower(this.fit$Species)==tolower(this.species)
           params$Vdist <- as.numeric(this.fit[fit.index,"Vdist"])
           params$kelim <- as.numeric(this.fit[fit.index,"kelim"]) 
@@ -140,19 +142,21 @@ makeCvTpredsfromfits <- function(label)
             {
               this.subset4 <- subset(this.subset3,Dose==this.dose)
               obs.times <- signif(sort(unique(this.subset4$Time)),4)
-              pred <- solve_1comp(
+              pred <- suppressWarnings(solve_1comp(
                 parameters=params,
                 times=sort(unique(c(seq(0,2,0.05),obs.times))),
                 iv.dose=(this.route=="iv"),
-                dose=this.dose)
+                dose=this.dose,
+                suppress.messages=TRUE))
               pred <- subset(pred,pred[,"time"]>0.0001)
               # Convert from uM to ug/mL:
               pred[,"Ccompartment"] <- pred[,"Ccompartment"]*params$MW/1000
               if (any(tolower(unlist(this.subset4[,"Media"]))=="blood"))
               {
-                Rb2p <- available_rblood2plasma(
+                Rb2p <- suppressWarnings(available_rblood2plasma(
                   chem.cas=this.cas,
-                  species=this.species)
+                  species=this.species,
+                  suppress.messages=TRUE))
               }
               this.subset4means <- NULL
               for (this.time in obs.times)
@@ -227,15 +231,17 @@ maketkstatpreds <- function(label)
       {
         this.subset2 <- subset(this.subset1,Species==this.species)
         vd.obs <- unlist(as.numeric(this.subset2[,"Vdist"]))
-        vd.pred <- calc_vdist(
+        vd.pred <- suppressWarnings(calc_vdist(
           chem.cas=this.cas,
           species=this.species,
-          default.to.human=T)
+          default.to.human=TRUE,
+          suppress.messages=TRUE))
         thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"]))
-        thalf.pred <- log(2)/calc_elimination_rate(
+        thalf.pred <- log(2)/suppressWarnings(calc_elimination_rate(
           chem.cas=this.cas,
           species=this.species,
-          default.to.human=T)
+          default.to.human=TRUE,
+          suppress.messages=TRUE))
         new.tab <- data.frame(
           Compound=this.compound,
           DTXSID=this.dtxsid,

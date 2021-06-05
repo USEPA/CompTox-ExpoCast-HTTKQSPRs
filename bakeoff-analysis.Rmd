@@ -22,6 +22,7 @@ library(gplots)
 library(RColorBrewer)
 library(DescTools)
 library(gridExtra)
+library(reshape2)
 ```
 Load custom code 
 ```{r load_code, eval = TRUE}
@@ -94,7 +95,8 @@ for (this.study in unique(CvT.data$Source))
     this.subset2 <- subset(this.subset1,CAS==this.chem)
     for (this.media in unique(this.subset2$Media))
     {
-      this.subset3 <- subset(this.subset2,Media==this.media)
+      this.subset3 <- subset(this.subset2,Media==this.media & !is.na(Value))
+      this.subset3 <- subset(this.subset3,Value>0)
       this.loq <- min(this.subset3$Value,na.rm=TRUE)
       this.loq <- this.loq*0.9
       CvT.data[
@@ -711,7 +713,7 @@ if (this.cas %in% all_study_1c_fits.mean$CAS)
 length(unique(cvtfits$CAS))
 # Add DTXSID:
 cvtfits <-
-  merge(cvtfits,chem.tab[,c("CASRN","DTXSID")],by.x="CAS",by.y="CASRN")
+  merge(cvtfits,CvT.chems[,c("CASRN","DTXSID")],by.x="CAS",by.y="CASRN")
 length(unique(cvtfits$CAS))
 ```
 
@@ -770,7 +772,7 @@ chem.physical_and_invitro.data <- add_chemtable(
     Clint="Human.Clint.httk"),
   species="Human",
   reference="InVitro",
-  overwrite=T)
+  overwrite=TRUE)
 level2tab.invitro.list <- suppressWarnings(makeCvTpreds("HTTK-InVitro"))
 level2tab.invitro <- level2tab.invitro.list$cvt
 level2tab.invitro.stats <- level2tab.invitro.list$stats
@@ -790,7 +792,7 @@ chem.physical_and_invitro.data <- add_chemtable(
     Clint="Human.Clint.SPlus"),
   species="Human",
   reference="SPlus",
-  overwrite=T)
+  overwrite=TRUE)
 level2tab.admet.list <- makeCvTpreds("HTTK-ADmet")
 level2tab.admet <- level2tab.admet.list$cvt
 level2tab.admet.stats <- level2tab.admet.list$stats
@@ -810,7 +812,7 @@ chem.physical_and_invitro.data <- add_chemtable(
     Clint="Human.Clint.Dawson"),
   species="Human",
   reference="Dawson",
-  overwrite=T)
+  overwrite=TRUE)
 level2tab.dawson.list <- makeCvTpreds("HTTK-Dawson")
 level2tab.dawson <- level2tab.dawson.list$cvt
 level2tab.dawson.stats <- level2tab.dawson.list$stats
@@ -830,7 +832,7 @@ chem.physical_and_invitro.data <- add_chemtable(
     Clint="Human.Clint.Pradeep"),
   species="Human",
   reference="Pradeep",
-  overwrite=T)
+  overwrite=TRUE)
 level2tab.pradeep.list <- makeCvTpreds("HTTK-Pradeep")
 level2tab.pradeep <- level2tab.pradeep.list$cvt
 level2tab.pradeep.stats <- level2tab.pradeep.list$stats
@@ -1077,7 +1079,7 @@ print(FigLev2)
 ```
 
 ```{r make_level2_auc_plot, eval = TRUE}
-Lev2.auc <- ggplot(data=level2tab.stats, aes(x=QSAR, y=AUC.RPE)) + 
+FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSAR, y=AUC.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
