@@ -14,6 +14,9 @@ knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
 ```
 To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
 ```{r load_packages, eval = TRUE}
+# Clear the memory:
+rm(list=ls()) 
+
 library(readxl)
 library(ggplot2)
 library(httk)
@@ -255,19 +258,10 @@ CvT.chems <- merge(CvT.chems,
   by="DTXSID")
 colnames(CvT.chems)[colnames(CvT.chems)=="Clint_pred"] <- "Human.Clint.OPERA"
 colnames(CvT.chems)[colnames(CvT.chems)=="FUB_pred"] <- "Human.Fup.OPERA"
-
-for (this.col in 12:21) CvT.chems[,this.col] <- as.numeric(CvT.chems[,this.col])
 ```
 
 Master Table:
 ```{r prediction_table, eval = TRUE}
-CvT.chems <- merge(CvT.chems,
-  opera[,c("DTXSID","Clint_pred","FUB_pred")],
-  all.x=TRUE,
-  by="DTXSID")
-colnames(CvT.chems)[colnames(CvT.chems)=="Clint_pred"] <- "Human.Clint.OPERA"
-colnames(CvT.chems)[colnames(CvT.chems)=="FUB_pred"] <- "Human.Fup.OPERA"
-
 for (this.col in 12:21) CvT.chems[,this.col] <- as.numeric(CvT.chems[,this.col])
 ```
 
@@ -283,12 +277,26 @@ Heatmap of the Data Set:
   colnames(CvT.chems.scale)[10] <- "Vapor Pressure"
   colnames(CvT.chems.scale)[11] <- "Water Solubility"
   rownames(CvT.chems.scale) <- CvT.chems.scale$PREFERRED_NAME 
+# Make sure everything is numeric:
   for (this.col in 4:21) CvT.chems.scale[,this.col] <- 
     as.numeric(CvT.chems.scale[,this.col])
-  for (this.col in 4:21) CvT.chems.scale[,this.col] <- 
+# Scale and center
+  for (this.col in 4:11) CvT.chems.scale[,this.col] <- 
     (CvT.chems.scale[,this.col] - mean(CvT.chems.scale[,this.col],na.rm=TRUE)) / 
     sd(CvT.chems.scale[,this.col],na.rm=TRUE)
-  mypalette<-brewer.pal(11,"RdYlBu")
+# scale and center all predictions by in vitro:
+clint.mean <- mean(CvT.chems.scale[,12], na.rm=TRUE)
+fup.mean <- mean(CvT.chems.scale[,13], na.rm=TRUE)
+clint.sd <- sd(CvT.chems.scale[,12], na.rm=TRUE)
+fup.sd <- sd(CvT.chems.scale[,13], na.rm=TRUE)
+for (this.col in seq(12,20,2)) CvT.chems.scale[,this.col] <- 
+    (CvT.chems.scale[,this.col] - clint.mean) / clint.sd
+for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <- 
+    (CvT.chems.scale[,this.col] - fup.mean) / fup.sd
+
+
+  
+    mypalette<-brewer.pal(11,"RdYlBu")
   heatmap.2(as.matrix(CvT.chems.scale[,4:21]),
     lwid=c(0.4,1),
     lhei=c(0.4,1),
@@ -390,7 +398,7 @@ for (this.chem in unique(level1tab$DTXSID))
     level1tab[level1tab$DTXSID==this.chem & level1tab$QSAR=="OPERA",
       "Human.Fup.RPE"] <- this.mean.fup
     CvT.chems[CvT.chems$DTXSID==this.chem,"Human.Clint.OPERA"] <- NA
-    CvT.chems[CvT.chems$DTXSID==this.chem,"Human.Clint.Fup"] <- NA
+    CvT.chems[CvT.chems$DTXSID==this.chem,"Human.Fup.OPERA"] <- NA
   }
 }
 ```
@@ -935,7 +943,7 @@ level3tab.opera <- maketkstatpreds(CvT.data,"HTTK-OPERA")
 # The performance of actual 1 compartment model fits provides an upper limit
 # of how good we can get (thanks Rusty)
 ```{r cvt_compare_fits, eval = TRUE}
-level2tab.fits.list <- makeCvTpredsfromfits("1CompFits")
+level2tab.fits.list <- makeCvTpredsfromfits(CvT.data,"1CompFits")
 level2tab.fits <-  level2tab.fits.list$cvt
 level2tab.fits.stats <- level2tab.fits.list$stats
 ```
@@ -957,7 +965,7 @@ level2tab.stats <- rbind(
   level2tab.pradeep.stats,
   level2tab.opera.stats,
   level2tab.fits.stats)
-level2tab.stats <- subset(level2tab,!duplicated(level2tab))
+level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
 ```
 
 Assign average to missing predictions:
@@ -1015,8 +1023,13 @@ Assign average to missing predictions:
   hist(level2tab$RPE)
 
 level2tab.stats$AUC.RPE <- (level2tab.stats$AUC.pred-level2tab.stats$AUC.obs)/level2tab.stats$AUC.obs
+level2tab.stats[level2tab.stats$AUC.RPE>5,"AUC.RPE"] <- 5
+hist(level2tab.stats$AUC.RPE)
+
 level2tab.stats$Cmax.RPE <- (level2tab.stats$Cmax.pred-level2tab.stats$Cmax.obs)/level2tab.stats$Cmax.obs
- 
+level2tab.stats[level2tab.stats$Cmax.RPE>5,"Cmax.RPE"] <- 5
+hist(level2tab.stats$Cmax.RPE)
+     
 #level2tab$RPE.trunc[level2tab$RPE.trunc < -100] <- -100
 #level2tab$RPE.trunc[level2tab$RPE.trunc > 100] <- 100
  
@@ -1144,11 +1157,65 @@ FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) +
   xlab("QSAR") +
   ylab("RPE for In Vivo CvT Data")+
  # scale_y_continuous(limits=c(-10,40)) +
-  scale_y_log10(limits=c(10-2,100),breaks=c(10^-1,1,3,10),label=scientific_10)+
+ # scale_y_log10(limits=c(10-2,100),breaks=c(10^-1,1,3,10),label=scientific_10)+
   theme_bw()+
   theme( text  = element_text(size=20))   +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev2)  
+```
+
+```{r make_level2_auc_plot, eval = TRUE}
+FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSAR, y=AUC.RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSAR") +
+  ylab("RPE for In Vivo CvTdb AUC")+
+  scale_y_continuous(limits=c(-1.5,3)) +
+#  scale_y_log10(limits=c(10^-1,10),breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=20))   +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+print(FigLev2.auc)  
+```
+```{r make_level2_auc_plot, eval = TRUE}
+FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
+  geom_point(size=2,aes(x=AUC.pred,y=AUC.obs,shape=QSAR,color=QSAR))+
+  scale_x_log10(breaks=c(10^-5,10^-2,1,10,10^2),label=scientific_10,limits=c(10^-7,3000)) +
+  #scale_y_log10(label=scientific_10)+
+  scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
+  #geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  xlab('Predicted AUC (mg/L*h)') +
+  ylab('Observed AUC (mg/L*h)') +
+  theme_bw()+
+  facet_grid(cols=vars(QSAR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=14))
+
+print(FigLev2AUC_facet)
+AUC.stats.table <- NULL
+for (this.qsar in unique(level2tab.stats$QSAR))
+{
+  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
+  this.fit <- lm(data=this.subset,AUC.obs~AUC.pred)
+  this.row <- data.frame(
+    this.qsar,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+    )
+  AUC.stats.table <- rbind(AUC.stats.table,this.row)
+}
+
+print(AUC.stats.table)
 ```
 
 ```{r make_level2_auc_plot, eval = TRUE}
@@ -1186,7 +1253,61 @@ FigLev2.cmax <- ggplot(data=level2tab.stats, aes(x=QSAR, y=Cmax.RPE)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev2.cmax)  
 ```
+```{r make_level2_plot, eval = TRUE}
+FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSAR") +
+  ylab("RPE for In Vivo CvT Data")+
+ # scale_y_continuous(limits=c(-10,40)) +
+ # scale_y_log10(limits=c(10-2,100),breaks=c(10^-1,1,3,10),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=20))   +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+print(FigLev2)  
+```
 
+```{r make_level2_cmax_plot, eval = TRUE}
+FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
+  geom_point(size=2,aes(x=Cmax.pred,y=Cmax.obs,shape=QSAR,color=QSAR))+
+  scale_x_log10(breaks=c(10^-5,10^-2,1,10,10^2),label=scientific_10,limits=c(10^-7,3000)) +
+  #scale_y_log10(label=scientific_10)+
+  scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
+  #geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  xlab(bquote('Predicted'~C[max]~'(mg/L)')) +
+  ylab(bquote('Observed'~C[max]~'(mg/L)')) +
+  theme_bw()+
+  facet_grid(cols=vars(QSAR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=14))
+
+print(FigLev2Cmax_facet)
+
+Cmax.stats.table <- NULL
+for (this.qsar in unique(level2tab.stats$QSAR))
+{
+  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
+  this.fit <- lm(data=this.subset,Cmax.obs~Cmax.pred)
+  this.row <- data.frame(
+    this.qsar,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+    )
+  Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
+}
+
+print(Cmax.stats.table)
+```
 ```{r make_level2_plot_stats, eval = TRUE}
 #### add AAFE & RMSLE to the table
 texty <- 1
@@ -1222,7 +1343,7 @@ FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) +
   legend.text=element_text(size=14),
   legend.title = element_text(size=14),
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
-  axis.title.y=element_text(size=16))
+  axis.title.y=element_text(size=12))
 print(FigLev2) 
 #ggsave(paste("FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ggsave(paste("FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
@@ -1257,7 +1378,7 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
  # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
     xlab("QSAR") +
-  ylab(bquote("Chemical-Speicifc RMSLE for In Vivo CvT Data"))+
+  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(tableGrob(stats.table[c(2,4),1], theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
@@ -1278,7 +1399,7 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
   legend.text=element_text(size=14),
   legend.title = element_text(size=14),
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
-  axis.title.y=element_text(size=16))
+  axis.title.y=element_text(size=10))
 print(FigLev2RMSE) 
 ```
 ```{r analyze_admet1,eval=TRUE}
@@ -1306,6 +1427,20 @@ for (this.cas in unique(level2tab$CAS))
     }
   }
 }
+admet.chems <- unique(admet.better$Compound)
+invitro.chems <- unique(invitro.better$Compound)
+admet.chems[!(admet.chems %in% invitro.chems)]
+admet.better.chems <- admet.chems[!(admet.chems %in% invitro.chems)]
+invitro.better.chems <- invitro.chems[!(invitro.chems %in% admet.chems)]
+
+admet.better.data <- subset(CvT.chems,PREFERRED_NAME%in%admet.better.chems)
+invitro.better.data <- subset(CvT.chems,PREFERRED_NAME%in%invitro.better.chems)
+
+
+dev.new()
+plot(admet.better.data$Human.Fup.httk,admet.better.data$Human.Fup.SPlus)
+plot(admet.better.data$Human.Clint.httk+10^-3,admet.better.data$Human.Clint.SPlus+10^-3,log="xy")
+
 ```
       
     
@@ -1314,6 +1449,9 @@ for (this.cas in unique(level2tab$CAS))
 }
 
 ```
+
+Need to do invivo vs invitro/insilco plots for AUC & Cmax
+Need heatmap of RMSE x chemical, can add phys-chem
 ```{r analyze_admet, eval = TRUE}
 qsarbychem.table <- dcast(qsarbychem.table,Compound~QSAR)
 chems <- qsarbychem.table$Compound

@@ -174,7 +174,7 @@ makeCvTpredsfromfits <- function(CvT.data,label)
                   Dose=this.dose,
                   Time=this.time,
                   Conc.pred=pred[pred[,"time"] == this.time,"Ccompartment"],
-                  stringsAsFactors=F)
+                  stringsAsFactors=FALSE)
                 new.row <- merge(new.row,
                   this.subset5[,c(
                     "CAS","Media","Value","Source","calc_loq")], by="CAS")
@@ -205,7 +205,7 @@ makeCvTpredsfromfits <- function(CvT.data,label)
                 Cmax.pred=Cmax.pred,
                 AUC.obs=AUC.obs,
                 AUC.pred=AUC.pred,
-                stringsAsFactors=F)
+                stringsAsFactors=FALSE)
               stats.table <- rbind(stats.table,new.row)            
             }
           }
@@ -220,7 +220,7 @@ makeCvTpredsfromfits <- function(CvT.data,label)
 }
 
 # This function does the level III statistic comparisons:
-maketkstatpreds <- function(label)
+maketkstatpreds <- function(CvT.data,label)
 {
   out.table <- NULL
   for (this.cas in unique(cvtfits$CAS))
