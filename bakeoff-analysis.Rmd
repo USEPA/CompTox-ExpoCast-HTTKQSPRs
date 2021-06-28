@@ -78,8 +78,10 @@ series_res_set$Media <- tolower(series_res_set$Media)
 unique(series_res_set$Media)
 
 # Significant figures:
-series_res_set$Time <- signif(as.numeric(series_res_set$Time),2)
-series_res_set$Value <- signif(as.numeric(series_res_set$Value),4)
+series_res_set$Time <- suppressWarnings(signif(
+  as.numeric(series_res_set$Time),2))
+series_res_set$Value <- suppressWarnings(signif(
+  as.numeric(series_res_set$Value),4))
 
 CvT.data <- series_res_set
 CvT.chems <- unique(CvT.data$DTXSID)
@@ -115,7 +117,8 @@ CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
 
 ```{r load_physchem, eval = TRUE}
 CvT.chems <-read_excel("eval-chems3.xls")
-for (this.col in 6:18) CvT.chems[,this.col] <- signif(as.numeric(unlist(CvT.chems[,this.col])),3)
+for (this.col in 6:18) CvT.chems[,this.col] <- suppressWarnings(signif(
+  as.numeric(unlist(CvT.chems[,this.col])),3))
 CvT.chems <- CvT.chems[,c(
   "DTXSID",
   "PREFERRED_NAME",
@@ -448,7 +451,7 @@ FigLev1a_facet <- ggplot(data=level1tab) +
          axis.text.x = element_text(size=14))
 
 print(FigLev1a_facet)
-ggsave(paste("FigLev1a_Clint_obsVpred_facet",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
+ggsave(paste("figs/FigLev1a_Clint_obsVpred_facet",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
 ```
 
 Make Level1 RPE boix and whisker plot for Clint:
@@ -562,7 +565,7 @@ FigLev1b<-ggplot(data=level1tab, aes(x=QSAR, y=Human.Clint.RPE)) +
          legend.text=element_text(size=7),
          legend.title = element_text(size=8))
 print(FigLev1b) 
-ggsave(paste("FigLev1b_Clint_boxplot_wtable",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev1b_Clint_boxplot_wtable",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
@@ -602,8 +605,8 @@ FigLev1c <- ggplot(data=level1tab) +
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=14))
 print(FigLev1c)
-ggsave(paste("FigLev1c_Fub_obsVpred_facet",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
-#ggsave(paste("FigLev1c_Fub_obsVpred_facet_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
+ggsave(paste("figs/FigLev1c_Fub_obsVpred_facet",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
+#ggsave(paste("figs/FigLev1c_Fub_obsVpred_facet_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
 
 ```
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
@@ -655,8 +658,8 @@ FigLev1d<-ggplot(data=level1tab, aes(x=QSAR, y=Human.Fup.RPE)) +
          legend.text=element_text(size=7),
          legend.title = element_text(size=8))
 print(FigLev1d) 
-ggsave(paste("FigLev1d_fup_boxplot_wtable",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
-#ggsave(paste("FigLev1d_fup_boxplot_wtable_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev1d_fup_boxplot_wtable",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+#ggsave(paste("figs/FigLev1d_fup_boxplot_wtable_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
 
 
@@ -1345,8 +1348,8 @@ FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) +
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
   axis.title.y=element_text(size=12))
 print(FigLev2) 
-#ggsave(paste("FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
-ggsave(paste("FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+#ggsave(paste("figs/FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
 
 
@@ -1537,7 +1540,7 @@ FigLev2a <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-InVitro",]) +
  theme_bw()+
  theme( text  = element_text(size=20))
 print(FigLev2a)
-ggsave(paste("FigLev2_Conc_scatter_HTTKInVitro",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKInVitro",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 FigLev2b <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-ADmet",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
@@ -1553,7 +1556,7 @@ FigLev2b <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-ADmet",]) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev2b)
-ggsave(paste("FigLev2_Conc_scatter_HTTKADmet",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKADmet",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 FigLev2c <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Pradeep",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
@@ -1570,8 +1573,8 @@ FigLev2c <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Pradeep",]) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev2c)
-#ggsave(paste("FigLev2_Conc_scatter_HTTKPradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
-ggsave(paste("FigLev2_Conc_scatter_HTTKPradeep",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+#ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeep",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 
 FigLev2d <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Dawson",]) +
@@ -1588,7 +1591,7 @@ FigLev2d <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Dawson",]) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev2d)
-ggsave(paste("FigLev2_Conc_scatter_HTTKDawson",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKDawson",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 FigLev2e <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-OPERA" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
@@ -1604,7 +1607,7 @@ FigLev2e <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-OPERA" ,]) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev2e)
-ggsave(paste("FigLev2_Conc_scatter_HTTKOPERA",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKOPERA",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 FigLev2f <- ggplot(data=level2tab[level2tab$QSAR=="1CompFits" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
@@ -1620,7 +1623,7 @@ FigLev2f <- ggplot(data=level2tab[level2tab$QSAR=="1CompFits" ,]) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev2f)
-ggsave(paste("FigLev2_Conc_scatter_1CompFits",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_1CompFits",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
 
 #Level III Predictions -- predicted half-life or volume of distribution (Vd)
