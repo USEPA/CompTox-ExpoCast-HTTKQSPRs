@@ -115,6 +115,7 @@ CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
 
 ```
 
+
 ```{r load_physchem, eval = TRUE}
 CvT.chems <-read_excel("eval-chems3.xls")
 for (this.col in 6:18) CvT.chems[,this.col] <- suppressWarnings(signif(
@@ -1077,12 +1078,46 @@ level2tab$AbsFE[level2tab$AbsFE=="NaN"]<-0  #none
 
 
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-ADMet.AAFE<-10^(mean(level2tab$AbsFE[level2tab$QSAR=="HTTK-ADmet"],na.rm=TRUE))
-Dawson.AAFE<-10^(mean(level2tab$AbsFE[level2tab$QSAR=="HTTK-Dawson"],na.rm=TRUE))
-InVitro.AAFE<-10^(mean(level2tab$AbsFE[level2tab$QSAR=="HTTK-InVitro"],na.rm=TRUE))
-OPERA.AAFE<-10^(mean(level2tab$AbsFE[level2tab$QSAR=="HTTK-OPERA"],na.rm=TRUE))
-Pradeep.AAFE<-10^(mean(level2tab$AbsFE[level2tab$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
-fits.AAFE<-10^(mean(level2tab$AbsFE[level2tab$QSAR=="1CompFits"],na.rm=TRUE))
+ADMet.AAFE<-10^(mean(level2tab$AbsFE[
+  level2tab$QSAR=="HTTK-ADmet"],na.rm=TRUE))
+Dawson.AAFE<-10^(mean(level2tab$AbsFE[
+  level2tab$QSAR=="HTTK-Dawson"],na.rm=TRUE))
+InVitro.AAFE<-10^(mean(level2tab$AbsFE[
+  level2tab$QSAR=="HTTK-InVitro"],na.rm=TRUE))
+OPERA.AAFE<-10^(mean(level2tab$AbsFE[
+  level2tab$QSAR=="HTTK-OPERA"],na.rm=TRUE))
+Pradeep.AAFE<-10^(mean(level2tab$AbsFE[
+  level2tab$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
+fits.AAFE<-10^(mean(level2tab$AbsFE[
+  level2tab$QSAR=="1CompFits"],na.rm=TRUE))
+
+#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
+ADMet.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
+  level2tab.early$QSAR=="HTTK-ADmet"],na.rm=TRUE))
+Dawson.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
+  level2tab.early$QSAR=="HTTK-Dawson"],na.rm=TRUE))
+InVitro.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
+  level2tab.early$QSAR=="HTTK-InVitro"],na.rm=TRUE))
+OPERA.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
+  level2tab.early$QSAR=="HTTK-OPERA"],na.rm=TRUE))
+Pradeep.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
+  level2tab.early$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
+fits.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
+  level2tab.early$QSAR=="1CompFits"],na.rm=TRUE))
+
+#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
+ADMet.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
+  level2tab.late$QSAR=="HTTK-ADmet"],na.rm=TRUE))
+Dawson.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
+  level2tab.late$QSAR=="HTTK-Dawson"],na.rm=TRUE))
+InVitro.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
+  level2tab.late$QSAR=="HTTK-InVitro"],na.rm=TRUE))
+OPERA.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
+  level2tab.late$QSAR=="HTTK-OPERA"],na.rm=TRUE))
+Pradeep.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
+  level2tab.late$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
+fits.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
+  level2tab.late$QSAR=="1CompFits"],na.rm=TRUE))
 
 #RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
 ADMet.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-ADmet"]/
@@ -1098,6 +1133,46 @@ Pradeep.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-Pradee
 fits.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="1CompFits"]/
   level2tab$Conc.obs[level2tab$QSAR=="1CompFits"]))^2,na.rm=TRUE))
 
+ADMet.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
+  level2tab.early$QSAR=="HTTK-ADmet"]/
+  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-ADmet"]))^2,na.rm=TRUE))
+Dawson.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
+  level2tab.early$QSAR=="HTTK-Dawson"]/
+  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-Dawson"]))^2,na.rm=TRUE))
+InVitro.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
+  level2tab.early$QSAR=="HTTK-InVitro"]/
+  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-InVitro"]))^2,na.rm=TRUE))
+OPERA.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
+  level2tab.early$QSAR=="HTTK-OPERA"]/
+  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-OPERA"]))^2,na.rm=TRUE))
+Pradeep.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
+  level2tab.early$QSAR=="HTTK-Pradeep"]/
+  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-Pradeep"]))^2,na.rm=TRUE))
+fits.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
+  level2tab.early$QSAR=="1CompFits"]/
+  level2tab.early$Conc.obs[level2tab.early$QSAR=="1CompFits"]))^2,na.rm=TRUE))
+
+
+ADMet.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
+  level2tab.late$QSAR=="HTTK-ADmet"]/
+  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-ADmet"]))^2,na.rm=TRUE))
+Dawson.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
+  level2tab.late$QSAR=="HTTK-Dawson"]/
+  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-Dawson"]))^2,na.rm=TRUE))
+InVitro.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
+  level2tab.late$QSAR=="HTTK-InVitro"]/
+  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-InVitro"]))^2,na.rm=TRUE))
+OPERA.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
+  level2tab.late$QSAR=="HTTK-OPERA"]/
+  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-OPERA"]))^2,na.rm=TRUE))
+Pradeep.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
+  level2tab.late$QSAR=="HTTK-Pradeep"]/
+  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-Pradeep"]))^2,na.rm=TRUE))
+fits.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
+  level2tab.late$QSAR=="1CompFits"]/
+  level2tab.late$Conc.obs[level2tab.late$QSAR=="1CompFits"]))^2,na.rm=TRUE))
+
+
 ADMet.MRPE <- median(subset(level2tab,QSAR=="HTTK-ADmet")$RPE)
 Dawson.MRPE <- median(subset(level2tab,QSAR=="HTTK-Dawson")$RPE)
 InVitro.MRPE <- median(subset(level2tab,QSAR=="HTTK-InVitro")$RPE)
@@ -1105,66 +1180,257 @@ OPERA.MRPE <- median(subset(level2tab,QSAR=="HTTK-OPERA")$RPE)
 Pradeep.MRPE <- median(subset(level2tab,QSAR=="HTTK-Pradeep")$RPE)
 fits.MRPE <- median(subset(level2tab,QSAR=="1CompFits")$RPE)
 
+ADMet.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-ADmet")$RPE)
+Dawson.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-Dawson")$RPE)
+InVitro.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-InVitro")$RPE)
+OPERA.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-OPERA")$RPE)
+Pradeep.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-Pradeep")$RPE)
+fits.MRPE.early <- median(subset(level2tab.early,QSAR=="1CompFits")$RPE)
+
+ADMet.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-ADmet")$RPE)
+Dawson.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-Dawson")$RPE)
+InVitro.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-InVitro")$RPE)
+OPERA.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-OPERA")$RPE)
+Pradeep.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-Pradeep")$RPE)
+fits.MRPE.late <- median(subset(level2tab.late,QSAR=="1CompFits")$RPE)
 
 
+stats.table<-do.call("rbind",list(
+# AAFE
+  c(round(ADMet.AAFE,2),
+    round(Dawson.AAFE,2),
+    round(InVitro.AAFE,2),
+    round(OPERA.AAFE,2),
+    round(Pradeep.AAFE,2),
+    round(fits.AAFE,2)),
+# RMSLE
+  c(round(ADMet.RMSLE,2),
+    round(Dawson.RMSLE,2),
+    round(InVitro.RMSLE,2),
+    round(OPERA.RMSLE,2),
+    round(Pradeep.RMSLE,2),
+    round(fits.RMSLE,2)),
+# MRPE 
+    c(round(ADMet.MRPE,2),
+    round(Dawson.MRPE,2),
+    round(InVitro.MRPE,2),
+    round(OPERA.MRPE,2),
+    round(Pradeep.MRPE,2),
+    round(fits.MRPE,2)),
+# RMSLE.early
+    c(round(ADMet.RMSLE.early,2),
+    round(Dawson.RMSLE.early,2),
+    round(InVitro.RMSLE.early,2),
+    round(OPERA.RMSLE.early,2),
+    round(Pradeep.RMSLE.early,2),
+    round(fits.RMSLE.early,2)),
+# RMSLE.late
+    c(round(ADMet.RMSLE.late,2),
+    round(Dawson.RMSLE.late,2),
+    round(InVitro.RMSLE.late,2),
+    round(OPERA.RMSLE.late,2),
+    round(Pradeep.RMSLE.late,2),
+    round(fits.RMSLE.late,2)),
+# AAFE.early
+  c(round(ADMet.AAFE.early,2),
+    round(Dawson.AAFE.early,2),
+    round(InVitro.AAFE.early,2),
+    round(OPERA.AAFE.early,2),
+    round(Pradeep.AAFE.early,2),
+    round(fits.AAFE.early,2)),
+# AAFE.late
+    c(round(ADMet.AAFE.late,2),
+    round(Dawson.AAFE.late,2),
+    round(InVitro.AAFE.late,2),
+    round(OPERA.AAFE.late,2),
+    round(Pradeep.AAFE.late,2),
+    round(fits.AAFE.late,2)),
+# MRPE.early
+  c(round(ADMet.MRPE.early,2),
+    round(Dawson.MRPE.early,2),
+    round(InVitro.MRPE.early,2),
+    round(OPERA.MRPE.early,2),
+    round(Pradeep.MRPE.early,2),
+    round(fits.MRPE.early,2)),
+# MRPE.late
+  c(round(ADMet.MRPE.late,2),
+    round(Dawson.MRPE.late,2),
+    round(InVitro.MRPE.late,2),
+    round(OPERA.MRPE.late,2),
+    round(Pradeep.MRPE.late,2),
+    round(fits.MRPE.late,2))
+  ))
+colnames(stats.table) <-  c("ADMet", "Dawson", "InVitro", "OPERA", "Pradeep","1CompFits")
+rownames(stats.table) <- c("AAFE","RMSLE","MRPE","RMSLE.early","RMSLE.late","AAFE.early","AAFE.late","MRPE.early","MRPE.late")
 
-stats.table<-do.call("rbind",list(c(NA, "ADMet", "Dawson", "InVitro", "OPERA", "Pradeep","1CompFits"),
-                                              c("AAFE",round(ADMet.AAFE,2),
-                                                round(Dawson.AAFE,2),
-                                                round(InVitro.AAFE,2),
-                                                round(OPERA.AAFE,2),
-                                                round(Pradeep.AAFE,2),
-                                                round(fits.AAFE,2)),
-                                              c("RMSLE",round(ADMet.RMSLE,2),
-                                                round(Dawson.RMSLE,2),
-                                                round(InVitro.RMSLE,2),
-                                                round(OPERA.RMSLE,2),
-                                                round(Pradeep.RMSLE,2),
-                                                round(fits.RMSLE,2)),
-                                              c("MRPE",round(ADMet.RMSLE,2),
-                                                round(Dawson.RMSLE,2),
-                                                round(InVitro.RMSLE,2),
-                                                round(OPERA.RMSLE,2),
-                                                round(Pradeep.RMSLE,2),
-                                                round(fits.RMSLE,2))))
+AUC.stats.table <- NULL
+for (this.qsar in unique(level2tab.stats$QSAR))
+{
+  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
+  this.fit <- lm(data=this.subset,AUC.obs~AUC.pred)
+  this.row <- data.frame(
+    this.qsar,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+    )
+  AUC.stats.table <- rbind(AUC.stats.table,this.row)
+}
+
+Cmax.stats.table <- NULL
+for (this.qsar in unique(level2tab.stats$QSAR))
+{
+  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
+  this.fit <- lm(data=this.subset,Cmax.obs~Cmax.pred)
+  this.row <- data.frame(
+    this.qsar,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+    )
+  Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
+}
+
 ```
 
-#################################################################################################
 
-# #JW original
-# ## the summarized data get changed because of the introductions of NA's. This is incorrect.
-# FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE.trunc)) + 
-#   #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
-#   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
-#   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
-#   geom_boxplot(outlier.colour="red",
-#                outlier.size=2,
-#                outlier.alpha=0.1)+
-#   xlab("QSAR") +
-#   ylab("RPE for In Vivo CvT Data")+
-#   # scale_y_continuous(limits=c(-10,40)) +
-#   scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
-#   theme_bw()+
-#   theme( text  = element_text(size=20))   +
-#   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
-# print(FigLev2)  
+```{r divide_cvt_bytime, eval = TRUE}
+level2tab.early <- NULL
+level2tab.late <- NULL
+for (this.study in unique(level2tab$Source))
+{
+  this.subset1 <- subset(level2tab,Source==this.study)
+  for (this.chem in unique(this.subset1$CAS))
+  {
+    this.subset2 <- subset(this.subset1,CAS==this.chem)
+    mid.time <- mean(unique(this.subset2$Time))
+    level2tab.early <- rbind(level2tab.early,
+      subset(this.subset2,Time < mid.time))
+    level2tab.late <- rbind(level2tab.late,
+      subset(this.subset2,Time >= mid.time))
+  }
+}
+```
 
-```{r make_level2_plot, eval = TRUE}
+```{r make_level2_plot_stats, eval = TRUE}
+#### add AAFE & RMSLE to the table
+texty <- 1
+xshift <- 0.1
 FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) + 
-#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
-#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
-#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
-  geom_boxplot(outlier.colour="red",
-    outlier.size=2,
-    outlier.alpha=0.1)+
-  xlab("QSAR") +
-  ylab("RPE for In Vivo CvT Data")+
- # scale_y_continuous(limits=c(-10,40)) +
- # scale_y_log10(limits=c(10-2,100),breaks=c(10^-1,1,3,10),label=scientific_10)+
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSAR") +
+  ylab(bquote("Relative Error for In Vivo CvT Data"))+
   theme_bw()+
-  theme( text  = element_text(size=20))   +
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
-print(FigLev2)  
+  annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"1CompFits"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=12))
+print(FigLev2) 
+#ggsave(paste("figs/FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+```
+
+```{r make_level2_plot_stats_early, eval = TRUE}
+#### add AAFE & RMSLE to the table
+texty <- 1
+xshift <- 0.1
+FigLev2 <- ggplot(data=level2tab.early, aes(x=QSAR, y=RPE)) + 
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSAR") +
+  ylab(bquote("Relative Error for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"1CompFits"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=12))
+print(FigLev2) 
+#ggsave(paste("figs/FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+```
+
+```{r make_level2_plot_stats_late, eval = TRUE}
+#### add AAFE & RMSLE to the table
+texty <- 1
+xshift <- 0.1
+FigLev2 <- ggplot(data=level2tab.late, aes(x=QSAR, y=RPE)) + 
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSAR") +
+  ylab(bquote("Relative Error for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"1CompFits"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=12))
+print(FigLev2) 
+#ggsave(paste("figs/FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
 
 ```{r make_level2_auc_plot, eval = TRUE}
@@ -1184,6 +1450,7 @@ FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSAR, y=AUC.RPE)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev2.auc)  
 ```
+
 ```{r make_level2_auc_plot, eval = TRUE}
 FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
   geom_point(size=2,aes(x=AUC.pred,y=AUC.obs,shape=QSAR,color=QSAR))+
@@ -1205,19 +1472,6 @@ FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
          axis.text.x = element_text(size=14))
 
 print(FigLev2AUC_facet)
-AUC.stats.table <- NULL
-for (this.qsar in unique(level2tab.stats$QSAR))
-{
-  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
-  this.fit <- lm(data=this.subset,AUC.obs~AUC.pred)
-  this.row <- data.frame(
-    this.qsar,
-    R2=signif(summary(this.fit)$adj.r.squared,3),
-    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
-    )
-  AUC.stats.table <- rbind(AUC.stats.table,this.row)
-}
-
 print(AUC.stats.table)
 ```
 
@@ -1296,64 +1550,11 @@ FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
 
 print(FigLev2Cmax_facet)
 
-Cmax.stats.table <- NULL
-for (this.qsar in unique(level2tab.stats$QSAR))
-{
-  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
-  this.fit <- lm(data=this.subset,Cmax.obs~Cmax.pred)
-  this.row <- data.frame(
-    this.qsar,
-    R2=signif(summary(this.fit)$adj.r.squared,3),
-    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
-    )
-  Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
-}
-
 print(Cmax.stats.table)
 ```
-```{r make_level2_plot_stats, eval = TRUE}
-#### add AAFE & RMSLE to the table
-texty <- 1
-xshift <- 0.1
-FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) + 
-    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
-  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
-  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
-#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
-  geom_boxplot(lwd=0.3,
-               outlier.shape = NA)+
- # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-  coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-    xlab("QSAR") +
-  ylab(bquote("Relative Error for In Vivo CvT Data"))+
-  theme_bw()+
-  annotation_custom(tableGrob(stats.table[2:3,1], theme = ttheme_minimal(base_size = 12)),
-                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[2:3,7],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[2:3,2],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[2:3,3],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[2:3,4],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[2:3,5],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[2:3,6],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
-  theme( text  = element_text(size=20),
-  legend.key.height=unit(.5,"line"),
-  legend.text=element_text(size=14),
-  legend.title = element_text(size=14),
-  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
-  axis.title.y=element_text(size=12))
-print(FigLev2) 
-#ggsave(paste("figs/FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
-ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
-```
 
 
-```{r make_RMSE_bychem_plot, eval = TRUE}
+```{r make_RMSE_bychem_analysis, eval = TRUE}
 qsarbychem.table <- NULL
 QSARs <- unique(level2tab$QSAR)
 for (this.chemical in unique(level2tab$Compound))
@@ -1363,11 +1564,18 @@ for (this.chemical in unique(level2tab$Compound))
     this.subset <- subset(level2tab,QSAR==this.qsar & Compound==this.chemical)
     this.row <- this.subset[1,c(1:3,13)]
     this.row$RMSLE <- sqrt(mean((log10(this.subset$Conc.pred/
-      this.subset$Conc.obs))^2,na.rm=TRUE))  
+      this.subset$Conc.obs))^2,na.rm=TRUE))
+    this.subset <- subset(level2tab.early,QSAR==this.qsar & Compound==this.chemical)
+    this.row$RMSLE.early <- sqrt(mean((log10(this.subset$Conc.pred/
+      this.subset$Conc.obs))^2,na.rm=TRUE))
+    this.subset <- subset(level2tab.late,QSAR==this.qsar & Compound==this.chemical)
+    this.row$RMSLE.late <- sqrt(mean((log10(this.subset$Conc.pred/
+      this.subset$Conc.obs))^2,na.rm=TRUE))
     qsarbychem.table <- rbind(qsarbychem.table,this.row)
   }                    
 }
-
+```
+```{r make_RMSE_bychem_plot, eval = TRUE}
 #### add AAFE & RMSLE to the table
 texty <- 2.5
 xshift <- 0.1
@@ -1404,6 +1612,82 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
   axis.title.y=element_text(size=10))
 print(FigLev2RMSE) 
+```
+```{r make_RMSE_bychem_plot, eval = TRUE}
+#### add AAFE & RMSLE to the table
+texty <- 2.5
+xshift <- 0.1
+FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) + 
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSAR") +
+  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(tableGrob(stats.table[c(2,4),1], theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),7],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),2],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),3],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),4],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),5],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),6],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=10))
+print(FigLev2RMSE.early) 
+```
+```{r make_RMSE_bychem_plot, eval = TRUE}
+#### add AAFE & RMSLE to the table
+texty <- 2.5
+xshift <- 0.1
+FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) + 
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSAR") +
+  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(tableGrob(stats.table[c(2,4),1], theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),7],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),2],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),3],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),4],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),5],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c(2,4),6],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=10))
+print(FigLev2RMSE.late) 
 ```
 ```{r analyze_admet1,eval=TRUE}
 admet.better <-NULL
