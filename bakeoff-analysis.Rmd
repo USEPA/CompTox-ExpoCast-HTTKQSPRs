@@ -1075,8 +1075,28 @@ hist(level2tab$AbsFE)  # 4 seems large but does not to mess up the distribution
 
 #Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
 level2tab$AbsFE[level2tab$AbsFE=="NaN"]<-0  #none
+```
 
 
+```{r divide_cvt_bytime, eval = TRUE}
+level2tab.early <- NULL
+level2tab.late <- NULL
+for (this.study in unique(level2tab$Source))
+{
+  this.subset1 <- subset(level2tab,Source==this.study)
+  for (this.chem in unique(this.subset1$CAS))
+  {
+    this.subset2 <- subset(this.subset1,CAS==this.chem)
+    mid.time <- mean(unique(this.subset2$Time))
+    level2tab.early <- rbind(level2tab.early,
+      subset(this.subset2,Time < mid.time))
+    level2tab.late <- rbind(level2tab.late,
+      subset(this.subset2,Time >= mid.time))
+  }
+}
+```
+
+```{r calc_setspeific_stats, eval = TRUE}
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
 ADMet.AAFE<-10^(mean(level2tab$AbsFE[
   level2tab$QSAR=="HTTK-ADmet"],na.rm=TRUE))
@@ -1291,24 +1311,80 @@ for (this.qsar in unique(level2tab.stats$QSAR))
 
 ```
 
-
-```{r divide_cvt_bytime, eval = TRUE}
-level2tab.early <- NULL
-level2tab.late <- NULL
-for (this.study in unique(level2tab$Source))
+Heatmap with Level 2 stats
+```{r make_heatmap, eval = TRUE}
+CvT.chems.stats.heatmap <- CvT.chems.scale
+for (this.qsar in unique(level2tab.stats$QSAR))
 {
-  this.subset1 <- subset(level2tab,Source==this.study)
-  for (this.chem in unique(this.subset1$CAS))
+  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
+  print(paste(this.qsar,length(unique(this.subset$Compound))))
+  for (this.chem in unique(this.subset$Compound))
   {
-    this.subset2 <- subset(this.subset1,CAS==this.chem)
-    mid.time <- mean(unique(this.subset2$Time))
-    level2tab.early <- rbind(level2tab.early,
-      subset(this.subset2,Time < mid.time))
-    level2tab.late <- rbind(level2tab.late,
-      subset(this.subset2,Time >= mid.time))
+    this.subset2 <- subset(this.subset,Compound==this.chem)
+    this.index <- CvT.chems.stats.heatmap$PREFERRED_NAME==this.chem
+    CvT.chems.stats.heatmap[this.index,paste("AUC.RPE",this.qsar,sep=".")] <- 
+      mean(this.subset2$AUC.RPE)
+    CvT.chems.stats.heatmap[this.index,paste("Cmax.RPE",this.qsar,sep=".")] <- 
+      mean(this.subset2$Cmax.RPE)
+    this.subset3 <- subset(level2tab, QSAR==this.qsar & Compound==this.chem)
+    CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qsar,sep=".")] <- 
+      mean(log10(this.subset3$Conc.obs/this.subset3$Conc.pred)^2)^(1/2)
+    if (is.na(CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qsar,sep=".")])) browser()
   }
 }
 ```
+
+```{r scale_preds, eval = TRUE}
+for (this.chem in CvT.chems.stats.heatmap$PREFERRED_NAME) 
+{
+print(this.chem)
+  this.index <- CvT.chems.stats.heatmap$PREFERRED_NAME==this.chem
+  v <- CvT.chems.stats.heatmap[this.index,regexpr("AUC.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1]
+  print(v)
+  if (any(!is.na(v)))
+  {
+    m <- mean(v,na.rm=TRUE)
+    s <- sd(v,na.rm=TRUE)
+    CvT.chems.stats.heatmap[this.index,regexpr("AUC.RPE",
+      colnames(CvT.chems.stats.heatmap))!=-1] <- 
+      (v - m)/s
+  }
+  v <- CvT.chems.stats.heatmap[this.index,regexpr("Cmax.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1]
+  print(v)
+  if (any(!is.na(v)))
+  {
+    m <- mean(v,na.rm=TRUE)
+    s <- sd(v,na.rm=TRUE)
+  CvT.chems.stats.heatmap[this.index,regexpr("Cmax.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1] <- 
+    (v - m)/s
+  }
+  v <- CvT.chems.stats.heatmap[this.index,regexpr("Cmax.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1]
+  print(v)
+  if (any(!is.na(v)))
+  {
+    m <- mean(v,na.rm=TRUE)
+    s <- sd(v,na.rm=TRUE)
+    CvT.chems.stats.heatmap[this.indexregexpr("RMSLE",
+      colnames(CvT.chems.stats.heatmap))!=-1] <- 
+      (v - m)/s
+  }
+}
+
+mypalette<-brewer.pal(11,"RdYlBu")
+  heatmap.2(as.matrix(CvT.chems.stats.heatmap[,4:39]),
+    lwid=c(0.4,1),
+    lhei=c(0.4,1),
+    margins=c(10,1),
+    labRow = FALSE,
+    cexCol=1,
+    trace="none",
+    col=mypalette)
+```
+
 
 ```{r make_level2_plot_stats, eval = TRUE}
 #### add AAFE & RMSLE to the table
