@@ -1318,15 +1318,15 @@ for (this.qsar in unique(level2tab.stats$QSAR))
 {
   this.subset <- subset(level2tab.stats,QSAR==this.qsar)
   print(paste(this.qsar,length(unique(this.subset$Compound))))
-  for (this.chem in unique(this.subset$Compound))
+  for (this.chem in unique(this.subset$DTXSID))
   {
-    this.subset2 <- subset(this.subset,Compound==this.chem)
-    this.index <- CvT.chems.stats.heatmap$PREFERRED_NAME==this.chem
+    this.subset2 <- subset(this.subset,DTXSID==this.chem)
+    this.index <- tolower(CvT.chems.stats.heatmap$DTXSID)==tolower(this.chem)
     CvT.chems.stats.heatmap[this.index,paste("AUC.RPE",this.qsar,sep=".")] <- 
       mean(this.subset2$AUC.RPE)
     CvT.chems.stats.heatmap[this.index,paste("Cmax.RPE",this.qsar,sep=".")] <- 
       mean(this.subset2$Cmax.RPE)
-    this.subset3 <- subset(level2tab, QSAR==this.qsar & Compound==this.chem)
+    this.subset3 <- subset(level2tab, QSAR==this.qsar & DTXSID==this.chem)
     CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qsar,sep=".")] <- 
       mean(log10(this.subset3$Conc.obs/this.subset3$Conc.pred)^2)^(1/2)
     if (is.na(CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qsar,sep=".")])) browser()
@@ -1338,42 +1338,43 @@ for (this.qsar in unique(level2tab.stats$QSAR))
 for (this.chem in CvT.chems.stats.heatmap$PREFERRED_NAME) 
 {
 print(this.chem)
-  this.index <- CvT.chems.stats.heatmap$PREFERRED_NAME==this.chem
-  v <- CvT.chems.stats.heatmap[this.index,regexpr("AUC.RPE",
-    colnames(CvT.chems.stats.heatmap))!=-1]
-  print(v)
+  this.index <- which(CvT.chems.stats.heatmap$PREFERRED_NAME==this.chem)
+  v <- unlist(CvT.chems.stats.heatmap[this.index, regexpr("AUC.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1])
+#  print(v)
   if (any(!is.na(v)))
   {
     m <- mean(v,na.rm=TRUE)
     s <- sd(v,na.rm=TRUE)
-    CvT.chems.stats.heatmap[this.index,regexpr("AUC.RPE",
+    CvT.chems.stats.heatmap[this.index, regexpr("AUC.RPE",
       colnames(CvT.chems.stats.heatmap))!=-1] <- 
       (v - m)/s
   }
-  v <- CvT.chems.stats.heatmap[this.index,regexpr("Cmax.RPE",
-    colnames(CvT.chems.stats.heatmap))!=-1]
-  print(v)
+  v <- unlist(CvT.chems.stats.heatmap[this.index, regexpr("Cmax.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1])
+  #print(v)
   if (any(!is.na(v)))
   {
     m <- mean(v,na.rm=TRUE)
     s <- sd(v,na.rm=TRUE)
-  CvT.chems.stats.heatmap[this.index,regexpr("Cmax.RPE",
+  CvT.chems.stats.heatmap[this.index, regexpr("Cmax.RPE",
     colnames(CvT.chems.stats.heatmap))!=-1] <- 
     (v - m)/s
   }
-  v <- CvT.chems.stats.heatmap[this.index,regexpr("Cmax.RPE",
-    colnames(CvT.chems.stats.heatmap))!=-1]
-  print(v)
+  v <- unlist(CvT.chems.stats.heatmap[this.index, regexpr("RMSLE",
+    colnames(CvT.chems.stats.heatmap))!=-1])
+  #print(v)
   if (any(!is.na(v)))
   {
     m <- mean(v,na.rm=TRUE)
     s <- sd(v,na.rm=TRUE)
-    CvT.chems.stats.heatmap[this.indexregexpr("RMSLE",
+    CvT.chems.stats.heatmap[this.index, regexpr("RMSLE",
       colnames(CvT.chems.stats.heatmap))!=-1] <- 
       (v - m)/s
   }
 }
-
+```
+```{r make_stats_heatmap, eval = TRUE}
 mypalette<-brewer.pal(11,"RdYlBu")
   heatmap.2(as.matrix(CvT.chems.stats.heatmap[,4:39]),
     lwid=c(0.4,1),
@@ -1530,7 +1531,7 @@ print(FigLev2.auc)
 ```{r make_level2_auc_plot, eval = TRUE}
 FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
   geom_point(size=2,aes(x=AUC.pred,y=AUC.obs,shape=QSAR,color=QSAR))+
-  scale_x_log10(breaks=c(10^-5,10^-2,1,10,10^2),label=scientific_10,limits=c(10^-7,3000)) +
+  scale_x_log10(breaks=c(10^-5,10^-2,10),label=scientific_10,limits=c(10^-7,3000)) +
   #scale_y_log10(label=scientific_10)+
   scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
@@ -1544,8 +1545,9 @@ FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
   facet_grid(cols=vars(QSAR))+
   theme( text  = element_text(size=20),
          legend.position = "none",
+         strip.text.x = element_text(size = 10),
          axis.title = element_text(size=20),
-         axis.text.x = element_text(size=14))
+         axis.text.x = element_text(size=10))
 
 print(FigLev2AUC_facet)
 print(AUC.stats.table)
@@ -1600,14 +1602,15 @@ FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) +
  # scale_y_log10(limits=c(10-2,100),breaks=c(10^-1,1,3,10),label=scientific_10)+
   theme_bw()+
   theme( text  = element_text(size=20))   +
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))+
+  theme(axis.title.y = element_text(size=18))
 print(FigLev2)  
 ```
 
 ```{r make_level2_cmax_plot, eval = TRUE}
 FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
   geom_point(size=2,aes(x=Cmax.pred,y=Cmax.obs,shape=QSAR,color=QSAR))+
-  scale_x_log10(breaks=c(10^-5,10^-2,1,10,10^2),label=scientific_10,limits=c(10^-7,3000)) +
+  scale_x_log10(breaks=c(10^-5,10^-2,10^1),label=scientific_10,limits=c(10^-7,3000)) +
   #scale_y_log10(label=scientific_10)+
   scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
@@ -1621,8 +1624,9 @@ FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
   facet_grid(cols=vars(QSAR))+
   theme( text  = element_text(size=20),
          legend.position = "none",
+         strip.text.x = element_text(size = 10),
          axis.title = element_text(size=20),
-         axis.text.x = element_text(size=14))
+         axis.text.x = element_text(size=10))
 
 print(FigLev2Cmax_facet)
 
@@ -1654,7 +1658,7 @@ for (this.chemical in unique(level2tab$Compound))
 ```{r make_RMSE_bychem_plot, eval = TRUE}
 #### add AAFE & RMSLE to the table
 texty <- 2.5
-xshift <- 0.1
+xshift <- 0.2
 FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) + 
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1667,19 +1671,19 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
     xlab("QSAR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(tableGrob(stats.table[c(2,4),1], theme = ttheme_minimal(base_size = 12)),
+  annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),7],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"1CompFits"], theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),2],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),3],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),4],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),5],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),6],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
@@ -1689,11 +1693,12 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
   axis.title.y=element_text(size=10))
 print(FigLev2RMSE) 
 ```
-```{r make_RMSE_bychem_plot, eval = TRUE}
+```{r make_RMSE_bychem_early_plot, eval = TRUE}
 #### add AAFE & RMSLE to the table
 texty <- 2.5
-xshift <- 0.1
-FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) + 
+xshift <- 0.2
+FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
+   ggtitle("Early Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
@@ -1705,19 +1710,19 @@ FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
     xlab("QSAR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(tableGrob(stats.table[c(2,4),1], theme = ttheme_minimal(base_size = 12)),
+  annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),7],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"1CompFits"], theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),2],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),3],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),4],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),5],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),6],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
@@ -1727,11 +1732,12 @@ FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
   axis.title.y=element_text(size=10))
 print(FigLev2RMSE.early) 
 ```
-```{r make_RMSE_bychem_plot, eval = TRUE}
+```{r make_RMSE_bychem_late_plot, eval = TRUE}
 #### add AAFE & RMSLE to the table
 texty <- 2.5
-xshift <- 0.1
-FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) + 
+xshift <- 0.2
+FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
+   ggtitle("Late Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
@@ -1743,19 +1749,19 @@ FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
     xlab("QSAR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(tableGrob(stats.table[c(2,4),1], theme = ttheme_minimal(base_size = 12)),
+  annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),7],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"1CompFits"], theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),2],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),3],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),4],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),5],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c(2,4),6],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
@@ -1763,7 +1769,7 @@ FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
   legend.title = element_text(size=14),
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
   axis.title.y=element_text(size=10))
-print(FigLev2RMSE.late) 
+print(FigLev2RMSE.early) 
 ```
 ```{r analyze_admet1,eval=TRUE}
 admet.better <-NULL
@@ -1806,12 +1812,7 @@ plot(admet.better.data$Human.Clint.httk+10^-3,admet.better.data$Human.Clint.SPlu
 
 ```
       
-    
-  }
-  
-}
 
-```
 
 Need to do invivo vs invitro/insilco plots for AUC & Cmax
 Need heatmap of RMSE x chemical, can add phys-chem
@@ -1831,7 +1832,7 @@ rownames(qsarbychem.table) <- chems
   heatmap.2(t(qsarbychem.table),
     lwid=c(0.3,1),
     lhei=c(0.3,1),
-    margins=c(10,8),
+ #   margins=c(10,8),
 #    labRow = FALSE,
     cexCol=0.5,
     cexRow=1.0,
@@ -1888,102 +1889,111 @@ this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(10,10,10))
 ```{r make_pred_vs_obs_plots, eval = TRUE}
 FigLev2a <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-InVitro",]) +
  geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
- scale_x_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10) +
- scale_y_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10)+
+ scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+ scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
   # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
   #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
   geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
- xlab(bquote('Predicted Conc HTTK-InVitro')) +
- ylab(bquote('Observed Conc InVivo')) +
+ xlab(bquote('HTTK-InVitro')) +
+ ylab(bquote(' ')) +
  theme_bw()+
- theme( text  = element_text(size=20))
-print(FigLev2a)
+ theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2a)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKInVitro",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 FigLev2b <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-ADmet",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
-  scale_x_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10) +
-  scale_y_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10)+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
   # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
   #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
   geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
-  xlab(bquote('Predicted Conc HTTK-ADMET')) +
-  ylab(bquote('Observed Conc InVivo')) +
+  xlab(bquote('HTTK-ADMET')) +
+  ylab(bquote(' ')) +
   theme_bw()+
-  theme( text  = element_text(size=20))
-print(FigLev2b)
+  theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2b)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKADmet",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 FigLev2c <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Pradeep",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
-  scale_x_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10) +
-  scale_y_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10)+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
   # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
   #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
   geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   #  xlab(bquote('Predicted Conc HTTK-PradeepNEW')) +  ##Pradeep NEW ##
-  xlab(bquote('Predicted Conc HTTK-Pradeep')) +
-  ylab(bquote('Observed Conc InVivo')) +
+  xlab(bquote('HTTK-Pradeep')) +
+  ylab(bquote('Observed Conc In Vivo')) +
   theme_bw()+
-  theme( text  = element_text(size=20))
-print(FigLev2c)
+  theme( text  = element_text(size=20),
+         axis.title.y = element_text(size=14),
+         axis.text.y = element_text(size=10))
+#print(FigLev2c)
 #ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeep",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 
 FigLev2d <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Dawson",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
-  scale_x_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10) +
-  scale_y_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10)+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
   # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
   #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
   geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
-  xlab(bquote('Predicted Conc HTTK-Dawson')) +
-  ylab(bquote('Observed Conc InVivo')) +
+  xlab(bquote('HTTK-Dawson')) +
+  ylab(bquote(' ')) +
   theme_bw()+
-  theme( text  = element_text(size=20))
-print(FigLev2d)
+  theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2d)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKDawson",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 FigLev2e <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-OPERA" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
-  scale_x_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10) +
-  scale_y_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10)+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
   # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
   #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
   geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
-  xlab(bquote('Predicted Conc HTTK-OPERA')) +
-  ylab(bquote('Observed Conc InVivo')) +
+  xlab(bquote('HTTK-OPERA')) +
+  ylab(bquote(' ')) +
   theme_bw()+
-  theme( text  = element_text(size=20))
-print(FigLev2e)
+  theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2e)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKOPERA",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 FigLev2f <- ggplot(data=level2tab[level2tab$QSAR=="1CompFits" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
-  scale_x_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10) +
-  scale_y_log10(breaks=c(10^-1,1,10, 10^2, 10^3, 10^4),label=scientific_10)+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
   # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
   #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
   geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
-  xlab(bquote('Predicted Conc 1CompFits')) +
-  ylab(bquote('Observed Conc InVivo')) +
+  xlab(bquote('1CompFits')) +
+  ylab(bquote(' ')) +
   theme_bw()+
-  theme( text  = element_text(size=20))
-print(FigLev2f)
+  theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2f)
 ggsave(paste("figs/FigLev2_Conc_scatter_1CompFits",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+
+grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, nrow = 3)
 ```
 
 #Level III Predictions -- predicted half-life or volume of distribution (Vd)
