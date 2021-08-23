@@ -266,7 +266,23 @@ colnames(CvT.chems)[colnames(CvT.chems)=="FUB_pred"] <- "Human.Fup.OPERA"
 
 Master Table:
 ```{r prediction_table, eval = TRUE}
-for (this.col in 12:21) CvT.chems[,this.col] <- as.numeric(CvT.chems[,this.col])
+for (this.col in 12:21) 
+{
+  CvT.chems[,this.col] <- as.numeric(CvT.chems[,this.col])
+  # Make the "zeros" log-transformable:
+  for (this.row in 1:dim(CvT.chems)[1])
+  {
+    if (!is.na(CvT.chems[this.row,this.col]))
+    {
+      if (CvT.chems[this.row,this.col]==0)
+      {
+        
+      }
+    }
+  }
+}
+
+
 ```
 
 Heatmap of the Data Set:
@@ -304,7 +320,7 @@ for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <-
   heatmap.2(as.matrix(CvT.chems.scale[,4:21]),
     lwid=c(0.4,1),
     lhei=c(0.4,1),
-    margins=c(10,1),
+    margins=c(15,1),
     labRow = FALSE,
     cexCol=1,
     trace="none",
@@ -419,7 +435,7 @@ hist(subset(level1tab,QSAR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
 Make Level1 predictions vs. observed plot for Clint:
 ```{r clint_rpe_scatter, eval = TRUE}
 FigLev1a <- ggplot(data=level1tab) +
-  geom_point(size=3,aes(x=Human.Clint.pred,y=Human.Clint.httk,shape=QSAR,color=QSAR))+
+  geom_point(size=3,aes(x=Human.Clint.pred+10^-4,y=Human.Clint.httk+10^-4,shape=QSAR,color=QSAR))+
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10)+
   geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
@@ -430,13 +446,16 @@ FigLev1a <- ggplot(data=level1tab) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1a)
+```
+Make Level1 predictions vs. observed plot for Clint (faceted):
+```{r clint_rpe_scatter, eval = TRUE}
 
 ## Tiff image for manuscript (facet to see the individual predictions over Clint value)
 FigLev1a_facet <- ggplot(data=level1tab) +
-  geom_point(size=2,aes(x=Human.Clint.pred,y=Human.Clint.httk,shape=QSAR,color=QSAR))+
-  scale_x_log10(breaks=c(10^-5,10^-2,1,10,10^2),label=scientific_10,limits=c(10^-7,3000)) +
+  geom_point(size=2,aes(x=Human.Clint.pred+10^-4,y=Human.Clint.httk+10^-4,shape=QSAR,color=QSAR))+
+  scale_x_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits=c(30^-1,3000)) +
   #scale_y_log10(label=scientific_10)+
-  scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
+  scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 3000))+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
   #geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
   #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
@@ -571,7 +590,7 @@ ggsave(paste("figs/FigLev1b_Clint_boxplot_wtable",output.prefix,".tiff",sep=""),
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 FigLev1c <- ggplot(data=level1tab) +
-  geom_point(size=3,aes(x=Human.Fup.pred,y=Human.Fup.httk,shape=QSAR,color=QSAR))+
+  geom_point(size=3,aes(x=Human.Fup.pred+10^-4,y=Human.Fup.httk+10^-4,shape=QSAR,color=QSAR))+
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10)+
   geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
@@ -587,7 +606,7 @@ print(FigLev1c)
 
 ## faceted
 FigLev1c <- ggplot(data=level1tab) +
-  geom_point(size=2,aes(x=Human.Fup.pred,y=Human.Fup.httk,shape=QSAR,color=QSAR))+
+  geom_point(size=2,aes(x=Human.Fup.pred+10^-4,y=Human.Fup.httk+10^-4,shape=QSAR,color=QSAR))+
   ##  scale_x_log10(label=scientific_10) +
   scale_x_log10(breaks=c(10^-8,10^-6,10^-4,10^-2,1),label=scientific_10)+
   ##  scale_y_log10(label=scientific_10)+
@@ -1817,54 +1836,53 @@ plot(admet.better.data$Human.Clint.httk+10^-3,admet.better.data$Human.Clint.SPlu
 Need to do invivo vs invitro/insilco plots for AUC & Cmax
 Need heatmap of RMSE x chemical, can add phys-chem
 ```{r analyze_admet, eval = TRUE}
-qsarbychem.table <- dcast(qsarbychem.table,Compound~QSAR)
-chems <- qsarbychem.table$Compound
-qsarbychem.table <- apply(qsarbychem.table[,2:(1+length(QSARs))],2,as.numeric)
-rownames(qsarbychem.table) <- chems
+qsarbychem.table2 <- dcast(qsarbychem.table,Compound~QSAR,value.var="RMSLE")
+chems <- qsarbychem.table2$Compound
+qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)
+rownames(qsarbychem.table2) <- chems
+colnames(qsarbychem.table2) <- c("1CompFits","ADmet","Dawson","InVitro","OPERA","Pradeep")
+```
 
-
-
+```{r make_rmse_heatmap, eval = TRUE}
 
 
 
 
   mypalette<-brewer.pal(9,"PuRd")
-  heatmap.2(t(qsarbychem.table),
-    lwid=c(0.3,1),
-    lhei=c(0.3,1),
- #   margins=c(10,8),
+  heatmap.2(t(qsarbychem.table2),
+ #   lwid=c(0.3,1),
+#    lhei=c(0.3,1),
+    margins=c(10,8),
 #    labRow = FALSE,
     cexCol=0.5,
     cexRow=1.0,
     trace="none",
     col=mypalette)
-
-for (this.chem in unique(rownames(qsarbychem.table)))
+```
+```{r model_admet_difference, eval = TRUE}
+for (this.chem in unique(rownames(qsarbychem.table2)))
 {
   DTXSID <- level2tab[level2tab$Compound==this.chem,"DTXSID"][1]
   CvT.chems.nona[CvT.chems.nona$DTXSID == DTXSID, "ADMetDiff"] <-
-    qsarbychem.table[this.chem,"HTTK-ADmet"] - 
-    qsarbychem.table[this.chem,"HTTK-InVitro"]
+    qsarbychem.table2[this.chem,"ADmet"] - 
+    qsarbychem.table2[this.chem,"InVitro"]
 }
-
+thresh <- 0.2
 admetdiff <- subset(CvT.chems.nona,!is.na(ADMetDiff))
-  admetdiff[admetdiff$ADMetDiff > 0.25, "ADMetDiff"]<-3
-  admetdiff[admetdiff$ADMetDiff < (-0.25), "ADMetDiff"]<-1
-  admetdiff[admetdiff$ADMetDiff > (-0.25) &
-    admetdiff$ADMetDiff < 0.5, "ADMetDiff"]<-2
+  admetdiff[admetdiff$ADMetDiff > thresh, "ADMetDiff"]<-3
+  admetdiff[admetdiff$ADMetDiff < (-thresh), "ADMetDiff"]<-1
+  admetdiff[admetdiff$ADMetDiff > (-thresh) &
+    admetdiff$ADMetDiff < thresh, "ADMetDiff"]<-2
     
-dat <- admetdiff[,c(4:13,23)]
+dat <- admetdiff[,c(4:13,22)]
 dat
 head(dat)
-this.rf <- randomForest(data=dat,ADMetDiff ~ .)
+library(randomForest)
 colnames(dat)[3] <- "HENRYSLAW"
-this.rf <- randomForest(data=dat,ADMetDiff ~ .)
 colnames(dat)[8] <- "WATERSOL"
-this.rf <- randomForest(data=dat,ADMetDiff ~ .)
-help(randomForst)
-help(randomForest)
 dat$ADMetDiff <-as.factor(dat$ADMetDiff)
-this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(10,10,10))
+this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(10,10,10),ntree=5000)
+print(this.rf)
 ```
 
 
