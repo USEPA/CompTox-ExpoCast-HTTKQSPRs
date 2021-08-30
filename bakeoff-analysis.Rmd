@@ -929,7 +929,7 @@ CvT.chems.nobad <- subset(CvT.chems.notraining,
                           !(DTXSID %in% CvT.chems.nofits$DTXSID))
 dim(CvT.chems.nobad)
 dim(CvT.data)
-CvT.data <- subset(CvT.data,CAS%in%CvT.chems.nona$CASRN)
+CvT.data <- subset(CvT.data,CAS%in%CvT.chems.nobad$CASRN)
 dim(CvT.data)
 ```
 Make a version of the prediction matrix where we've smoothed out missing data:
