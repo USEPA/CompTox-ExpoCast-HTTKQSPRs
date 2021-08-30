@@ -369,15 +369,70 @@ level1tab <- rbind(level1tab1,level1tab2,level1tab3,level1tab4)
 level1tab$Human.Fup.pred <- as.numeric(level1tab$Human.Fup.pred)
 level1tab$Human.Clint.pred <- as.numeric(level1tab$Human.Clint.pred)
 ```
-# Let's try to avoid values that are being matched to the training set:
+## calculate absolute fold error (AbsFE)
+```{r calc_Level1AbsFE, eval=TRUE}
+
+#Absolute fold error (AbsFE) : abs(log10(pred/obs))
+level1tab$Human.Clint.AbsFE<-abs(log10(level1tab$Human.Clint.pred/level1tab$Human.Clint.httk))
+level1tab$Human.fup.AbsFE<-abs(log10(level1tab$Human.Fup.pred/level1tab$Human.Fup.httk))
+
+for (this.row in 1:dim(level1tab)[1])
+{
+  this.Clint.AbsFE <- level1tab[this.row,"Human.Clint.AbsFE"]
+  if (!is.na(this.Clint.AbsFE))
+  {
+    if (!is.finite(this.Clint.AbsFE)) 
+    {
+#Turn -Inf and Inf into NA
+      level1tab[this.row,"Human.Clint.AbsFE"] <- NA
+    }
+    if (is.nan(this.Clint.AbsFE)) 
+    {
+#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
+      level1tab[this.row,"Human.Clint.AbsFE"] <- 0
+    }
+  }
+  this.fup.AbsFE <- level1tab[this.row,"Human.fup.AbsFE"]
+  if (!is.na(this.fup.AbsFE))
+  {
+    if (!is.finite(this.fup.AbsFE)) 
+    {
+#Turn -Inf and Inf into NA
+      level1tab[this.row,"Human.fup.AbsFE"] <- NA
+    }
+    if (is.nan(this.fup.AbsFE)) 
+    {
+#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
+      level1tab[this.row,"Human.fup.AbsFE"] <- 0
+    }
+  }  
+}
+```
+
+# Let's try to avoid values that are just being retrieved from the training set:
 ```{r fold_error_cutoff, eval = TRUE}
-TOOCLOSE.THREHSOLD <- 0.01
-level1tab[level1tab$Human.Clint.AbsFE < TOOCLOSE.THREHSOLD  & 
-          level1tab$Human.fup.AbsFE < TOOCLOSE.THREHSOLD,
-          "Human.Clint.pred"] <- NA
-level1tab[level1tab$Human.Clint.AbsFE < TOOCLOSE.THREHSOLD  & 
-          level1tab$Human.fup.AbsFE < TOOCLOSE.THREHSOLD,
-          "Human.fup.pred"] <- NA
+TOOCLOSE.THRESHOLD <- 0.01
+possible.training.chems <- NULL
+for (this.row in 1:dim(level1tab)[1])
+{
+  clint <- level1tab[this.row,"Human.Clint.AbsFE"]
+  fup <- level1tab[this.row,"Human.fup.AbsFE"]
+  if (!is.na(clint))
+  {
+    if (!is.na(fup))
+    {
+      if (clint < TOOCLOSE.THRESHOLD & fup < TOOCLOSE.THRESHOLD)
+      {
+        possible.training.chems <- rbind(possible.training.chems,
+                                         level1tab[this.row,])
+        level1tab[this.row,"Human.Clint.pred"] <-NA
+        level1tab[this.row,"Human.Clint.AbsFE"] <-NA
+        level1tab[this.row,"Human.Fup.pred"] <-NA
+        level1tab[this.row,"Human.fup.AbsFE"] <-NA
+      }
+    }
+  }
+}
 ```
 
 Calculate RPE:     
@@ -413,23 +468,6 @@ for (this.chem in unique(level1tab$DTXSID))
   this.mean.fup <- mean(this.subset$Human.Fup.RPE,na.rm=T)
   level1tab[level1tab$DTXSID==this.chem & is.na(level1tab$Human.Fup.RPE),
     "Human.Fup.RPE"] <- this.mean.fup
-# Deal with KNN training set:
-  this.opera <- subset(this.subset, QSAR=="OPERA")
-  if (!is.na(this.opera$Human.Clint.RPE))
-    if (!is.na(this.opera$Human.Fup.RPE))
-      if (this.opera$Human.Clint.RPE < 10^-3 & this.opera$Human.Fup.RPE < 10^-3)
-  {
-    level1tab[level1tab$DTXSID==this.chem & level1tab$QSAR=="OPERA",
-      "Human.Clint.Pred"] <- NA
-    level1tab[level1tab$DTXSID==this.chem & level1tab$QSAR=="OPERA",
-      "Human.Fup.Pred"] <- NA
-    level1tab[level1tab$DTXSID==this.chem & level1tab$QSAR=="OPERA",
-      "Human.Clint.RPE"] <- this.mean.clint
-    level1tab[level1tab$DTXSID==this.chem & level1tab$QSAR=="OPERA",
-      "Human.Fup.RPE"] <- this.mean.fup
-    CvT.chems[CvT.chems$DTXSID==this.chem,"Human.Clint.OPERA"] <- NA
-    CvT.chems[CvT.chems$DTXSID==this.chem,"Human.Fup.OPERA"] <- NA
-  }
 }
 ```
 
@@ -500,20 +538,6 @@ FigLev1b <- ggplot(data=level1tab, aes(x=QSAR, y=Human.Clint.RPE)) +
 
 ## calculate some statistics
 ```{r calc_AbsFE_RMSE, eval=TRUE}
-
-#Absolute fold error (AbsFE) : abs(log10(pred/obs))
-level1tab$Human.Clint.AbsFE<-abs(log10(level1tab$Human.Clint.pred/level1tab$Human.Clint.httk))
-level1tab$Human.fup.AbsFE<-abs(log10(level1tab$Human.Fup.pred/level1tab$Human.Fup.httk))
-
-#Turn -Inf and Inf into NA
-level1tab$Human.Clint.AbsFE[level1tab$Human.Clint.AbsFE=="Inf"]<-NA
-level1tab$Human.Clint.AbsFE[level1tab$Human.Clint.AbsFE=="-Inf"]<-NA
-level1tab$Human.fup.AbsFE[level1tab$Human.fup.AbsFE=="Inf"]<-NA
-level1tab$Human.fup.AbsFE[level1tab$Human.fup.AbsFE=="-Inf"]<-NA
-
-#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
-level1tab$Human.Clint.AbsFE[level1tab$Human.Clint.AbsFE=="NaN"]<-0
-level1tab$Human.fup.AbsFE[level1tab$Human.fup.AbsFE=="NaN"]<-0
 
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
 ADMet.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSAR=="SPlus"],na.rm=TRUE))
@@ -881,9 +905,36 @@ CvT.chems.nofits <- CvT.chems[!(CvT.chems$CASRN%in%fittable$CAS),]
 CvT.data <- subset(CvT.data, CAS %in% fittable$CAS)
 length(unique(CvT.data$CAS)) # Number of chemicals with good fits
 ```
+Get rid of chemical predictions that are possibly just training set lookups:
+```{r remove_training_chems, eval=TRUE}
+CvT.chems.notraining <- CvT.chems
+for (this.qsar in unique(possible.training.chems$QSAR))
+{
+  this.subset <- subset(possible.training.chems, QSAR==this.qsar)
+  for (this.id in this.subset$DTXSID)
+  {
+    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
+      paste("Human.Clint",this.qsar,sep=".")]<-NA
+    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
+      paste("Human.Fup",this.qsar,sep=".")]<-NA
+  }
+}
+dim(CvT.chems.notraining)
+```
+
+# Get rid of chemicals with only OPERA predictions, or bad empirical fits:
+```{r remove_problem_chems, eval=TRUE}
+CvT.chems.nobad <- subset(CvT.chems.notraining,
+                          !(DTXSID %in% CvT.chems.opera$DTXSID) &
+                          !(DTXSID %in% CvT.chems.nofits$DTXSID))
+dim(CvT.chems.nobad)
+dim(CvT.data)
+CvT.data <- subset(CvT.data,CAS%in%CvT.chems.nona$CASRN)
+dim(CvT.data)
+```
 Make a version of the prediction matrix where we've smoothed out missing data:
 ```{r remove_missing_predictions, eval = TRUE}
-CvT.chems.nona <- CvT.chems
+CvT.chems.nona <- CvT.chems.nobad
 clint.cols <- c(12,14,16,18,20)
 fup.cols <- c(13,15,17,19,21)
 # Can't run PBTK for fup=0
