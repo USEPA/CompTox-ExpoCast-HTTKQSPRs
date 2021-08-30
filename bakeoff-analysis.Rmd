@@ -369,6 +369,16 @@ level1tab <- rbind(level1tab1,level1tab2,level1tab3,level1tab4)
 level1tab$Human.Fup.pred <- as.numeric(level1tab$Human.Fup.pred)
 level1tab$Human.Clint.pred <- as.numeric(level1tab$Human.Clint.pred)
 ```
+# Let's try to avoid values that are being matched to the training set:
+```{r fold_error_cutoff, eval = TRUE}
+TOOCLOSE.THREHSOLD <- 0.01
+level1tab[level1tab$Human.Clint.AbsFE < TOOCLOSE.THREHSOLD  & 
+          level1tab$Human.fup.AbsFE < TOOCLOSE.THREHSOLD,
+          "Human.Clint.pred"] <- NA
+level1tab[level1tab$Human.Clint.AbsFE < TOOCLOSE.THREHSOLD  & 
+          level1tab$Human.fup.AbsFE < TOOCLOSE.THREHSOLD,
+          "Human.fup.pred"] <- NA
+```
 
 Calculate RPE:     
 ```{r prediction_table, eval = TRUE}
@@ -391,7 +401,7 @@ hist(subset(level1tab,QSAR=="Pradeep")$Human.Fup.RPE,main="Pradeep",xlab="Fup RP
 hist(subset(level1tab,QSAR=="SPlus")$Human.Fup.RPE,main="SPlus",xlab="Fup RPE")
 hist(subset(level1tab,QSAR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
 ```
-   
+
 Add average RPE where missing:
 ```{r interpolate_rpe, eval = TRUE}
 for (this.chem in unique(level1tab$DTXSID))
@@ -709,58 +719,113 @@ ggsave(paste("figs/FigLev1d_fup_boxplot_wtable",output.prefix,".tiff",sep=""), w
 # HTTK PBTK with OPERA
 # ADmet predictor
 
+# Load metabolism data (chemical-enzyme mapping):
+```{r load_chemcyps, eval = TRUE}
+pharm <- read.csv("jm0613471_si_002.txt",sep="\t")
+pharm <- subset(pharm,DTXSID!="-")
+pest <- read_excel("Abass2012.xlsx")
+pharm <- pharm[,c("Compound","PREFERRED_NAME","DTXSID","CASRN","ISOFORM","Author")]
+pest <- pest[,c("Pesticide","PREFERRED_NAME","DTXSID","CASRN","Enzyme","Reference")]
+colnames(pest) <- colnames(pharm)
+cyps <- rbind(pharm,pest)
+
+```
 
 # We load the TK stats (Level III) at this point because it makes sense to do
 # the Level II and III calculations are the same time (rather than rewriting 
 # the parameter values twice).
 # TK Stats (including Vd and thalf) calculated from CvTdb:
 ```{r load_compartmental_model_parameters, eval = TRUE}
-load("TKparams-2020-02-28.RData")
-# We have parameters estimated for 83 chemicals:
-length(unique(all_study_1c_fits.mean$CAS)%in%eval.cas)
-cvtfits <- NULL
-for (this.cas in eval.cas)
-if (this.cas %in% all_study_1c_fits.mean$CAS)
+fits1comp <- read.csv("PK.fit.table.1comp.new.nobounds.csv")
+fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
+fits2comp <- read.csv("PK.fit.table.2comp.new.nobounds.csv")
+fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
+
+#How many chemicals have 1 or 2 compartment fits:
+length(unique(c(fits1comp$CAS,fits2comp$CAS)))
+
+fittable <- NULL
+for (this.cas in unique(c(fits1comp$CAS,fits2comp$CAS)))
 {
-  this.subset <- subset(all_study_1c_fits.mean, CAS == this.cas)
-  #print(this.subset)
-  # If there was just one data set:
-  if (dim(this.subset)[1]==1)
+  
+  Vdist.1comp <- NA
+  kelim.1comp <- NA
+  Vdist.2comp <- NA
+  kelim.2comp <- NA
+  this.row <- data.frame(
+    CAS=this.cas,
+    AIC.1comp=NA,
+    AIC.2comp=NA,
+    Model=NA,
+    Vdist=NA,
+    kelim=NA)
+  if (this.cas %in% fits1comp$CAS)
   {
-    cvtfits <- rbind(cvtfits,this.subset)
-  # If invivoPKfit worked for joint analysis of all data sets:
-  } else if (any(regexpr(",",this.subset$Reference)!=-1)) {
-    index <- regexpr(",",this.subset$Reference)!=-1
-    cvtfits <- rbind(cvtfits,this.subset[index,])
-  # Take the average across data sets:
-  } else {
-  # try to get rid of bad values:
-    this.subset <- subset(this.subset,Vdist<100)
-    if (dim(this.subset)[1]>0)
+    this.data <- subset(fits1comp,
+      CAS==this.cas & param.value.type=="Fitted geometric mean")
+    if (dim(this.data)[1]>1)
     {
-      this.subset$Vdist <- mean(this.subset$Vdist)
-      this.subset$halflife <- mean(this.subset$halflife)
-      this.subset$Reference <- paste(this.subset$Reference,collapse=", ")
-      cvtfits <- rbind(cvtfits,this.subset[1,])
+      this.data <- subset(this.data, Data.Analyzed=="Joint Analysis")
+    }
+    if (dim(this.data)[1]>0) 
+    {
+      this.row$AIC.1comp <- this.data$AIC
+      Vdist.1comp <- this.data$Vdist
+      kelim.1comp <- this.data$kelim
     }
   }
+  if (this.cas %in% fits2comp$CAS)
+  {
+    this.data <- subset(fits2comp,
+      CAS==this.cas & param.value.type=="Fitted geometric mean")
+    if (dim(this.data)[1]>1)
+    {
+      this.data <- subset(this.data, Data.Analyzed=="Joint Analysis")
+    }
+    if (dim(this.data)[1]>0) 
+    {
+      this.row$AIC.2comp <- this.data$AIC
+      Vdist.2comp <- this.data$Vss
+      kelim.2comp <- this.data$kelim
+    }
+  }
+  if (!is.na(this.row$AIC.1comp))
+  {
+    if (!is.na(this.row$AIC.2comp))
+    {
+      if (this.row$AIC.1comp < this.row$AIC.2comp)
+      {
+        this.row$Model <- "1Comp"
+      } else this.row$Model <- "2Comp"
+    } else this.row$Model <- "1Comp"
+  } else if (!is.na(this.row$AIC.2comp))
+  {
+    this.row$Model <- "2Comp"
+  }
+
+  if (!is.na(this.row$Model))
+    if (this.row$Model == "1Comp")
+    {
+      this.row$Vdist <- Vdist.1comp
+      this.row$kelim <- kelim.1comp
+    } else 
+    {
+      this.row$Vdist <- Vdist.2comp
+      this.row$kelim <- kelim.2comp
+    }      
+  
+  fittable <- rbind(fittable,this.row)
 }
-length(unique(cvtfits$CAS))
-# Add DTXSID:
-cvtfits <-
-  merge(cvtfits,CvT.chems[,c("CASRN","DTXSID")],by.x="CAS",by.y="CASRN")
-length(unique(cvtfits$CAS))
-```
+fittable$halflife <- log(2)/fittable$kelim
 
-```{r clean_PK_parameters, eval = TRUE}
-#Clean up CvTfits:
-hist(cvtfits$Vdist)
-cvtfits <- subset(cvtfits,Vdist<20)
-hist(cvtfits$Vdist)
+#Lets only keep chemicals where we can fit a PK model:
+fittable <- subset(fittable, !is.na(Model))
 
-hist(cvtfits$kelim)
-cvtfits <- subset(cvtfits,kelim<100)
-hist(cvtfits$kelim)
+for (this.col in c("AIC.1comp","AIC.2comp","Vdist","kelim","halflife"))
+  fittable[,this.col] <- signif(as.numeric(fittable[,this.col]),4)
+
+# We have parameters estimated for 86 chemicals:
+dim(fittable)[1]
 ```
 There are ten chemicals where only opera could make predictions:
 ```{r separate_out_opera_only, eval=TRUE}
@@ -809,7 +874,13 @@ CvT.data <- subset(CvT.data,!(DTXSID %in% c(
   "DTXSID7030066",
   "DTXSID80108992")))
 ```
-
+There are chemicals where the in vivo data don't permit empirical fits, drop
+those from the level II/III evaluation:
+```{r separate_out_badfits, eval=TRUE}
+CvT.chems.nofits <- CvT.chems[!(CvT.chems$CASRN%in%fittable$CAS),]
+CvT.data <- subset(CvT.data, CAS %in% fittable$CAS)
+length(unique(CvT.data$CAS)) # Number of chemicals with good fits
+```
 Make a version of the prediction matrix where we've smoothed out missing data:
 ```{r remove_missing_predictions, eval = TRUE}
 CvT.chems.nona <- CvT.chems
@@ -874,7 +945,7 @@ print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
 level2tab.invitro.list <- makeCvTpreds(CvT.data,"HTTK-InVitro")
 level2tab.invitro <- level2tab.invitro.list$cvt
 level2tab.invitro.stats <- level2tab.invitro.list$stats
-level3tab.invitro <- maketkstatpreds(CvT.data,"HTTK-InVitro")
+level3tab.invitro <- maketkstatpreds(CvT.data,fittable,"HTTK-InVitro")
 ```
 
 ```{r cvt_compare_admet, eval = TRUE}
@@ -895,7 +966,7 @@ print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
 level2tab.admet.list <- makeCvTpreds(CvT.data,"HTTK-ADmet")
 level2tab.admet <- level2tab.admet.list$cvt
 level2tab.admet.stats <- level2tab.admet.list$stats
-level3tab.admet <- maketkstatpreds(CvT.data,"HTTK-ADmet")
+level3tab.admet <- maketkstatpreds(CvT.data,fittable,"HTTK-ADmet")
 ```
 
 ```{r cvt_compare_dawson, eval = TRUE}
@@ -916,7 +987,7 @@ print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
 level2tab.dawson.list <- makeCvTpreds(CvT.data,"HTTK-Dawson")
 level2tab.dawson <- level2tab.dawson.list$cvt
 level2tab.dawson.stats <- level2tab.dawson.list$stats
-level3tab.dawson <- maketkstatpreds(CvT.data,"HTTK-Dawson")
+level3tab.dawson <- maketkstatpreds(CvT.data,fittable,"HTTK-Dawson")
 ```
 
 ```{r cvt_compare_pradeep, eval = TRUE}
@@ -937,7 +1008,7 @@ print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
 level2tab.pradeep.list <- makeCvTpreds(CvT.data,"HTTK-Pradeep")
 level2tab.pradeep <- level2tab.pradeep.list$cvt
 level2tab.pradeep.stats <- level2tab.pradeep.list$stats
-level3tab.pradeep <- maketkstatpreds(CvT.data,"HTTK-Pradeep")
+level3tab.pradeep <- maketkstatpreds(CvT.data,fittable,"HTTK-Pradeep")
 
 ```
 
@@ -960,13 +1031,17 @@ print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
 level2tab.opera.list <- makeCvTpreds(CvT.data,"HTTK-OPERA")
 level2tab.opera <- level2tab.opera.list$cvt
 level2tab.opera.stats <- level2tab.opera.list$stats
-level3tab.opera <- maketkstatpreds(CvT.data,"HTTK-OPERA")
+level3tab.opera <- maketkstatpreds(CvT.data,fittable,"HTTK-OPERA")
 ```
 
 # The performance of actual 1 compartment model fits provides an upper limit
 # of how good we can get (thanks Rusty)
 ```{r cvt_compare_fits, eval = TRUE}
-level2tab.fits.list <- makeCvTpredsfromfits(CvT.data,"1CompFits")
+level2tab.fits.list <- makeCvTpredsfromfits(
+  CvT.data,
+  fits1comp,
+  fits2comp,
+  "FitsToData")
 level2tab.fits <-  level2tab.fits.list$cvt
 level2tab.fits.stats <- level2tab.fits.list$stats
 ```
@@ -989,6 +1064,8 @@ level2tab.stats <- rbind(
   level2tab.opera.stats,
   level2tab.fits.stats)
 level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
+# Occasionally we can't calculate AUC, get rid of these data:
+level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
 ```
 
 Assign average to missing predictions:
@@ -1755,7 +1832,7 @@ print(FigLev2RMSE.early)
 #### add AAFE & RMSLE to the table
 texty <- 2.5
 xshift <- 0.2
-FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
+FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
    ggtitle("Late Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1788,8 +1865,52 @@ annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"ADMet"],row
   legend.title = element_text(size=14),
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
   axis.title.y=element_text(size=10))
-print(FigLev2RMSE.early) 
+print(FigLev2RMSE.late) 
 ```
+```{r make_RMSE_by1compfit_plot, eval = TRUE}
+RMSE.thresh<-1
+goodfitchems <- subset(qsarbychem.table,QSAR=="1CompFits" & RMSLE<RMSE.thresh)$CAS
+
+#### add AAFE & RMSLE to the table
+texty <- 2.5
+xshift <- 0.2
+FigLev2RMSEGoodChems <- ggplot(data=subset(qsarbychem.table, CAS %in% goodfitchems), 
+   aes(x=QSAR, y=RMSLE)) +
+   ggtitle("Good 1 Compartment Chems")+
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSAR") +
+  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"1CompFits"], theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
+annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=10))
+print(FigLev2RMSEGoodChems)
+```
+
 ```{r analyze_admet1,eval=TRUE}
 admet.better <-NULL
 invitro.better <-NULL
@@ -1854,7 +1975,7 @@ colnames(qsarbychem.table2) <- c("1CompFits","ADmet","Dawson","InVitro","OPERA",
 #    lhei=c(0.3,1),
     margins=c(10,8),
 #    labRow = FALSE,
-    cexCol=0.5,
+    cexCol=0.25,
     cexRow=1.0,
     trace="none",
     col=mypalette)
@@ -1875,8 +1996,7 @@ admetdiff <- subset(CvT.chems.nona,!is.na(ADMetDiff))
     admetdiff$ADMetDiff < thresh, "ADMetDiff"]<-2
     
 dat <- admetdiff[,c(4:13,22)]
-dat
-head(dat)
+
 library(randomForest)
 colnames(dat)[3] <- "HENRYSLAW"
 colnames(dat)[8] <- "WATERSOL"
