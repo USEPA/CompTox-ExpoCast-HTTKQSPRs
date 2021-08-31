@@ -1133,6 +1133,7 @@ level2tab.fits <-  level2tab.fits.list$cvt
 level2tab.fits.stats <- level2tab.fits.list$stats
 ```
 
+# Collect the Concentration vs. time (level 2) predictions from each model:
 ```{r cvt_onering, eval = TRUE}
 level2tab <- rbind(
   level2tab.invitro,
@@ -1178,7 +1179,9 @@ Assign average to missing predictions:
             for (this.obs in unique(this.subset5$Conc.obs))
             {
               this.subset6 <- subset(this.subset5,Conc.obs==this.obs)
-              mean.pred <- mean(this.subset6$Conc.pred,na.rm=TRUE)
+              # Omit the fits and y-randomization from the mean:
+              mean.pred <- mean(subset(this.subset6,
+                !(QSAR %in% c("FitsToData","YRandom")))$Conc.pred,na.rm=TRUE)
               for (this.QSAR in QSARs)
               {
                 if (!(this.QSAR %in% this.subset6$QSAR))
@@ -1424,14 +1427,15 @@ for (this.chem in CvT.chems.stats.heatmap$PREFERRED_NAME)
 ```
 ```{r make_stats_heatmap, eval = TRUE}
 mypalette<-brewer.pal(11,"RdYlBu")
-  heatmap.2(as.matrix(CvT.chems.stats.heatmap[,4:39]),
-    lwid=c(0.4,1),
-    lhei=c(0.4,1),
-    margins=c(10,1),
-    labRow = FALSE,
-    cexCol=1,
-    trace="none",
-    col=mypalette)
+heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
+  4:dim(CvT.chems.stats.heatmap)[2]]),
+  lwid=c(0.4,1),
+  lhei=c(0.4,1),
+  margins=c(10,1),
+  labRow = FALSE,
+  cexCol=1,
+  trace="none",
+  col=mypalette)
 ```
 
 
@@ -1452,19 +1456,35 @@ FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) +
   ylab(bquote("Relative Error for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
-                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"FitsToData"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
@@ -1494,18 +1514,34 @@ FigLev2 <- ggplot(data=level2tab.early, aes(x=QSAR, y=RPE)) +
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"FitsToData"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
@@ -1535,18 +1571,34 @@ FigLev2 <- ggplot(data=level2tab.late, aes(x=QSAR, y=RPE)) +
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"FitsToData"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
@@ -1591,6 +1643,7 @@ FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
   ylab('Observed AUC (mg/L*h)') +
   theme_bw()+
   facet_grid(cols=vars(QSAR))+
+  scale_shape_manual(values = 0:10)+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 10),
@@ -1668,6 +1721,7 @@ FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
   xlab(bquote('Predicted'~C[max]~'(mg/L)')) +
   ylab(bquote('Observed'~C[max]~'(mg/L)')) +
+  scale_shape_manual(values = 0:10)+
   theme_bw()+
   facet_grid(cols=vars(QSAR))+
   theme( text  = element_text(size=20),
@@ -1707,6 +1761,7 @@ for (this.chemical in unique(level2tab$Compound))
 #### add AAFE & RMSLE to the table
 texty <- 2.5
 xshift <- 0.2
+these.stats <- c("RMSLE","AAFE")
 FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) + 
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1719,20 +1774,37 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
     xlab("QSAR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
-                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"FitsToData"], theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
+    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("RMSLE","AAFE"),"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+  
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
@@ -1745,6 +1817,7 @@ print(FigLev2RMSE)
 #### add AAFE & RMSLE to the table
 texty <- 2.5
 xshift <- 0.2
+these.stats <- c("RMSLE.early","AAFE.early")
 FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
    ggtitle("Early Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
@@ -1758,20 +1831,37 @@ FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
     xlab("QSAR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
-                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"FitsToData"], theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(these.stats, theme = ttheme_minimal(base_size = 12)),
+    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
@@ -1784,6 +1874,7 @@ print(FigLev2RMSE.early)
 #### add AAFE & RMSLE to the table
 texty <- 2.5
 xshift <- 0.2
+these.stats <- c("RMSLE.late","AAFE.late")
 FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
    ggtitle("Late Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
@@ -1797,20 +1888,37 @@ FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
     xlab("QSAR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
-                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"FitsToData"], theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(these.stats, theme = ttheme_minimal(base_size = 12)),
+    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[these.stats,"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
