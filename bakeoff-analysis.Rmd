@@ -1977,7 +1977,7 @@ Need heatmap of RMSE x chemical, can add phys-chem
 ```{r analyze_admet, eval = TRUE}
 qsarbychem.table2 <- dcast(qsarbychem.table,Compound~QSAR,value.var="RMSLE")
 chems <- qsarbychem.table2$Compound
-qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)
+qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)[,1:6]
 rownames(qsarbychem.table2) <- chems
 colnames(qsarbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep")
 ```
@@ -2026,12 +2026,46 @@ for (this.chem in admetdiff$DTXSID)
       admetdiff[admetdiff$DTXSID==this.chem,paste("CYP",this.cyp,sep="")] <- "1"
     }
   }
-for (this.col in 25:31) admetdiff[is.na(admetdiff[,this.col]),this.col] <- 0
+for (this.col in c("CYP2C9",
+                     "CYP2C19",                                      
+                     "CYP3A4",
+                     "CYP2D6",                                       
+                     "CYP2B6",
+                     "CYP1A2",
+                     "CYP1A1")) 
+  admetdiff[is.na(admetdiff[,this.col]),this.col] <- 0
 
-dat <- admetdiff[,c(4:15,22,24:30)]
+dat <- admetdiff[,c("AVERAGE_MASS",                                 
+ "BOILING_POINT_DEGC_OPERA_PRED",
+ "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",            
+ "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED",
+ "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED",
+ "MELTING_POINT_DEGC_OPERA_PRED",
+ "VAPOR_PRESSURE_MMHG_OPERA_PRED",
+ "WATER_SOLUBILITY_MOL/L_OPERA_PRED",
+ "Human.Clint.httk",                             
+ "Human.Fup.httk",
+ "Human.Clint.SPlus",                            
+ "Human.Fup.SPlus",
+ "ADMetDiff",                                    
+ "Model",                                        
+ "CYP2C9",
+ "CYP2C19",                                      
+ "CYP3A4",
+ "CYP2D6",                                       
+ "CYP2B6",
+ "CYP1A2",
+ "CYP1A1")]
 
 # Turn into factor:
-for (this.col in 14:20) dat[,this.col] <- as.factor(dat[,this.col])
+for (this.col in c("Model",                                        
+ "CYP2C9",
+ "CYP2C19",                                      
+ "CYP3A4",
+ "CYP2D6",                                       
+ "CYP2B6",
+ "CYP1A2",
+ "CYP1A1")) dat[,this.col] <- as.factor(dat[,this.col])
   
 # Add contrast between ADmet and HTTK 
 dat$Clint.Ratio <- dat$Human.Clint.SPlus/dat$Human.Clint.httk
