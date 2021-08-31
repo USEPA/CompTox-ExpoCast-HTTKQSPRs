@@ -973,7 +973,15 @@ for (this.chem in CvT.chems.nona$DTXSID)
   }
 }
 ```
-
+# Randomize the in vitro descriptors as a sort of prediction "floor"
+```{r cvt_yrandomize_desc, eval = TRUE}
+set.seed(123456)
+yrandom.ids <- sample(1:dim(CvT.chems.nona)[1],dim(CvT.chems.nona)[1])
+CvT.chems.nona[,"Human.Clint.YRandom"] <- 
+  CvT.chems.nona[yrandom.ids, "Human.Clint.httk"]
+CvT.chems.nona[,"Human.Fup.YRandom"] <- 
+  CvT.chems.nona[yrandom.ids, "Human.Fup.httk"]
+```
 
 Make predictions of CvT using in vitro measured data. Rather than use default
 HTTK (which also pulls in things like blood to plasma ratio) we'll wipe out 
@@ -992,7 +1000,8 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="InVitro",
   overwrite=TRUE)
-print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+print(paste("HTTK parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
 level2tab.invitro.list <- makeCvTpreds(CvT.data,"HTTK-InVitro")
 level2tab.invitro <- level2tab.invitro.list$cvt
 level2tab.invitro.stats <- level2tab.invitro.list$stats
@@ -1013,7 +1022,8 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="SPlus",
   overwrite=TRUE)
-print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+print(paste("ADMet parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
 level2tab.admet.list <- makeCvTpreds(CvT.data,"HTTK-ADmet")
 level2tab.admet <- level2tab.admet.list$cvt
 level2tab.admet.stats <- level2tab.admet.list$stats
@@ -1034,7 +1044,8 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="Dawson",
   overwrite=TRUE)
-print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+print(paste("Dawson (2021) parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
 level2tab.dawson.list <- makeCvTpreds(CvT.data,"HTTK-Dawson")
 level2tab.dawson <- level2tab.dawson.list$cvt
 level2tab.dawson.stats <- level2tab.dawson.list$stats
@@ -1055,7 +1066,8 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="Pradeep",
   overwrite=TRUE)
-print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+print(paste("Pradeep (2020) parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
 level2tab.pradeep.list <- makeCvTpreds(CvT.data,"HTTK-Pradeep")
 level2tab.pradeep <- level2tab.pradeep.list$cvt
 level2tab.pradeep.stats <- level2tab.pradeep.list$stats
@@ -1078,11 +1090,35 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="OPERA",
   overwrite=T)
-print(paste(length(get_cheminfo(model="pbtk")),"chemicals for PBTK"))
+print(paste("OPERA parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
 level2tab.opera.list <- makeCvTpreds(CvT.data,"HTTK-OPERA")
 level2tab.opera <- level2tab.opera.list$cvt
 level2tab.opera.stats <- level2tab.opera.list$stats
 level3tab.opera <- maketkstatpreds(CvT.data,fittable,"HTTK-OPERA")
+```
+
+# Add y-random predictions:
+```{r cvt_compare_yrandom, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.YRandom",
+    Clint="Human.Clint.YRandom"),
+  species="Human",
+  reference="YRandom",
+  overwrite=T)
+print(paste("Y-randomized parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
+level2tab.yrandom.list <- makeCvTpreds(CvT.data,"HTTK-YRandom")
+level2tab.yrandom <- level2tab.yrandom.list$cvt
+level2tab.yrandom.stats <- level2tab.yrandom.list$stats
+level3tab.yrandom <- maketkstatpreds(CvT.data,fittable,"HTTK-YRandom")
 ```
 
 # The performance of actual 1 compartment model fits provides an upper limit
@@ -1104,7 +1140,8 @@ level2tab <- rbind(
   level2tab.dawson,
   level2tab.pradeep,
   level2tab.opera,
-  level2tab.fits)
+  level2tab.fits,
+  level2tab.yrandom)
 level2tab <- subset(level2tab,!duplicated(level2tab))
 
 level2tab.stats <- rbind(
@@ -1113,7 +1150,8 @@ level2tab.stats <- rbind(
   level2tab.dawson.stats,
   level2tab.pradeep.stats,
   level2tab.opera.stats,
-  level2tab.fits.stats)
+  level2tab.fits.stats,
+  level2tab.yrandom.stats)
 level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
 # Occasionally we can't calculate AUC, get rid of these data:
 level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
@@ -1244,191 +1282,54 @@ for (this.study in unique(level2tab$Source))
 ```
 
 ```{r calc_setspeific_stats, eval = TRUE}
-#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-ADMet.AAFE<-10^(mean(level2tab$AbsFE[
-  level2tab$QSAR=="HTTK-ADmet"],na.rm=TRUE))
-Dawson.AAFE<-10^(mean(level2tab$AbsFE[
-  level2tab$QSAR=="HTTK-Dawson"],na.rm=TRUE))
-InVitro.AAFE<-10^(mean(level2tab$AbsFE[
-  level2tab$QSAR=="HTTK-InVitro"],na.rm=TRUE))
-OPERA.AAFE<-10^(mean(level2tab$AbsFE[
-  level2tab$QSAR=="HTTK-OPERA"],na.rm=TRUE))
-Pradeep.AAFE<-10^(mean(level2tab$AbsFE[
-  level2tab$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
-fits.AAFE<-10^(mean(level2tab$AbsFE[
-  level2tab$QSAR=="FitsToData"],na.rm=TRUE))
+AAFE <- list()
+AAFE.early <- list()
+AAFE.late <- list()
+RMSLE <- list()
+RMSLE.early <- list()
+RMSLE.late <- list()
+MRPE <- list()
+MRPE.early <- list()
+MRPE.late <- list()
 
+for (this.qsar in unique(level2tab$QSAR))
+{
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-ADMet.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
-  level2tab.early$QSAR=="HTTK-ADmet"],na.rm=TRUE))
-Dawson.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
-  level2tab.early$QSAR=="HTTK-Dawson"],na.rm=TRUE))
-InVitro.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
-  level2tab.early$QSAR=="HTTK-InVitro"],na.rm=TRUE))
-OPERA.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
-  level2tab.early$QSAR=="HTTK-OPERA"],na.rm=TRUE))
-Pradeep.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
-  level2tab.early$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
-fits.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
-  level2tab.early$QSAR=="FitsToData"],na.rm=TRUE))
-
-#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-ADMet.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
-  level2tab.late$QSAR=="HTTK-ADmet"],na.rm=TRUE))
-Dawson.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
-  level2tab.late$QSAR=="HTTK-Dawson"],na.rm=TRUE))
-InVitro.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
-  level2tab.late$QSAR=="HTTK-InVitro"],na.rm=TRUE))
-OPERA.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
-  level2tab.late$QSAR=="HTTK-OPERA"],na.rm=TRUE))
-Pradeep.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
-  level2tab.late$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
-fits.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
-  level2tab.late$QSAR=="FitsToData"],na.rm=TRUE))
-
+  AAFE[[this.qsar]] <- 10^(mean(level2tab$AbsFE[
+    level2tab$QSAR==this.qsar],na.rm=TRUE))
+  AAFE.early[[this.qsar]] <- 10^(mean(level2tab.early$AbsFE[
+    level2tab.early$QSAR==this.qsar],na.rm=TRUE))
+  AAFE.late[[this.qsar]] <- 10^(mean(level2tab.late$AbsFE[
+    level2tab.late$QSAR==this.qsar],na.rm=TRUE))
 #RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
-ADMet.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-ADmet"]/
-  level2tab$Conc.obs[level2tab$QSAR=="HTTK-ADmet"]))^2,na.rm=TRUE))
-Dawson.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-Dawson"]/
-  level2tab$Conc.obs[level2tab$QSAR=="HTTK-Dawson"]))^2,na.rm=TRUE))
-InVitro.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-InVitro"]/
-  level2tab$Conc.obs[level2tab$QSAR=="HTTK-InVitro"]))^2,na.rm=TRUE))
-OPERA.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-OPERA"]/
-  level2tab$Conc.obs[level2tab$QSAR=="HTTK-OPERA"]))^2,na.rm=TRUE))
-Pradeep.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-Pradeep"]/
-  level2tab$Conc.obs[level2tab$QSAR=="HTTK-Pradeep"]))^2,na.rm=TRUE))
-fits.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="FitsToData"]/
-  level2tab$Conc.obs[level2tab$QSAR=="FitsToData"]))^2,na.rm=TRUE))
+  RMSLE[[this.qsar]] <- sqrt(mean((log10(level2tab$Conc.pred[
+    level2tab$QSAR==this.qsar] /
+    level2tab$Conc.obs[level2tab$QSAR==this.qsar]))^2,na.rm=TRUE))
+  RMSLE.early[[this.qsar]] <-sqrt(mean((log10(level2tab.early$Conc.pred[
+    level2tab.early$QSAR==this.qsar]/
+    level2tab.early$Conc.obs[level2tab.early$QSAR==this.qsar]))^2,na.rm=TRUE))
+  RMSLE.late[[this.qsar]] <-sqrt(mean((log10(level2tab.late$Conc.pred[
+    level2tab.late$QSAR==this.qsar]/
+    level2tab.late$Conc.obs[level2tab.late$QSAR==this.qsar]))^2,na.rm=TRUE))
+  MRPE[[this.qsar]] <- median(subset(level2tab,QSAR==this.qsar)$RPE)
+  MRPE.early[[this.qsar]] <- median(subset(level2tab.early,QSAR==this.qsar)$RPE)
+  MRPE.late[[this.qsar]] <- median(subset(level2tab.late,QSAR==this.qsar)$RPE)
+}
 
-ADMet.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
-  level2tab.early$QSAR=="HTTK-ADmet"]/
-  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-ADmet"]))^2,na.rm=TRUE))
-Dawson.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
-  level2tab.early$QSAR=="HTTK-Dawson"]/
-  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-Dawson"]))^2,na.rm=TRUE))
-InVitro.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
-  level2tab.early$QSAR=="HTTK-InVitro"]/
-  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-InVitro"]))^2,na.rm=TRUE))
-OPERA.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
-  level2tab.early$QSAR=="HTTK-OPERA"]/
-  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-OPERA"]))^2,na.rm=TRUE))
-Pradeep.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
-  level2tab.early$QSAR=="HTTK-Pradeep"]/
-  level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-Pradeep"]))^2,na.rm=TRUE))
-fits.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
-  level2tab.early$QSAR=="FitsToData"]/
-  level2tab.early$Conc.obs[level2tab.early$QSAR=="FitsToData"]))^2,na.rm=TRUE))
-
-
-ADMet.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
-  level2tab.late$QSAR=="HTTK-ADmet"]/
-  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-ADmet"]))^2,na.rm=TRUE))
-Dawson.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
-  level2tab.late$QSAR=="HTTK-Dawson"]/
-  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-Dawson"]))^2,na.rm=TRUE))
-InVitro.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
-  level2tab.late$QSAR=="HTTK-InVitro"]/
-  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-InVitro"]))^2,na.rm=TRUE))
-OPERA.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
-  level2tab.late$QSAR=="HTTK-OPERA"]/
-  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-OPERA"]))^2,na.rm=TRUE))
-Pradeep.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
-  level2tab.late$QSAR=="HTTK-Pradeep"]/
-  level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-Pradeep"]))^2,na.rm=TRUE))
-fits.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
-  level2tab.late$QSAR=="FitsToData"]/
-  level2tab.late$Conc.obs[level2tab.late$QSAR=="FitsToData"]))^2,na.rm=TRUE))
-
-
-ADMet.MRPE <- median(subset(level2tab,QSAR=="HTTK-ADmet")$RPE)
-Dawson.MRPE <- median(subset(level2tab,QSAR=="HTTK-Dawson")$RPE)
-InVitro.MRPE <- median(subset(level2tab,QSAR=="HTTK-InVitro")$RPE)
-OPERA.MRPE <- median(subset(level2tab,QSAR=="HTTK-OPERA")$RPE)
-Pradeep.MRPE <- median(subset(level2tab,QSAR=="HTTK-Pradeep")$RPE)
-fits.MRPE <- median(subset(level2tab,QSAR=="FitsToData")$RPE)
-
-ADMet.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-ADmet")$RPE)
-Dawson.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-Dawson")$RPE)
-InVitro.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-InVitro")$RPE)
-OPERA.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-OPERA")$RPE)
-Pradeep.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-Pradeep")$RPE)
-fits.MRPE.early <- median(subset(level2tab.early,QSAR=="FitsToData")$RPE)
-
-ADMet.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-ADmet")$RPE)
-Dawson.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-Dawson")$RPE)
-InVitro.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-InVitro")$RPE)
-OPERA.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-OPERA")$RPE)
-Pradeep.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-Pradeep")$RPE)
-fits.MRPE.late <- median(subset(level2tab.late,QSAR=="FitsToData")$RPE)
-
-
-stats.table<-do.call("rbind",list(
-# AAFE
-  c(round(ADMet.AAFE,2),
-    round(Dawson.AAFE,2),
-    round(InVitro.AAFE,2),
-    round(OPERA.AAFE,2),
-    round(Pradeep.AAFE,2),
-    round(fits.AAFE,2)),
-# RMSLE
-  c(round(ADMet.RMSLE,2),
-    round(Dawson.RMSLE,2),
-    round(InVitro.RMSLE,2),
-    round(OPERA.RMSLE,2),
-    round(Pradeep.RMSLE,2),
-    round(fits.RMSLE,2)),
-# MRPE 
-    c(round(ADMet.MRPE,2),
-    round(Dawson.MRPE,2),
-    round(InVitro.MRPE,2),
-    round(OPERA.MRPE,2),
-    round(Pradeep.MRPE,2),
-    round(fits.MRPE,2)),
-# RMSLE.early
-    c(round(ADMet.RMSLE.early,2),
-    round(Dawson.RMSLE.early,2),
-    round(InVitro.RMSLE.early,2),
-    round(OPERA.RMSLE.early,2),
-    round(Pradeep.RMSLE.early,2),
-    round(fits.RMSLE.early,2)),
-# RMSLE.late
-    c(round(ADMet.RMSLE.late,2),
-    round(Dawson.RMSLE.late,2),
-    round(InVitro.RMSLE.late,2),
-    round(OPERA.RMSLE.late,2),
-    round(Pradeep.RMSLE.late,2),
-    round(fits.RMSLE.late,2)),
-# AAFE.early
-  c(round(ADMet.AAFE.early,2),
-    round(Dawson.AAFE.early,2),
-    round(InVitro.AAFE.early,2),
-    round(OPERA.AAFE.early,2),
-    round(Pradeep.AAFE.early,2),
-    round(fits.AAFE.early,2)),
-# AAFE.late
-    c(round(ADMet.AAFE.late,2),
-    round(Dawson.AAFE.late,2),
-    round(InVitro.AAFE.late,2),
-    round(OPERA.AAFE.late,2),
-    round(Pradeep.AAFE.late,2),
-    round(fits.AAFE.late,2)),
-# MRPE.early
-  c(round(ADMet.MRPE.early,2),
-    round(Dawson.MRPE.early,2),
-    round(InVitro.MRPE.early,2),
-    round(OPERA.MRPE.early,2),
-    round(Pradeep.MRPE.early,2),
-    round(fits.MRPE.early,2)),
-# MRPE.late
-  c(round(ADMet.MRPE.late,2),
-    round(Dawson.MRPE.late,2),
-    round(InVitro.MRPE.late,2),
-    round(OPERA.MRPE.late,2),
-    round(Pradeep.MRPE.late,2),
-    round(fits.MRPE.late,2))
-  ))
-colnames(stats.table) <-  c("ADMet", "Dawson", "InVitro", "OPERA", "Pradeep","FitsToData")
-rownames(stats.table) <- c("AAFE","RMSLE","MRPE","RMSLE.early","RMSLE.late","AAFE.early","AAFE.late","MRPE.early","MRPE.late")
+stats.table <- data.frame()
+for (this.qsar in names(RMSLE))
+{
+  stats.table["AAFE",this.qsar] <- round(AAFE[[this.qsar]],2)
+  stats.table["RMSLE",this.qsar] <- round(RMSLE[[this.qsar]],2)
+  stats.table["MRPE",this.qsar] <- round(MRPE[[this.qsar]],2)
+  stats.table["RMSLE.early",this.qsar] <- round(RMSLE.early[[this.qsar]],2)
+  stats.table["RMSLE.late",this.qsar] <- round(RMSLE.late[[this.qsar]],2)
+  stats.table["AAFE.early",this.qsar] <- round(AAFE.early[[this.qsar]],2)
+  stats.table["AAFE.late",this.qsar] <- round(AAFE.late[[this.qsar]],2)
+  stats.table["MRPE.early",this.qsar] <- round(MRPE.early[[this.qsar]],2)
+  stats.table["MRPE.late",this.qsar] <- round(MRPE.late[[this.qsar]],2)
+}
+  
 
 AUC.stats.table <- NULL
 for (this.qsar in unique(level2tab.stats$QSAR))
@@ -2014,16 +1915,15 @@ for (this.chem in admetdiff$DTXSID)
     this.subset <- subset(cyps,DTXSID==this.chem)
     for (this.cyp in this.subset$ISOFORM)
     {
-      admetdiff[admetdiff$DTXSID==this.chem,this.cyp] <- "1"
+      admetdiff[admetdiff$DTXSID==this.chem,paste("CYP",this.cyp,sep="")] <- "1"
     }
   }
 for (this.col in 25:31) admetdiff[is.na(admetdiff[,this.col]),this.col] <- 0
 
-
-dat <- admetdiff[,c(4:15,22,24:31)]
+dat <- admetdiff[,c(4:15,22,24:30)]
 
 # Turn into factor:
-for (this.col in 14:21) dat[,this.col] <- as.factor(dat[,this.col])
+for (this.col in 14:20) dat[,this.col] <- as.factor(dat[,this.col])
   
 # Add contrast between ADmet and HTTK 
 dat$Clint.Ratio <- dat$Human.Clint.SPlus/dat$Human.Clint.httk
@@ -2032,6 +1932,9 @@ dat$Clint.Ratio[!is.finite(dat$Clint.Ratio)] <- 10000
 
 dat$Fup.Ratio <- dat$Human.Fup.SPlus/dat$Human.Fup.httk
 dat$Fup.Ratio[is.nan(dat$Fup.Ratio)] <- 1
+
+# transform to more uniform scale:
+dat[,3] <- log10(dat[,3])
 
 library(randomForest)
 colnames(dat)[1] <- "Molecular_Weight"
@@ -2043,7 +1946,7 @@ colnames(dat)[6] <- "Melting_Point"
 colnames(dat)[7] <- "Vapor_Pressure"
 colnames(dat)[8] <- "Water_Solubility"
 #dat$ADMetDiff <-as.factor(dat$ADMetDiff)
-this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(15,15,15),ntree=5000)
+this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(10,10,10),ntree=5000)
 print(this.rf)
 varImpPlot(this.rf)
 plot(dat[,2],dat[,13])
