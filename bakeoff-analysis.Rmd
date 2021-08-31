@@ -771,74 +771,104 @@ length(unique(c(fits1comp$CAS,fits2comp$CAS)))
 fittable <- NULL
 for (this.cas in unique(c(fits1comp$CAS,fits2comp$CAS)))
 {
+  if (this.cas %in% fits1comp$CAS) this.compound <- fits1comp[
+    fits1comp$CAS==this.cas,"Compound"][1]
+  else this.compound <- fits2comp[
+    fits2comp$CAS==this.cas,"Compound"][1]
   
-  Vdist.1comp <- NA
-  kelim.1comp <- NA
-  Vdist.2comp <- NA
-  kelim.2comp <- NA
-  this.row <- data.frame(
-    CAS=this.cas,
-    AIC.1comp=NA,
-    AIC.2comp=NA,
-    Model=NA,
-    Vdist=NA,
-    kelim=NA)
-  if (this.cas %in% fits1comp$CAS)
+  this.data.1comp <- subset(fits1comp,CAS==this.cas)
+  this.data.2comp <- subset(fits2comp,CAS==this.cas)
+  
+  for (this.species in unique(tolower(c(
+    this.data.1comp$Species,
+    this.data.2comp$Species))))
   {
-    this.data <- subset(fits1comp,
-      CAS==this.cas & param.value.type=="Fitted geometric mean")
-    if (dim(this.data)[1]>1)
+    Vdist.1comp <- NA
+    kelim.1comp <- NA
+    Vdist.2comp <- NA
+    kelim.2comp <- NA
+    
+    this.data.1comp.species <- subset(this.data.1comp,tolower(Species)==this.species)
+    this.data.2comp.species <- subset(this.data.2comp,tolower(Species)==this.species)
+    
+    this.row <- data.frame(
+      Compound=this.compound,
+      CAS=this.cas,
+      Species=this.species,
+      Reference=NA,
+      AIC.1comp=NA,
+      AIC.2comp=NA,
+      Model=NA,
+      Vdist=NA,
+      kelim=NA)
+    
+    if (this.cas %in% fits1comp$CAS)
     {
-      this.data <- subset(this.data, Data.Analyzed=="Joint Analysis")
-    }
-    if (dim(this.data)[1]>0) 
-    {
-      this.row$AIC.1comp <- this.data$AIC
-      Vdist.1comp <- this.data$Vdist
-      kelim.1comp <- this.data$kelim
-    }
-  }
-  if (this.cas %in% fits2comp$CAS)
-  {
-    this.data <- subset(fits2comp,
-      CAS==this.cas & param.value.type=="Fitted geometric mean")
-    if (dim(this.data)[1]>1)
-    {
-      this.data <- subset(this.data, Data.Analyzed=="Joint Analysis")
-    }
-    if (dim(this.data)[1]>0) 
-    {
-      this.row$AIC.2comp <- this.data$AIC
-      Vdist.2comp <- this.data$Vss
-      kelim.2comp <- this.data$kelim
-    }
-  }
-  if (!is.na(this.row$AIC.1comp))
-  {
-    if (!is.na(this.row$AIC.2comp))
-    {
-      if (this.row$AIC.1comp < this.row$AIC.2comp)
-      {
-        this.row$Model <- "1Comp"
-      } else this.row$Model <- "2Comp"
-    } else this.row$Model <- "1Comp"
-  } else if (!is.na(this.row$AIC.2comp))
-  {
-    this.row$Model <- "2Comp"
-  }
+      this.data.1comp.species <- subset(this.data.1comp.species,
+        param.value.type=="Fitted geometric mean")
 
-  if (!is.na(this.row$Model))
-    if (this.row$Model == "1Comp")
+    # If more than one source, require that the joint analysis worked:
+     if (dim(this.data.1comp.species)[1]>1)
+      {
+        this.data.1comp.species<- subset(this.data.1comp.species, 
+                                         Data.Analyzed=="Joint Analysis")
+      }
+      if (dim(this.data.1comp.species)[1]>0) 
+      {
+        this.row$AIC.1comp <- this.data.1comp.species$AIC
+        Vdist.1comp <- this.data.1comp.species$Vdist
+        kelim.1comp <- this.data.1comp.species$kelim
+        this.row$Reference <- this.data.1comp.species$Reference
+      }
+    }
+    
+    if (this.cas %in% fits2comp$CAS)
     {
-      this.row$Vdist <- Vdist.1comp
-      this.row$kelim <- kelim.1comp
-    } else 
+      this.data.2comp.species <- subset(this.data.2comp.species,
+        param.value.type=="Fitted geometric mean")
+
+    # If more than one source, require that the joint analysis worked:
+      if (dim(this.data.2comp.species)[1]>1)
+      {
+        this.data.2comp.species <- subset(this.data.2comp.species, 
+                            Data.Analyzed=="Joint Analysis")
+      }
+      if (dim(this.data.2comp.species)[1]>0) 
+      {
+        this.row$AIC.2comp <- this.data.2comp.species$AIC
+        Vdist.2comp <- this.data.2comp.species$Vss
+        kelim.2comp <- this.data.2comp.species$kelim
+        this.row$Reference <- this.data.2comp.species$Reference
+      }
+    }
+
+    if (!is.na(this.row$AIC.1comp))
     {
-      this.row$Vdist <- Vdist.2comp
-      this.row$kelim <- kelim.2comp
-    }      
-  
-  fittable <- rbind(fittable,this.row)
+      if (!is.na(this.row$AIC.2comp))
+      {
+        if (this.row$AIC.1comp < this.row$AIC.2comp)
+        {
+          this.row$Model <- "1Comp"
+        } else this.row$Model <- "2Comp"
+      } else this.row$Model <- "1Comp"
+    } else if (!is.na(this.row$AIC.2comp))
+    {
+      this.row$Model <- "2Comp"
+    }
+    
+    if (!is.na(this.row$Model))
+      if (this.row$Model == "1Comp")
+      {
+        this.row$Vdist <- Vdist.1comp
+        this.row$kelim <- kelim.1comp
+      } else 
+      {
+        this.row$Vdist <- Vdist.2comp
+        this.row$kelim <- kelim.2comp
+      }      
+    
+    fittable <- rbind(fittable,this.row)
+  }
 }
 fittable$halflife <- log(2)/fittable$kelim
 
@@ -2277,6 +2307,7 @@ level3tab.arnot2 <- level3tab.arnot1
 level3tab.arnot1$QSAR <- "QSARINS"
 level3tab.arnot2$QSAR <- "IFS-QSAR"
 for (this.dtxsid in level3.arnot$test_substance_dtxsid)
+  if (this.dtxsid %in% level3tab.arnot1$DTXSID)
 {
   level3tab.arnot1[level3tab.arnot1$DTXSID==this.dtxsid,"thalf.pred"] <- 
     as.numeric(level3.arnot[level3.arnot$test_substance_dtxsid==this.dtxsid,

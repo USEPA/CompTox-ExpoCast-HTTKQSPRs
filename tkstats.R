@@ -440,13 +440,15 @@ maketkstatpreds <- function(
   label)
 {
   out.table <- NULL
-  for (this.cas in unique(cvtfits$CAS))
+  for (this.cas in unique(CvT.data$CAS))
+    if (this.cas %in% cvtfits$CAS)
   {
     if (this.cas %in% get_cheminfo(model="1compartment"))
     {
-      this.subset1 <- subset(cvtfits,CAS==this.cas)
+      this.subset1 <- subset(CvT.data,CAS==this.cas)
       this.compound <- this.subset1$Compound[1]
       this.dtxsid <- this.subset1$DTXSID[1]
+      this.subset1 <- subset(cvtfits,CAS==this.cas)
       for (this.species in unique(this.subset1$Species))
       {
         this.subset2 <- subset(this.subset1,Species==this.species)
