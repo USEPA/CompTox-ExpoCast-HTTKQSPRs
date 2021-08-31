@@ -1256,7 +1256,7 @@ OPERA.AAFE<-10^(mean(level2tab$AbsFE[
 Pradeep.AAFE<-10^(mean(level2tab$AbsFE[
   level2tab$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
 fits.AAFE<-10^(mean(level2tab$AbsFE[
-  level2tab$QSAR=="1CompFits"],na.rm=TRUE))
+  level2tab$QSAR=="FitsToData"],na.rm=TRUE))
 
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
 ADMet.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
@@ -1270,7 +1270,7 @@ OPERA.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
 Pradeep.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
   level2tab.early$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
 fits.AAFE.early <- 10^(mean(level2tab.early$AbsFE[
-  level2tab.early$QSAR=="1CompFits"],na.rm=TRUE))
+  level2tab.early$QSAR=="FitsToData"],na.rm=TRUE))
 
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
 ADMet.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
@@ -1284,7 +1284,7 @@ OPERA.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
 Pradeep.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
   level2tab.late$QSAR=="HTTK-Pradeep"],na.rm=TRUE))
 fits.AAFE.late <- 10^(mean(level2tab.late$AbsFE[
-  level2tab.late$QSAR=="1CompFits"],na.rm=TRUE))
+  level2tab.late$QSAR=="FitsToData"],na.rm=TRUE))
 
 #RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
 ADMet.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-ADmet"]/
@@ -1297,8 +1297,8 @@ OPERA.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-OPERA"]/
   level2tab$Conc.obs[level2tab$QSAR=="HTTK-OPERA"]))^2,na.rm=TRUE))
 Pradeep.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="HTTK-Pradeep"]/
   level2tab$Conc.obs[level2tab$QSAR=="HTTK-Pradeep"]))^2,na.rm=TRUE))
-fits.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="1CompFits"]/
-  level2tab$Conc.obs[level2tab$QSAR=="1CompFits"]))^2,na.rm=TRUE))
+fits.RMSLE<-sqrt(mean((log10(level2tab$Conc.pred[level2tab$QSAR=="FitsToData"]/
+  level2tab$Conc.obs[level2tab$QSAR=="FitsToData"]))^2,na.rm=TRUE))
 
 ADMet.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
   level2tab.early$QSAR=="HTTK-ADmet"]/
@@ -1316,8 +1316,8 @@ Pradeep.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
   level2tab.early$QSAR=="HTTK-Pradeep"]/
   level2tab.early$Conc.obs[level2tab.early$QSAR=="HTTK-Pradeep"]))^2,na.rm=TRUE))
 fits.RMSLE.early <-sqrt(mean((log10(level2tab.early$Conc.pred[
-  level2tab.early$QSAR=="1CompFits"]/
-  level2tab.early$Conc.obs[level2tab.early$QSAR=="1CompFits"]))^2,na.rm=TRUE))
+  level2tab.early$QSAR=="FitsToData"]/
+  level2tab.early$Conc.obs[level2tab.early$QSAR=="FitsToData"]))^2,na.rm=TRUE))
 
 
 ADMet.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
@@ -1336,8 +1336,8 @@ Pradeep.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
   level2tab.late$QSAR=="HTTK-Pradeep"]/
   level2tab.late$Conc.obs[level2tab.late$QSAR=="HTTK-Pradeep"]))^2,na.rm=TRUE))
 fits.RMSLE.late <-sqrt(mean((log10(level2tab.late$Conc.pred[
-  level2tab.late$QSAR=="1CompFits"]/
-  level2tab.late$Conc.obs[level2tab.late$QSAR=="1CompFits"]))^2,na.rm=TRUE))
+  level2tab.late$QSAR=="FitsToData"]/
+  level2tab.late$Conc.obs[level2tab.late$QSAR=="FitsToData"]))^2,na.rm=TRUE))
 
 
 ADMet.MRPE <- median(subset(level2tab,QSAR=="HTTK-ADmet")$RPE)
@@ -1345,21 +1345,21 @@ Dawson.MRPE <- median(subset(level2tab,QSAR=="HTTK-Dawson")$RPE)
 InVitro.MRPE <- median(subset(level2tab,QSAR=="HTTK-InVitro")$RPE)
 OPERA.MRPE <- median(subset(level2tab,QSAR=="HTTK-OPERA")$RPE)
 Pradeep.MRPE <- median(subset(level2tab,QSAR=="HTTK-Pradeep")$RPE)
-fits.MRPE <- median(subset(level2tab,QSAR=="1CompFits")$RPE)
+fits.MRPE <- median(subset(level2tab,QSAR=="FitsToData")$RPE)
 
 ADMet.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-ADmet")$RPE)
 Dawson.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-Dawson")$RPE)
 InVitro.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-InVitro")$RPE)
 OPERA.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-OPERA")$RPE)
 Pradeep.MRPE.early <- median(subset(level2tab.early,QSAR=="HTTK-Pradeep")$RPE)
-fits.MRPE.early <- median(subset(level2tab.early,QSAR=="1CompFits")$RPE)
+fits.MRPE.early <- median(subset(level2tab.early,QSAR=="FitsToData")$RPE)
 
 ADMet.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-ADmet")$RPE)
 Dawson.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-Dawson")$RPE)
 InVitro.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-InVitro")$RPE)
 OPERA.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-OPERA")$RPE)
 Pradeep.MRPE.late <- median(subset(level2tab.late,QSAR=="HTTK-Pradeep")$RPE)
-fits.MRPE.late <- median(subset(level2tab.late,QSAR=="1CompFits")$RPE)
+fits.MRPE.late <- median(subset(level2tab.late,QSAR=="FitsToData")$RPE)
 
 
 stats.table<-do.call("rbind",list(
@@ -1427,7 +1427,7 @@ stats.table<-do.call("rbind",list(
     round(Pradeep.MRPE.late,2),
     round(fits.MRPE.late,2))
   ))
-colnames(stats.table) <-  c("ADMet", "Dawson", "InVitro", "OPERA", "Pradeep","1CompFits")
+colnames(stats.table) <-  c("ADMet", "Dawson", "InVitro", "OPERA", "Pradeep","FitsToData")
 rownames(stats.table) <- c("AAFE","RMSLE","MRPE","RMSLE.early","RMSLE.late","AAFE.early","AAFE.late","MRPE.early","MRPE.late")
 
 AUC.stats.table <- NULL
@@ -1484,7 +1484,7 @@ for (this.qsar in unique(level2tab.stats$QSAR))
 ```{r scale_preds, eval = TRUE}
 for (this.chem in CvT.chems.stats.heatmap$PREFERRED_NAME) 
 {
-print(this.chem)
+#print(this.chem)
   this.index <- which(CvT.chems.stats.heatmap$PREFERRED_NAME==this.chem)
   v <- unlist(CvT.chems.stats.heatmap[this.index, regexpr("AUC.RPE",
     colnames(CvT.chems.stats.heatmap))!=-1])
@@ -1552,7 +1552,7 @@ FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) +
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"1CompFits"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"FitsToData"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(tableGrob(stats.table[c("AAFE","RMSLE"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
@@ -1593,7 +1593,7 @@ FigLev2 <- ggplot(data=level2tab.early, aes(x=QSAR, y=RPE)) +
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"1CompFits"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"FitsToData"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
@@ -1634,7 +1634,7 @@ FigLev2 <- ggplot(data=level2tab.late, aes(x=QSAR, y=RPE)) +
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"1CompFits"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"FitsToData"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(tableGrob(stats.table[c("AAFE.late","RMSLE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
@@ -1820,7 +1820,7 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
   theme_bw()+
   annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"1CompFits"], theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"FitsToData"], theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
 annotation_custom(tableGrob(stats.table[c("RMSLE","AAFE"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
@@ -1859,7 +1859,7 @@ FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
   theme_bw()+
   annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"1CompFits"], theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"FitsToData"], theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
 annotation_custom(tableGrob(stats.table[c("RMSLE.early","AAFE.early"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
@@ -1898,7 +1898,7 @@ FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
   theme_bw()+
   annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
                     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"1CompFits"], theme = ttheme_minimal(base_size = 14)),
+  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"FitsToData"], theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
 annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
                     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
@@ -1918,49 +1918,7 @@ annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"ADMet"],row
   axis.title.y=element_text(size=10))
 print(FigLev2RMSE.late) 
 ```
-```{r make_RMSE_by1compfit_plot, eval = TRUE}
-RMSE.thresh<-1
-goodfitchems <- subset(qsarbychem.table,QSAR=="1CompFits" & RMSLE<RMSE.thresh)$CAS
 
-#### add AAFE & RMSLE to the table
-texty <- 2.5
-xshift <- 0.2
-FigLev2RMSEGoodChems <- ggplot(data=subset(qsarbychem.table, CAS %in% goodfitchems), 
-   aes(x=QSAR, y=RMSLE)) +
-   ggtitle("Good 1 Compartment Chems")+
-    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
-  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
-  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
-#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
-  geom_boxplot(lwd=0.3,
-               outlier.shape = NA)+
- # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-  coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-    xlab("QSAR") +
-  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
-  theme_bw()+
-  annotation_custom(tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
-                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"1CompFits"], theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty)+
-annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"ADMet"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"Dawson"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"InVitro"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"OPERA"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(stats.table[c("RMSLE.late","AAFE.late"),"Pradeep"],rows=NULL, theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
-  theme( text  = element_text(size=20),
-  legend.key.height=unit(.5,"line"),
-  legend.text=element_text(size=14),
-  legend.title = element_text(size=14),
-  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
-  axis.title.y=element_text(size=10))
-print(FigLev2RMSEGoodChems)
-```
 
 ```{r analyze_admet1,eval=TRUE}
 admet.better <-NULL
@@ -2012,7 +1970,7 @@ qsarbychem.table2 <- dcast(qsarbychem.table,Compound~QSAR,value.var="RMSLE")
 chems <- qsarbychem.table2$Compound
 qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)
 rownames(qsarbychem.table2) <- chems
-colnames(qsarbychem.table2) <- c("1CompFits","ADmet","Dawson","InVitro","OPERA","Pradeep")
+colnames(qsarbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep")
 ```
 
 ```{r make_rmse_heatmap, eval = TRUE}
@@ -2041,19 +1999,54 @@ for (this.chem in unique(rownames(qsarbychem.table2)))
 }
 thresh <- 0.2
 admetdiff <- subset(CvT.chems.nona,!is.na(ADMetDiff))
-  admetdiff[admetdiff$ADMetDiff > thresh, "ADMetDiff"]<-3
-  admetdiff[admetdiff$ADMetDiff < (-thresh), "ADMetDiff"]<-1
+  admetdiff[admetdiff$ADMetDiff > thresh, "ADMetDiffCat"]<-3
+  admetdiff[admetdiff$ADMetDiff < (-thresh), "ADMetDiffCat"]<-1
   admetdiff[admetdiff$ADMetDiff > (-thresh) &
-    admetdiff$ADMetDiff < thresh, "ADMetDiff"]<-2
-    
-dat <- admetdiff[,c(4:13,22)]
+    admetdiff$ADMetDiff < thresh, "ADMetDiffCat"]<-2
+
+# Add 1 vs. 2 comp:
+admetdiff <- merge(admetdiff,fittable[,c(1,4)],by.x="CASRN",by.y="CAS")
+  
+# Add enzymes:
+for (this.chem in admetdiff$DTXSID)
+  if (this.chem %in% cyps$DTXSID)
+  {
+    this.subset <- subset(cyps,DTXSID==this.chem)
+    for (this.cyp in this.subset$ISOFORM)
+    {
+      admetdiff[admetdiff$DTXSID==this.chem,this.cyp] <- "1"
+    }
+  }
+for (this.col in 25:31) admetdiff[is.na(admetdiff[,this.col]),this.col] <- 0
+
+
+dat <- admetdiff[,c(4:15,22,24:31)]
+
+# Turn into factor:
+for (this.col in 14:21) dat[,this.col] <- as.factor(dat[,this.col])
+  
+# Add contrast between ADmet and HTTK 
+dat$Clint.Ratio <- dat$Human.Clint.SPlus/dat$Human.Clint.httk
+dat$Clint.Ratio[is.nan(dat$Clint.Ratio)] <- 1
+dat$Clint.Ratio[!is.finite(dat$Clint.Ratio)] <- 10000
+
+dat$Fup.Ratio <- dat$Human.Fup.SPlus/dat$Human.Fup.httk
+dat$Fup.Ratio[is.nan(dat$Fup.Ratio)] <- 1
 
 library(randomForest)
-colnames(dat)[3] <- "HENRYSLAW"
-colnames(dat)[8] <- "WATERSOL"
-dat$ADMetDiff <-as.factor(dat$ADMetDiff)
-this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(10,10,10),ntree=5000)
+colnames(dat)[1] <- "Molecular_Weight"
+colnames(dat)[2] <- "Boiling_Point"
+colnames(dat)[3] <- "Henrys_Law_Constant"
+colnames(dat)[4] <- "LogKow"
+colnames(dat)[5] <- "LogKoa"
+colnames(dat)[6] <- "Melting_Point"
+colnames(dat)[7] <- "Vapor_Pressure"
+colnames(dat)[8] <- "Water_Solubility"
+#dat$ADMetDiff <-as.factor(dat$ADMetDiff)
+this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(15,15,15),ntree=5000)
 print(this.rf)
+varImpPlot(this.rf)
+plot(dat[,2],dat[,13])
 ```
 
 
@@ -2165,7 +2158,7 @@ FigLev2e <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-OPERA" ,]) +
 #print(FigLev2e)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKOPERA",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
-FigLev2f <- ggplot(data=level2tab[level2tab$QSAR=="1CompFits" ,]) +
+FigLev2f <- ggplot(data=level2tab[level2tab$QSAR=="FitsToData" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
   scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
   scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
@@ -2174,13 +2167,13 @@ FigLev2f <- ggplot(data=level2tab[level2tab$QSAR=="1CompFits" ,]) +
   #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
   geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
-  xlab(bquote('1CompFits')) +
+  xlab(bquote('FitsToData')) +
   ylab(bquote(' ')) +
   theme_bw()+
   theme( text  = element_text(size=20),
          axis.text.y = element_text(size=10))
 #print(FigLev2f)
-ggsave(paste("figs/FigLev2_Conc_scatter_1CompFits",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_FitsToData",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, nrow = 3)
 ```
