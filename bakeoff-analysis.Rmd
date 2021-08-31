@@ -2044,7 +2044,7 @@ admetdiff <- subset(CvT.chems.nona,!is.na(ADMetDiff))
     admetdiff$ADMetDiff < thresh, "ADMetDiffCat"]<-2
 
 # Add 1 vs. 2 comp:
-admetdiff <- merge(admetdiff,fittable[,c(1,4)],by.x="CASRN",by.y="CAS")
+admetdiff <- merge(admetdiff,fittable[,c("CAS","Model")],by.x="CASRN",by.y="CAS")
   
 # Add enzymes:
 for (this.chem in admetdiff$DTXSID)
@@ -2297,7 +2297,7 @@ grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, nrow = 
 #training/testing sets. I don''t think they are as comparable to rodent data as 
 #the human predictions, but they were developed with different training sets 
 #(and for fish, not mammals!).
-```{r do_level3, eval = TRUE}
+```{r level3_load_arnot, eval = TRUE}
 level3.arnot <- read_excel("TK_QSAR_evaluation_set_HumanQSARHLPredictions.xlsx")
 level3.arnot <- subset(level3.arnot,administration_route_normalized=="iv")
 level3tab.arnot1 <- level3tab.opera
@@ -2316,7 +2316,8 @@ for (this.dtxsid in level3.arnot$test_substance_dtxsid)
     as.numeric(level3.arnot[level3.arnot$test_substance_dtxsid==this.dtxsid,
     "IFS_Hum_HLT_Hour"]) 
 }
-
+```
+```{r prep_level3, eval = TRUE}
 level3tab <- rbind(
   level3tab.invitro,
   level3tab.admet,
@@ -2324,7 +2325,8 @@ level3tab <- rbind(
   level3tab.pradeep,
   level3tab.opera,
   level3tab.arnot1,
-  level3tab.arnot2)
+  level3tab.arnot2,
+  level3tab.yrandom)
 
 
 # HTTK PBTK with in vitro
@@ -2342,6 +2344,39 @@ level3tab$thalf.RPE <-
   (level3tab$thalf.pred - level3tab$thalf.obs)/level3tab$thalf.obs
 level3tab$Vd.RPE <- (level3tab$Vd.pred - level3tab$Vd.obs)/level3tab$Vd.obs
 
+halflife.stats.table <- NULL
+for (this.qsar in unique(level3tab$QSAR))
+{
+  this.subset <- subset(level3tab,QSAR==this.qsar)
+  this.fit <- lm(data=this.subset,log10(thalf.obs)~log10(thalf.pred))
+  this.row <- data.frame(
+    this.qsar,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+    )
+  halflife.stats.table <- rbind(halflife.stats.table,this.row)
+}
+print(halflife.stats.table)
+
+vd.stats.table <- NULL
+for (this.qsar in unique(level3tab$QSAR))
+{
+  this.subset <- subset(level3tab,QSAR==this.qsar&!is.na(Vd.obs)&!is.na(Vd.pred))
+  if (any(!is.na(this.subset$Vd.pred)))
+  {
+    this.fit <- lm(data=this.subset,log10(Vd.obs)~log10(Vd.pred))
+    this.row <- data.frame(
+      this.qsar,
+      R2=signif(summary(this.fit)$adj.r.squared,3),
+      RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+     )
+    vd.stats.table <- rbind(vd.stats.table,this.row)
+  }
+}
+print(vd.stats.table)
+```
+# Half-life scatter plot:
+```{r make_level3_halflife_scatter_plot, eval = TRUE}
 
 FigLev3a <- ggplot(data=level3tab) +
   geom_point(size=3,aes(x=thalf.pred,y=thalf.obs,shape=QSAR,color=QSAR))+
@@ -2353,12 +2388,19 @@ FigLev3a <- ggplot(data=level3tab) +
   geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
   xlab(bquote('Predicted'~t[half]~"(h)")) +
   ylab(bquote('Observed'~t[half]~"(h)")) +
+  scale_shape_manual(values = 0:10)+
   theme_bw()+
-  theme( text  = element_text(size=20))
+  facet_grid(cols=vars(QSAR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         strip.text.x = element_text(size = 8),
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=10))
 print(FigLev3a)
 
+```
 
-
+```{r make_level3_halflife_box_plot, eval = TRUE}
 
 FigLev3b <- ggplot(data=level3tab, aes(x=QSAR, y=thalf.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
@@ -2368,16 +2410,19 @@ FigLev3b <- ggplot(data=level3tab, aes(x=QSAR, y=thalf.RPE)) +
     outlier.size=2,
     outlier.alpha=0.1)+
   xlab("QSAR") +
-  ylab(bquote('Relative Prediction Error in '~t[half]~"(h)")) +
-  scale_y_continuous(limits=c(-2,12)) +
+  ylab(bquote('RPE in '~t[half]~"(h)")) +
+  scale_y_continuous(limits=c(-2,6)) +
 #  scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
   theme_bw()+
   theme( text  = element_text(size=20))   +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev3b) 
 
+```
+```{r make_level3_vd_scatter_plot, eval = TRUE}
 FigLev3c <- ggplot(data=subset(level3tab,!(QSAR %in% c("IFS-QSAR","QSARINS")))) +
   geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,shape=QSAR,color=QSAR))+
+  scale_x_log10(label=scientific_10)+
   scale_y_log10(label=scientific_10)+
   scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
   geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
@@ -2385,12 +2430,18 @@ FigLev3c <- ggplot(data=subset(level3tab,!(QSAR %in% c("IFS-QSAR","QSARINS")))) 
   geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
   xlab(bquote('Predicted'~V[d]~"(L/kg BW)")) +
   ylab(bquote('Observed'~V[d]~"(L/kg BW)")) +
+  scale_shape_manual(values = 0:10)+
   theme_bw()+
-  theme( text  = element_text(size=20))
+  facet_grid(cols=vars(QSAR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         strip.text.x = element_text(size = 10),
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=10))
 print(FigLev3c)
 
-
-
+```
+```{r make_level3_vd_box_plot, eval = TRUE}
 
 FigLev3d <- ggplot(data=subset(level3tab,!(QSAR %in% c("IFS-QSAR","QSARINS"))), 
   aes(x=QSAR, y=Vd.RPE)) + 
