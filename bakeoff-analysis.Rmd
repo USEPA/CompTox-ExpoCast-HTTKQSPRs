@@ -929,11 +929,20 @@ CvT.data <- subset(CvT.data,!(DTXSID %in% c(
   "DTXSID50881104",
   "DTXSID7030066",
   "DTXSID80108992")))
+write.csv(CvT.chems.opera[,c(
+  "DTXSID",
+  "PREFERRED_NAME",                               
+  "CASRN")], row.names=FALSE,file="SupTable-OPERAOnlyChems.txt")
 ```
 There are chemicals where the in vivo data don't permit empirical fits, drop
 those from the level II/III evaluation:
 ```{r separate_out_badfits, eval=TRUE}
 CvT.chems.nofits <- CvT.chems[!(CvT.chems$CASRN%in%fittable$CAS),]
+write.csv(CvT.chems.nofits[,c(
+  "DTXSID",
+  "PREFERRED_NAME",                               
+  "CASRN")], row.names=FALSE,file="SupTable-NoEmpiricalFitChems.txt")
+
 CvT.data <- subset(CvT.data, CAS %in% fittable$CAS)
 length(unique(CvT.data$CAS)) # Number of chemicals with good fits
 ```
@@ -2014,13 +2023,10 @@ chems <- qsarbychem.table2$Compound
 qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)[,1:7]
 rownames(qsarbychem.table2) <- chems
 colnames(qsarbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep","Y-Random")
+write.csv(qsarbychem.table2,row.names=FALSE,file="SupTable-RMSLEbyChem.txt")
 ```
 
 ```{r make_rmse_heatmap, eval = TRUE}
-
-
-
-
   mypalette<-brewer.pal(9,"PuRd")
   heatmap.2(t(qsarbychem.table2),
  #   lwid=c(0.3,1),
