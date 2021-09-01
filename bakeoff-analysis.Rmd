@@ -1,10 +1,10 @@
 ---
-title: "TK QSAR Bakeoff"
+title: "TK QSPR Bakeoff"
 author: "John Wambaugh and Nisha Sipes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{TKQSAR Bakeoff}
+  %\VignetteIndexEntry{TKQSPR Bakeoff}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -180,7 +180,7 @@ colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- "Human.Fup.
 
 
 
-At level I we are comparing QSAR's with the in vitro measured values.
+At level I we are comparing QSPR's with the in vitro measured values.
 We don't have those values for all the chemicals, so we only are comnparing on
 a subset.
 
@@ -333,7 +333,7 @@ level1tab1 <- level1tab[,c(
   "CASRN",
   "Human.Clint.httk","Human.Fup.httk",
   "Human.Clint.SPlus","Human.Fup.SPlus")]
-level1tab1$QSAR <- "SPlus"
+level1tab1$QSPR <- "SPlus"
 colnames(level1tab1)[6:7] <- c("Human.Clint.pred","Human.Fup.pred") 
 
 level1tab2 <- level1tab[,c(
@@ -341,7 +341,7 @@ level1tab2 <- level1tab[,c(
   "PREFERRED_NAME",
   "CASRN","Human.Clint.httk","Human.Fup.httk",
   "Human.Clint.Dawson","Human.Fup.Dawson")]
-level1tab2$QSAR <- "Dawson"
+level1tab2$QSPR <- "Dawson"
 colnames(level1tab2)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
 
 level1tab3 <- level1tab[,c(
@@ -349,7 +349,7 @@ level1tab3 <- level1tab[,c(
   "PREFERRED_NAME",
   "CASRN","Human.Clint.httk","Human.Fup.httk",
   "Human.Clint.Pradeep","Human.Fup.Pradeep")]
-level1tab3$QSAR <- "Pradeep"
+level1tab3$QSPR <- "Pradeep"
 colnames(level1tab3)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
 
 level1tab4 <- level1tab[,c(
@@ -357,19 +357,27 @@ level1tab4 <- level1tab[,c(
   "PREFERRED_NAME",
   "CASRN","Human.Clint.httk","Human.Fup.httk",
   "Human.Clint.OPERA","Human.Fup.OPERA")]
-level1tab4$QSAR <- "OPERA"
+level1tab4$QSPR <- "OPERA"
 colnames(level1tab4)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
 
 level1tab <- rbind(level1tab1,level1tab2,level1tab3,level1tab4)
 level1tab$Human.Fup.pred <- as.numeric(level1tab$Human.Fup.pred)
 level1tab$Human.Clint.pred <- as.numeric(level1tab$Human.Clint.pred)
 ```
-## calculate absolute fold error (AbsFE)
+## calculate fold error (FE) and absolute fold error (AbsFE)
 ```{r calc_Level1AbsFE, eval=TRUE}
 
 #Absolute fold error (AbsFE) : abs(log10(pred/obs))
-level1tab$Human.Clint.AbsFE<-abs(log10(level1tab$Human.Clint.pred/level1tab$Human.Clint.httk))
-level1tab$Human.fup.AbsFE<-abs(log10(level1tab$Human.Fup.pred/level1tab$Human.Fup.httk))
+level1tab$Human.Clint.AbsFE <- abs(log10(level1tab$Human.Clint.pred /
+  level1tab$Human.Clint.httk))
+level1tab$Human.fup.AbsFE <- abs(log10(level1tab$Human.Fup.pred /
+  level1tab$Human.Fup.httk))
+
+# Fo
+level1tab$Human.Clint.FE<- log10(level1tab$Human.Clint.pred /
+  level1tab$Human.Clint.httk)
+level1tab$Human.fup.FE<- log10(level1tab$Human.Fup.pred /
+  level1tab$Human.Fup.httk)
 
 for (this.row in 1:dim(level1tab)[1])
 {
@@ -380,11 +388,13 @@ for (this.row in 1:dim(level1tab)[1])
     {
 #Turn -Inf and Inf into NA
       level1tab[this.row,"Human.Clint.AbsFE"] <- NA
+      level1tab[this.row,"Human.Clint.FE"] <- NA
     }
     if (is.nan(this.Clint.AbsFE)) 
     {
 #Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
       level1tab[this.row,"Human.Clint.AbsFE"] <- 0
+      level1tab[this.row,"Human.Clint.FE"] <- 0
     }
   }
   this.fup.AbsFE <- level1tab[this.row,"Human.fup.AbsFE"]
@@ -394,11 +404,13 @@ for (this.row in 1:dim(level1tab)[1])
     {
 #Turn -Inf and Inf into NA
       level1tab[this.row,"Human.fup.AbsFE"] <- NA
+      level1tab[this.row,"Human.fup.FE"] <- NA
     }
     if (is.nan(this.fup.AbsFE)) 
     {
 #Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
       level1tab[this.row,"Human.fup.AbsFE"] <- 0
+      level1tab[this.row,"Human.fup.FE"] <- 0
     }
   }  
 }
@@ -437,6 +449,17 @@ write.csv(possible.training.chems,row.names=FALSE,
           file="SupTable-PossibleTrainingChems.txt")
 ```
 
+```{r fold_error_differences, eval = TRUE}
+ks.tests.clint <- data.frame()
+for (this.qspr1 in unique(level1tab$QSPR))
+  for (this.qspr2 in unique(level1tab$QSPR))
+  {
+    set1 <- subset(level1tab,QSPR==this.qspr1)$Human.Clint.FE
+    set2 <- subset(level1tab,QSPR==this.qspr2)$Human.Clint.FE
+    ks.tests.clint[this.qspr1,this.qspr2] <- kstest(set1,set2)$p.value
+  }
+```
+
 Calculate RPE:     
 ```{r prediction_table, eval = TRUE}
 level1tab[,"Human.Clint.RPE"] <- 
@@ -448,15 +471,15 @@ level1tab[,"Human.Fup.RPE"] <-
   as.numeric(level1tab[,"Human.Fup.httk"])) /
   as.numeric(level1tab[,"Human.Fup.httk"])
   
-hist(subset(level1tab,QSAR=="Dawson")$Human.Clint.RPE,main="Dawson",xlab="Clint RPE")
-hist(subset(level1tab,QSAR=="Pradeep")$Human.Clint.RPE,main="Pradeep",xlab="Clint RPE")
-hist(subset(level1tab,QSAR=="SPlus")$Human.Clint.RPE,main="SPlus",xlab="Clint RPE")
-hist(subset(level1tab,QSAR=="OPERA")$Human.Clint.RPE,main="OPERA",xlab="Clint RPE")
+hist(subset(level1tab,QSPR=="Dawson")$Human.Clint.RPE,main="Dawson",xlab="Clint RPE")
+hist(subset(level1tab,QSPR=="Pradeep")$Human.Clint.RPE,main="Pradeep",xlab="Clint RPE")
+hist(subset(level1tab,QSPR=="SPlus")$Human.Clint.RPE,main="SPlus",xlab="Clint RPE")
+hist(subset(level1tab,QSPR=="OPERA")$Human.Clint.RPE,main="OPERA",xlab="Clint RPE")
 
-hist(subset(level1tab,QSAR=="Dawson")$Human.Fup.RPE,main="Dawson",xlab="Fup RPE")
-hist(subset(level1tab,QSAR=="Pradeep")$Human.Fup.RPE,main="Pradeep",xlab="Fup RPE")
-hist(subset(level1tab,QSAR=="SPlus")$Human.Fup.RPE,main="SPlus",xlab="Fup RPE")
-hist(subset(level1tab,QSAR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
+hist(subset(level1tab,QSPR=="Dawson")$Human.Fup.RPE,main="Dawson",xlab="Fup RPE")
+hist(subset(level1tab,QSPR=="Pradeep")$Human.Fup.RPE,main="Pradeep",xlab="Fup RPE")
+hist(subset(level1tab,QSPR=="SPlus")$Human.Fup.RPE,main="SPlus",xlab="Fup RPE")
+hist(subset(level1tab,QSPR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
 ```
 
 Add average RPE where missing:
@@ -475,17 +498,17 @@ for (this.chem in unique(level1tab$DTXSID))
 
 Check distribution of RPE for Clint:
 ```{r clint_rpe_hist, eval = TRUE}
-hist(subset(level1tab,QSAR=="OPERA")$Human.Clint.RPE,main="OPERA",xlab="Clint RPE")
+hist(subset(level1tab,QSPR=="OPERA")$Human.Clint.RPE,main="OPERA",xlab="Clint RPE")
 ```
 Check distribution of RPE for Fup:
 ```{r fup_rpe_hist, eval = TRUE}
-hist(subset(level1tab,QSAR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
+hist(subset(level1tab,QSPR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
 ```
 
 Make Level1 predictions vs. observed plot for Clint:
 ```{r clint_rpe_scatter, eval = TRUE}
 FigLev1a <- ggplot(data=level1tab) +
-  geom_point(size=3,aes(x=Human.Clint.pred+10^-4,y=Human.Clint.httk+10^-4,shape=QSAR,color=QSAR))+
+  geom_point(size=3,aes(x=Human.Clint.pred+10^-4,y=Human.Clint.httk+10^-4,shape=QSPR,color=QSPR))+
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10)+
   geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
@@ -502,7 +525,7 @@ Make Level1 predictions vs. observed plot for Clint (faceted):
 
 ## Tiff image for manuscript (facet to see the individual predictions over Clint value)
 FigLev1a_facet <- ggplot(data=level1tab) +
-  geom_point(size=2,aes(x=Human.Clint.pred+10^-4,y=Human.Clint.httk+10^-4,shape=QSAR,color=QSAR))+
+  geom_point(size=2,aes(x=Human.Clint.pred+10^-4,y=Human.Clint.httk+10^-4,shape=QSPR,color=QSPR))+
   scale_x_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits=c(30^-1,3000)) +
   #scale_y_log10(label=scientific_10)+
   scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 3000))+
@@ -514,7 +537,7 @@ FigLev1a_facet <- ggplot(data=level1tab) +
   xlab(bquote('Predicted'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
   ylab(bquote('Observed'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
   theme_bw()+
-  facet_grid(cols=vars(QSAR))+
+  facet_grid(cols=vars(QSPR))+
   theme( text  = element_text(size=20),
          legend.position = "none",
          axis.title = element_text(size=20),
@@ -526,11 +549,11 @@ ggsave(paste("figs/FigLev1a_Clint_obsVpred_facet",output.prefix,".tiff",sep=""),
 
 Make Level1 RPE boix and whisker plot for Clint:
   ```{r clint_rpe_boxwhisker, eval = TRUE}
-FigLev1b <- ggplot(data=level1tab, aes(x=QSAR, y=Human.Clint.RPE)) + 
+FigLev1b <- ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) + 
   geom_boxplot(outlier.colour="red",    
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab(bquote("Relative Prediction Error in"~Cl[int]))+
   scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
   theme_bw()+
@@ -542,27 +565,27 @@ FigLev1b <- ggplot(data=level1tab, aes(x=QSAR, y=Human.Clint.RPE)) +
 ```{r calc_AbsFE_RMSE, eval=TRUE}
 
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-ADMet.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSAR=="SPlus"],na.rm=TRUE))
-Dawson.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSAR=="Dawson"],na.rm=TRUE))
-OPERA.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSAR=="OPERA"],na.rm=TRUE))
-Pradeep.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSAR=="Pradeep"],na.rm=TRUE))
+ADMet.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSPR=="SPlus"],na.rm=TRUE))
+Dawson.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSPR=="Dawson"],na.rm=TRUE))
+OPERA.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSPR=="OPERA"],na.rm=TRUE))
+Pradeep.Human.Clint.AAFE<-10^(mean(level1tab$Human.Clint.AbsFE[level1tab$QSPR=="Pradeep"],na.rm=TRUE))
 
-ADMet.Human.fup.AAFE<-10^(mean(level1tab$Human.fup.AbsFE[level1tab$QSAR=="SPlus"],na.rm=TRUE))
-Dawson.Human.fup.AAFE<-10^(mean(level1tab$Human.fup.AbsFE[level1tab$QSAR=="Dawson"],na.rm=TRUE))
-OPERA.Human.fup.AAFE<-10^(mean(level1tab$Human.fup.AbsFE[level1tab$QSAR=="OPERA"],na.rm=TRUE))
-Pradeep.Human.fup.AAFE<-10^(mean(level1tab$Human.fup.AbsFE[level1tab$QSAR=="Pradeep"],na.rm=TRUE))
+ADMet.Human.fup.AAFE<-10^(mean(level1tab$Human.fup.AbsFE[level1tab$QSPR=="SPlus"],na.rm=TRUE))
+Dawson.Human.fup.AAFE<-10^(mean(level1tab$Human.fup.AbsFE[level1tab$QSPR=="Dawson"],na.rm=TRUE))
+OPERA.Human.fup.AAFE<-10^(mean(level1tab$Human.fup.AbsFE[level1tab$QSPR=="OPERA"],na.rm=TRUE))
+Pradeep.Human.fup.AAFE<-10^(mean(level1tab$Human.fup.AbsFE[level1tab$QSPR=="Pradeep"],na.rm=TRUE))
 
 
 #RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))^2)  ### use this
-ADMet.Human.Clint.RMSLE<-sqrt(mean((log10(level1tab$Human.Clint.pred[level1tab$QSAR=="SPlus"]+1)-log10(level1tab$Human.Clint.httk[level1tab$QSAR=="SPlus"]+1))^2,na.rm=TRUE))
-Dawson.Human.Clint.RMSLE<-sqrt(mean((log10(level1tab$Human.Clint.pred[level1tab$QSAR=="Dawson"]+1)-log10(level1tab$Human.Clint.httk[level1tab$QSAR=="Dawson"]+1))^2,na.rm=TRUE))
-OPERA.Human.Clint.RMSLE<-sqrt(mean((log10(level1tab$Human.Clint.pred[level1tab$QSAR=="OPERA"]+1)-log10(level1tab$Human.Clint.httk[level1tab$QSAR=="OPERA"]+1))^2,na.rm=TRUE))
-Pradeep.Human.Clint.RMSLE<-sqrt(mean((log10(level1tab$Human.Clint.pred[level1tab$QSAR=="Pradeep"]+1)-log10(level1tab$Human.Clint.httk[level1tab$QSAR=="Pradeep"]+1))^2,na.rm=TRUE))
+ADMet.Human.Clint.RMSLE<-sqrt(mean((log10(level1tab$Human.Clint.pred[level1tab$QSPR=="SPlus"]+1)-log10(level1tab$Human.Clint.httk[level1tab$QSPR=="SPlus"]+1))^2,na.rm=TRUE))
+Dawson.Human.Clint.RMSLE<-sqrt(mean((log10(level1tab$Human.Clint.pred[level1tab$QSPR=="Dawson"]+1)-log10(level1tab$Human.Clint.httk[level1tab$QSPR=="Dawson"]+1))^2,na.rm=TRUE))
+OPERA.Human.Clint.RMSLE<-sqrt(mean((log10(level1tab$Human.Clint.pred[level1tab$QSPR=="OPERA"]+1)-log10(level1tab$Human.Clint.httk[level1tab$QSPR=="OPERA"]+1))^2,na.rm=TRUE))
+Pradeep.Human.Clint.RMSLE<-sqrt(mean((log10(level1tab$Human.Clint.pred[level1tab$QSPR=="Pradeep"]+1)-log10(level1tab$Human.Clint.httk[level1tab$QSPR=="Pradeep"]+1))^2,na.rm=TRUE))
 
-ADMet.Human.fup.RMSLE<-sqrt(mean((log10(level1tab$Human.Fup.pred[level1tab$QSAR=="SPlus"]+1)-log10(level1tab$Human.Fup.httk[level1tab$QSAR=="SPlus"]+1))^2,na.rm=TRUE))
-Dawson.Human.fup.RMSLE<-sqrt(mean((log10(level1tab$Human.Fup.pred[level1tab$QSAR=="Dawson"]+1)-log10(level1tab$Human.Fup.httk[level1tab$QSAR=="Dawson"]+1))^2,na.rm=TRUE))
-OPERA.Human.fup.RMSLE<-sqrt(mean((log10(level1tab$Human.Fup.pred[level1tab$QSAR=="OPERA"]+1)-log10(level1tab$Human.Fup.httk[level1tab$QSAR=="OPERA"]+1))^2,na.rm=TRUE))
-Pradeep.Human.fup.RMSLE<-sqrt(mean((log10(level1tab$Human.Fup.pred[level1tab$QSAR=="Pradeep"]+1)-log10(level1tab$Human.Fup.httk[level1tab$QSAR=="Pradeep"]+1))^2,na.rm=TRUE))
+ADMet.Human.fup.RMSLE<-sqrt(mean((log10(level1tab$Human.Fup.pred[level1tab$QSPR=="SPlus"]+1)-log10(level1tab$Human.Fup.httk[level1tab$QSPR=="SPlus"]+1))^2,na.rm=TRUE))
+Dawson.Human.fup.RMSLE<-sqrt(mean((log10(level1tab$Human.Fup.pred[level1tab$QSPR=="Dawson"]+1)-log10(level1tab$Human.Fup.httk[level1tab$QSPR=="Dawson"]+1))^2,na.rm=TRUE))
+OPERA.Human.fup.RMSLE<-sqrt(mean((log10(level1tab$Human.Fup.pred[level1tab$QSPR=="OPERA"]+1)-log10(level1tab$Human.Fup.httk[level1tab$QSPR=="OPERA"]+1))^2,na.rm=TRUE))
+Pradeep.Human.fup.RMSLE<-sqrt(mean((log10(level1tab$Human.Fup.pred[level1tab$QSPR=="Pradeep"]+1)-log10(level1tab$Human.Fup.httk[level1tab$QSPR=="Pradeep"]+1))^2,na.rm=TRUE))
 
 Human.Clint.stats.table<-do.call("rbind",list(c(NA, "SPlus", "Dawson", "OPERA", "Pradeep"),
                                  c("AAFE",round(ADMet.Human.Clint.AAFE,2),
@@ -593,11 +616,11 @@ Human.fup.stats.table<-do.call("rbind",list(c(NA, "SPlus", "Dawson", "OPERA", "P
 ```{r clint_rpe_boxwhisker_stats, eval = TRUE}
 #### add AAFE & RMSLE to the table
 FigLev1b.texty <- -2
-FigLev1b<-ggplot(data=level1tab, aes(x=QSAR, y=Human.Clint.RPE)) + 
+FigLev1b<-ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) + 
   geom_boxplot(lwd=.3,  #reduce the boxplot linewidth
                outlier.shape=NA)+
   coord_cartesian(ylim=c(-3,8))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab(bquote("Relative Error in"~Cl[int]))+
 #  scale_y_log10(breaks=c(10^-3,10^-2,10^-1,1,10,10^2,10^3),label=scientific_10)+
   #scale_y_continuous(limits=c(-100,100))+
@@ -626,7 +649,7 @@ ggsave(paste("figs/FigLev1b_Clint_boxplot_wtable",output.prefix,".tiff",sep=""),
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 FigLev1c <- ggplot(data=level1tab) +
-  geom_point(size=3,aes(x=Human.Fup.pred+10^-4,y=Human.Fup.httk+10^-4,shape=QSAR,color=QSAR))+
+  geom_point(size=3,aes(x=Human.Fup.pred+10^-4,y=Human.Fup.httk+10^-4,shape=QSPR,color=QSPR))+
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10)+
   geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
@@ -642,7 +665,7 @@ print(FigLev1c)
 
 ## faceted
 FigLev1c <- ggplot(data=level1tab) +
-  geom_point(size=2,aes(x=Human.Fup.pred+10^-4,y=Human.Fup.httk+10^-4,shape=QSAR,color=QSAR))+
+  geom_point(size=2,aes(x=Human.Fup.pred+10^-4,y=Human.Fup.httk+10^-4,shape=QSPR,color=QSPR))+
   ##  scale_x_log10(label=scientific_10) +
   scale_x_log10(breaks=c(10^-8,10^-6,10^-4,10^-2,1),label=scientific_10)+
   ##  scale_y_log10(label=scientific_10)+
@@ -654,7 +677,7 @@ FigLev1c <- ggplot(data=level1tab) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
   xlab(bquote('Predicted'~f[up])) +
   ylab(bquote('Observed'~f[up])) +
-  facet_grid(cols=vars(QSAR))+
+  facet_grid(cols=vars(QSPR))+
   theme_bw()+
   theme( text  = element_text(size=20),
          legend.position = "none",
@@ -666,11 +689,11 @@ ggsave(paste("figs/FigLev1c_Fub_obsVpred_facet",output.prefix,".tiff",sep=""), w
 
 ```
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
-FigLev1d <- ggplot(data=level1tab, aes(x=QSAR, y=Human.Fup.RPE)) + 
+FigLev1d <- ggplot(data=level1tab, aes(x=QSPR, y=Human.Fup.RPE)) + 
   geom_boxplot(outlier.colour="red",    
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab(bquote("Relative Prediction Error in"~f[up]))+
   scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
   theme_bw()+
@@ -684,13 +707,13 @@ print(FigLev1d)
 #### add AAFE & RMSLE to the table
 
 texty <- 3
-FigLev1d<-ggplot(data=level1tab, aes(x=QSAR, y=Human.Fup.RPE)) + 
+FigLev1d<-ggplot(data=level1tab, aes(x=QSPR, y=Human.Fup.RPE)) + 
   geom_boxplot(lwd=.3,  #reduce the boxplot linewidth
                outlier.shape=NA)+
  # coord_cartesian(ylim=c(-3,6))+ ### Pradeep NEW !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-1.5,3))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab(bquote("Relative Error in"~f[up]))+
 #  scale_y_log10(breaks=c(10^-3,10^-2,10^-1,1,10,10^2,10^3),label=scientific_10)+
 #  scale_y_continuous(limits=c(-3,5))+
@@ -726,14 +749,14 @@ ggsave(paste("figs/FigLev1d_fup_boxplot_wtable",output.prefix,".tiff",sep=""), w
 #
 #
 
-# At level II we are comparing predictions made using QSAR values with actual
-# tissue concentration vs. time data. Most of the QSAR values are used with the
+# At level II we are comparing predictions made using QSPR values with actual
+# tissue concentration vs. time data. Most of the QSPR values are used with the
 # HTTK PBTK model to make predictions. I hope to get ADmet predictor PBTK
 # predictions too.
 #
 # Level I included the predictions made with the in vitro measured values, but this 
 # is a subset of the total chemicals. Should probably run all statistics both
-# for all chemicals and just the subset to make sure that the QSARs aren't 
+# for all chemicals and just the subset to make sure that the QSPRs aren't 
 # affected by weird chemcials with no in vitro measured values. But I haven't 
 # done this yet.
 
@@ -951,15 +974,15 @@ length(unique(CvT.data$CAS)) # Number of chemicals with good fits
 Get rid of chemical predictions that are possibly just training set lookups:
 ```{r remove_training_chems, eval=TRUE}
 CvT.chems.notraining <- CvT.chems
-for (this.qsar in unique(possible.training.chems$QSAR))
+for (this.qspr in unique(possible.training.chems$QSPR))
 {
-  this.subset <- subset(possible.training.chems, QSAR==this.qsar)
+  this.subset <- subset(possible.training.chems, QSPR==this.qspr)
   for (this.id in this.subset$DTXSID)
   {
     CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
-      paste("Human.Clint",this.qsar,sep=".")]<-NA
+      paste("Human.Clint",this.qspr,sep=".")]<-NA
     CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
-      paste("Human.Fup",this.qsar,sep=".")]<-NA
+      paste("Human.Fup",this.qspr,sep=".")]<-NA
   }
 }
 dim(CvT.chems.notraining)
@@ -1203,7 +1226,7 @@ level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
 
 Assign average to missing predictions:
 ```{r smooth_missing, eval = TRUE}
-  QSARs <- unique(level2tab$QSAR)
+  QSPRs <- unique(level2tab$QSPR)
   for (this.chem in unique(level2tab$CAS))
   {
     this.subset1 <- subset(level2tab,CAS==this.chem)
@@ -1224,13 +1247,13 @@ Assign average to missing predictions:
               this.subset6 <- subset(this.subset5,Conc.obs==this.obs)
               # Omit the fits and y-randomization from the mean:
               mean.pred <- mean(subset(this.subset6,
-                !(QSAR %in% c("FitsToData","YRandom")))$Conc.pred,na.rm=TRUE)
-              for (this.QSAR in QSARs)
+                !(QSPR %in% c("FitsToData","YRandom")))$Conc.pred,na.rm=TRUE)
+              for (this.QSPR in QSPRs)
               {
-                if (!(this.QSAR %in% this.subset6$QSAR))
+                if (!(this.QSPR %in% this.subset6$QSPR))
                 {
                   this.row <- this.subset6[1,]
-                  this.row$QSAR <- this.QSAR
+                  this.row$QSPR <- this.QSPR
                   this.row$Conc.pred <- mean.pred
                   level2tab <- rbind(level2tab,this.row)
                 }
@@ -1338,52 +1361,52 @@ MRPE <- list()
 MRPE.early <- list()
 MRPE.late <- list()
 
-for (this.qsar in unique(level2tab$QSAR))
+for (this.qspr in unique(level2tab$QSPR))
 {
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-  AAFE[[this.qsar]] <- 10^(mean(level2tab$AbsFE[
-    level2tab$QSAR==this.qsar],na.rm=TRUE))
-  AAFE.early[[this.qsar]] <- 10^(mean(level2tab.early$AbsFE[
-    level2tab.early$QSAR==this.qsar],na.rm=TRUE))
-  AAFE.late[[this.qsar]] <- 10^(mean(level2tab.late$AbsFE[
-    level2tab.late$QSAR==this.qsar],na.rm=TRUE))
+  AAFE[[this.qspr]] <- 10^(mean(level2tab$AbsFE[
+    level2tab$QSPR==this.qspr],na.rm=TRUE))
+  AAFE.early[[this.qspr]] <- 10^(mean(level2tab.early$AbsFE[
+    level2tab.early$QSPR==this.qspr],na.rm=TRUE))
+  AAFE.late[[this.qspr]] <- 10^(mean(level2tab.late$AbsFE[
+    level2tab.late$QSPR==this.qspr],na.rm=TRUE))
 #RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
-  RMSLE[[this.qsar]] <- sqrt(mean((log10(level2tab$Conc.pred[
-    level2tab$QSAR==this.qsar] /
-    level2tab$Conc.obs[level2tab$QSAR==this.qsar]))^2,na.rm=TRUE))
-  RMSLE.early[[this.qsar]] <-sqrt(mean((log10(level2tab.early$Conc.pred[
-    level2tab.early$QSAR==this.qsar]/
-    level2tab.early$Conc.obs[level2tab.early$QSAR==this.qsar]))^2,na.rm=TRUE))
-  RMSLE.late[[this.qsar]] <-sqrt(mean((log10(level2tab.late$Conc.pred[
-    level2tab.late$QSAR==this.qsar]/
-    level2tab.late$Conc.obs[level2tab.late$QSAR==this.qsar]))^2,na.rm=TRUE))
-  MRPE[[this.qsar]] <- median(subset(level2tab,QSAR==this.qsar)$RPE)
-  MRPE.early[[this.qsar]] <- median(subset(level2tab.early,QSAR==this.qsar)$RPE)
-  MRPE.late[[this.qsar]] <- median(subset(level2tab.late,QSAR==this.qsar)$RPE)
+  RMSLE[[this.qspr]] <- sqrt(mean((log10(level2tab$Conc.pred[
+    level2tab$QSPR==this.qspr] /
+    level2tab$Conc.obs[level2tab$QSPR==this.qspr]))^2,na.rm=TRUE))
+  RMSLE.early[[this.qspr]] <-sqrt(mean((log10(level2tab.early$Conc.pred[
+    level2tab.early$QSPR==this.qspr]/
+    level2tab.early$Conc.obs[level2tab.early$QSPR==this.qspr]))^2,na.rm=TRUE))
+  RMSLE.late[[this.qspr]] <-sqrt(mean((log10(level2tab.late$Conc.pred[
+    level2tab.late$QSPR==this.qspr]/
+    level2tab.late$Conc.obs[level2tab.late$QSPR==this.qspr]))^2,na.rm=TRUE))
+  MRPE[[this.qspr]] <- median(subset(level2tab,QSPR==this.qspr)$RPE)
+  MRPE.early[[this.qspr]] <- median(subset(level2tab.early,QSPR==this.qspr)$RPE)
+  MRPE.late[[this.qspr]] <- median(subset(level2tab.late,QSPR==this.qspr)$RPE)
 }
 
 stats.table <- data.frame()
-for (this.qsar in names(RMSLE))
+for (this.qspr in names(RMSLE))
 {
-  stats.table["AAFE",this.qsar] <- round(AAFE[[this.qsar]],2)
-  stats.table["RMSLE",this.qsar] <- round(RMSLE[[this.qsar]],2)
-  stats.table["MRPE",this.qsar] <- round(MRPE[[this.qsar]],2)
-  stats.table["RMSLE.early",this.qsar] <- round(RMSLE.early[[this.qsar]],2)
-  stats.table["RMSLE.late",this.qsar] <- round(RMSLE.late[[this.qsar]],2)
-  stats.table["AAFE.early",this.qsar] <- round(AAFE.early[[this.qsar]],2)
-  stats.table["AAFE.late",this.qsar] <- round(AAFE.late[[this.qsar]],2)
-  stats.table["MRPE.early",this.qsar] <- round(MRPE.early[[this.qsar]],2)
-  stats.table["MRPE.late",this.qsar] <- round(MRPE.late[[this.qsar]],2)
+  stats.table["AAFE",this.qspr] <- round(AAFE[[this.qspr]],2)
+  stats.table["RMSLE",this.qspr] <- round(RMSLE[[this.qspr]],2)
+  stats.table["MRPE",this.qspr] <- round(MRPE[[this.qspr]],2)
+  stats.table["RMSLE.early",this.qspr] <- round(RMSLE.early[[this.qspr]],2)
+  stats.table["RMSLE.late",this.qspr] <- round(RMSLE.late[[this.qspr]],2)
+  stats.table["AAFE.early",this.qspr] <- round(AAFE.early[[this.qspr]],2)
+  stats.table["AAFE.late",this.qspr] <- round(AAFE.late[[this.qspr]],2)
+  stats.table["MRPE.early",this.qspr] <- round(MRPE.early[[this.qspr]],2)
+  stats.table["MRPE.late",this.qspr] <- round(MRPE.late[[this.qspr]],2)
 }
   
 
 AUC.stats.table <- NULL
-for (this.qsar in unique(level2tab.stats$QSAR))
+for (this.qspr in unique(level2tab.stats$QSPR))
 {
-  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
+  this.subset <- subset(level2tab.stats,QSPR==this.qspr)
   this.fit <- lm(data=this.subset,log10(AUC.obs)~log10(AUC.pred))
   this.row <- data.frame(
-    this.qsar,
+    this.qspr,
     R2=signif(summary(this.fit)$adj.r.squared,3),
     RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
     )
@@ -1391,12 +1414,12 @@ for (this.qsar in unique(level2tab.stats$QSAR))
 }
 
 Cmax.stats.table <- NULL
-for (this.qsar in unique(level2tab.stats$QSAR))
+for (this.qspr in unique(level2tab.stats$QSPR))
 {
-  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
+  this.subset <- subset(level2tab.stats,QSPR==this.qspr)
   this.fit <- lm(data=this.subset,log10(Cmax.obs)~log10(Cmax.pred))
   this.row <- data.frame(
-    this.qsar,
+    this.qspr,
     R2=signif(summary(this.fit)$adj.r.squared,3),
     RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
     )
@@ -1408,22 +1431,22 @@ for (this.qsar in unique(level2tab.stats$QSAR))
 Heatmap with Level 2 stats
 ```{r make_heatmap, eval = TRUE}
 CvT.chems.stats.heatmap <- CvT.chems.scale
-for (this.qsar in unique(level2tab.stats$QSAR))
+for (this.qspr in unique(level2tab.stats$QSPR))
 {
-  this.subset <- subset(level2tab.stats,QSAR==this.qsar)
-  print(paste(this.qsar,length(unique(this.subset$Compound))))
+  this.subset <- subset(level2tab.stats,QSPR==this.qspr)
+  print(paste(this.qspr,length(unique(this.subset$Compound))))
   for (this.chem in unique(this.subset$DTXSID))
   {
     this.subset2 <- subset(this.subset,DTXSID==this.chem)
     this.index <- tolower(CvT.chems.stats.heatmap$DTXSID)==tolower(this.chem)
-    CvT.chems.stats.heatmap[this.index,paste("AUC.RPE",this.qsar,sep=".")] <- 
+    CvT.chems.stats.heatmap[this.index,paste("AUC.RPE",this.qspr,sep=".")] <- 
       mean(this.subset2$AUC.RPE)
-    CvT.chems.stats.heatmap[this.index,paste("Cmax.RPE",this.qsar,sep=".")] <- 
+    CvT.chems.stats.heatmap[this.index,paste("Cmax.RPE",this.qspr,sep=".")] <- 
       mean(this.subset2$Cmax.RPE)
-    this.subset3 <- subset(level2tab, QSAR==this.qsar & DTXSID==this.chem)
-    CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qsar,sep=".")] <- 
+    this.subset3 <- subset(level2tab, QSPR==this.qspr & DTXSID==this.chem)
+    CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qspr,sep=".")] <- 
       mean(log10(this.subset3$Conc.obs/this.subset3$Conc.pred)^2)^(1/2)
-    if (is.na(CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qsar,sep=".")])) browser()
+    if (is.na(CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qspr,sep=".")])) browser()
   }
 }
 ```
@@ -1486,7 +1509,7 @@ heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
 #### add AAFE & RMSLE to the table
 texty <- 1
 xshift <- 0.1
-FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) + 
+FigLev2 <- ggplot(data=level2tab, aes(x=QSPR, y=RPE)) + 
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
@@ -1495,7 +1518,7 @@ FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) +
                outlier.shape = NA)+
  # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-    xlab("QSAR") +
+    xlab("QSPR") +
   ylab(bquote("Relative Error for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
@@ -1543,7 +1566,7 @@ ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4
 #### add AAFE & RMSLE to the table
 texty <- 1
 xshift <- 0.1
-FigLev2 <- ggplot(data=level2tab.early, aes(x=QSAR, y=RPE)) + 
+FigLev2 <- ggplot(data=level2tab.early, aes(x=QSPR, y=RPE)) + 
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
@@ -1552,7 +1575,7 @@ FigLev2 <- ggplot(data=level2tab.early, aes(x=QSAR, y=RPE)) +
                outlier.shape = NA)+
  # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-    xlab("QSAR") +
+    xlab("QSPR") +
   ylab(bquote("Relative Error for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
@@ -1600,7 +1623,7 @@ ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4
 #### add AAFE & RMSLE to the table
 texty <- 1
 xshift <- 0.1
-FigLev2 <- ggplot(data=level2tab.late, aes(x=QSAR, y=RPE)) + 
+FigLev2 <- ggplot(data=level2tab.late, aes(x=QSPR, y=RPE)) + 
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
@@ -1609,7 +1632,7 @@ FigLev2 <- ggplot(data=level2tab.late, aes(x=QSAR, y=RPE)) +
                outlier.shape = NA)+
  # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-    xlab("QSAR") +
+    xlab("QSPR") +
   ylab(bquote("Relative Error for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
@@ -1654,14 +1677,14 @@ ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4
 ```
 
 ```{r make_level2_auc_plot, eval = TRUE}
-FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSAR, y=AUC.RPE)) + 
+FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSPR, y=AUC.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
   geom_boxplot(outlier.colour="red",
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab("RPE for In Vivo CvTdb AUC")+
   scale_y_continuous(limits=c(-1.5,3)) +
 #  scale_y_log10(limits=c(10^-1,10),breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
@@ -1673,7 +1696,7 @@ print(FigLev2.auc)
 
 ```{r make_level2_auc_plot, eval = TRUE}
 FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
-  geom_point(size=2,aes(x=AUC.pred,y=AUC.obs,shape=QSAR,color=QSAR))+
+  geom_point(size=2,aes(x=AUC.pred,y=AUC.obs,shape=QSPR,color=QSPR))+
   scale_x_log10(breaks=c(10^-5,10^-2,10),label=scientific_10,limits=c(10^-7,3000)) +
   #scale_y_log10(label=scientific_10)+
   scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
@@ -1685,7 +1708,7 @@ FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
   xlab('Predicted AUC (mg/L*h)') +
   ylab('Observed AUC (mg/L*h)') +
   theme_bw()+
-  facet_grid(cols=vars(QSAR))+
+  facet_grid(cols=vars(QSPR))+
   scale_shape_manual(values = 0:10)+
   theme( text  = element_text(size=20),
          legend.position = "none",
@@ -1698,14 +1721,14 @@ print(AUC.stats.table)
 ```
 
 ```{r make_level2_auc_plot, eval = TRUE}
-FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSAR, y=AUC.RPE)) + 
+FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSPR, y=AUC.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
   geom_boxplot(outlier.colour="red",
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab("RPE for In Vivo CvTdb AUC")+
   scale_y_continuous(limits=c(-1.5,3)) +
 #  scale_y_log10(limits=c(10^-1,10),breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
@@ -1716,14 +1739,14 @@ print(FigLev2.auc)
 ```
 
 ```{r make_level2_cmax_plot, eval = TRUE}
-FigLev2.cmax <- ggplot(data=level2tab.stats, aes(x=QSAR, y=Cmax.RPE)) + 
+FigLev2.cmax <- ggplot(data=level2tab.stats, aes(x=QSPR, y=Cmax.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
   geom_boxplot(outlier.colour="red",
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab("RPE for In Vivo CvTdb Cmax")+
   scale_y_continuous(limits=c(-1.5,3)) +
  # scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
@@ -1733,14 +1756,14 @@ FigLev2.cmax <- ggplot(data=level2tab.stats, aes(x=QSAR, y=Cmax.RPE)) +
 print(FigLev2.cmax)  
 ```
 ```{r make_level2_plot, eval = TRUE}
-FigLev2 <- ggplot(data=level2tab, aes(x=QSAR, y=RPE)) + 
+FigLev2 <- ggplot(data=level2tab, aes(x=QSPR, y=RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
   geom_boxplot(outlier.colour="red",
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab("RPE for In Vivo CvT Data")+
  # scale_y_continuous(limits=c(-10,40)) +
  # scale_y_log10(limits=c(10-2,100),breaks=c(10^-1,1,3,10),label=scientific_10)+
@@ -1753,7 +1776,7 @@ print(FigLev2)
 
 ```{r make_level2_cmax_plot, eval = TRUE}
 FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
-  geom_point(size=2,aes(x=Cmax.pred,y=Cmax.obs,shape=QSAR,color=QSAR))+
+  geom_point(size=2,aes(x=Cmax.pred,y=Cmax.obs,shape=QSPR,color=QSPR))+
   scale_x_log10(breaks=c(10^-5,10^-2,10^1),label=scientific_10,limits=c(10^-7,3000)) +
   #scale_y_log10(label=scientific_10)+
   scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
@@ -1766,7 +1789,7 @@ FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
   ylab(bquote('Observed'~C[max]~'(mg/L)')) +
   scale_shape_manual(values = 0:10)+
   theme_bw()+
-  facet_grid(cols=vars(QSAR))+
+  facet_grid(cols=vars(QSPR))+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 8),
@@ -1780,23 +1803,23 @@ print(Cmax.stats.table)
 
 
 ```{r make_RMSE_bychem_analysis, eval = TRUE}
-qsarbychem.table <- NULL
-QSARs <- unique(level2tab$QSAR)
+qsprbychem.table <- NULL
+QSPRs <- unique(level2tab$QSPR)
 for (this.chemical in unique(level2tab$Compound))
 {
-  for (this.qsar in QSARs)
+  for (this.qspr in QSPRs)
   {
-    this.subset <- subset(level2tab,QSAR==this.qsar & Compound==this.chemical)
+    this.subset <- subset(level2tab,QSPR==this.qspr & Compound==this.chemical)
     this.row <- this.subset[1,c(1:3,13)]
     this.row$RMSLE <- sqrt(mean((log10(this.subset$Conc.pred/
       this.subset$Conc.obs))^2,na.rm=TRUE))
-    this.subset <- subset(level2tab.early,QSAR==this.qsar & Compound==this.chemical)
+    this.subset <- subset(level2tab.early,QSPR==this.qspr & Compound==this.chemical)
     this.row$RMSLE.early <- sqrt(mean((log10(this.subset$Conc.pred/
       this.subset$Conc.obs))^2,na.rm=TRUE))
-    this.subset <- subset(level2tab.late,QSAR==this.qsar & Compound==this.chemical)
+    this.subset <- subset(level2tab.late,QSPR==this.qspr & Compound==this.chemical)
     this.row$RMSLE.late <- sqrt(mean((log10(this.subset$Conc.pred/
       this.subset$Conc.obs))^2,na.rm=TRUE))
-    qsarbychem.table <- rbind(qsarbychem.table,this.row)
+    qsprbychem.table <- rbind(qsprbychem.table,this.row)
   }                    
 }
 ```
@@ -1805,7 +1828,7 @@ for (this.chemical in unique(level2tab$Compound))
 texty <- 2.5
 xshift <- 0.2
 these.stats <- c("RMSLE","AAFE")
-FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) + 
+FigLev2RMSE <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE)) + 
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
@@ -1814,7 +1837,7 @@ FigLev2RMSE <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE)) +
                outlier.shape = NA)+
  # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-    xlab("QSAR") +
+    xlab("QSPR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(
@@ -1862,7 +1885,7 @@ texty <- 2.5
 xshift <- 0.2
 these.stats <- c("RMSLE.early","AAFE.early")
 stat.labels <- c("RMSLE","AAFE")
-FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
+FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
    ggtitle("Early Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1872,7 +1895,7 @@ FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
                outlier.shape = NA)+
  # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-    xlab("QSAR") +
+    xlab("QSPR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(
@@ -1920,7 +1943,7 @@ texty <- 2.5
 xshift <- 0.2
 these.stats <- c("RMSLE.late","AAFE.late")
 stat.labels <- c("RMSLE","AAFE")
-FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
+FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
    ggtitle("Late Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1930,7 +1953,7 @@ FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
                outlier.shape = NA)+
  # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-    xlab("QSAR") +
+    xlab("QSPR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(
@@ -1986,8 +2009,8 @@ for (this.cas in unique(level2tab$CAS))
     for (this.time in unique(this.subset2$Time))
     {
       this.subset3 <- subset(this.subset2,Time==this.time)
-      this.subset3.invitro <- subset(this.subset3, QSAR=="HTTK-InVitro")
-      this.subset3.admet <- subset(this.subset3, QSAR=="HTTK-ADmet")
+      this.subset3.invitro <- subset(this.subset3, QSPR=="HTTK-InVitro")
+      this.subset3.admet <- subset(this.subset3, QSPR=="HTTK-ADmet")
       this.subset3 <- cbind(this.subset3.invitro,
         this.subset3.admet[,c("Conc.pred","RPE","AbsFE")])
       colnames(this.subset3)[16:18] <- paste(
@@ -2020,17 +2043,17 @@ plot(admet.better.data$Human.Clint.httk+10^-3,admet.better.data$Human.Clint.SPlu
 Need to do invivo vs invitro/insilco plots for AUC & Cmax
 Need heatmap of RMSE x chemical, can add phys-chem
 ```{r analyze_admet, eval = TRUE}
-qsarbychem.table2 <- dcast(qsarbychem.table,Compound~QSAR,value.var="RMSLE")
-chems <- qsarbychem.table2$Compound
-qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)[,1:7]
-rownames(qsarbychem.table2) <- chems
-colnames(qsarbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep","Y-Random")
-write.csv(signif(qsarbychem.table2,3),file="SupTable-RMSLEbyChem.txt")
+qsprbychem.table2 <- dcast(qsprbychem.table,Compound~QSPR,value.var="RMSLE")
+chems <- qsprbychem.table2$Compound
+qsprbychem.table2 <- apply(qsprbychem.table2[,2:(1+length(QSPRs))],2,as.numeric)[,1:7]
+rownames(qsprbychem.table2) <- chems
+colnames(qsprbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep","Y-Random")
+write.csv(signif(qsprbychem.table2,3),file="SupTable-RMSLEbyChem.txt")
 ```
 
 ```{r make_rmse_heatmap, eval = TRUE}
   mypalette<-brewer.pal(9,"PuRd")
-  heatmap.2(t(qsarbychem.table2),
+  heatmap.2(t(qsprbychem.table2),
  #   lwid=c(0.3,1),
 #    lhei=c(0.3,1),
     margins=c(10,8),
@@ -2041,12 +2064,12 @@ write.csv(signif(qsarbychem.table2,3),file="SupTable-RMSLEbyChem.txt")
     col=mypalette)
 ```
 ```{r model_admet_difference, eval = TRUE}
-for (this.chem in unique(rownames(qsarbychem.table2)))
+for (this.chem in unique(rownames(qsprbychem.table2)))
 {
   DTXSID <- level2tab[level2tab$Compound==this.chem,"DTXSID"][1]
   CvT.chems.nona[CvT.chems.nona$DTXSID == DTXSID, "ADMetDiff"] <-
-    qsarbychem.table2[this.chem,"ADmet"] - 
-    qsarbychem.table2[this.chem,"InVitro"]
+    qsprbychem.table2[this.chem,"ADmet"] - 
+    qsprbychem.table2[this.chem,"InVitro"]
 }
 thresh <- 0.2
 admetdiff <- subset(CvT.chems.nona,!is.na(ADMetDiff))
@@ -2145,7 +2168,7 @@ plot(dat[,2],dat[,13])
 # Not sure if we can reasonably show all the predictions vs. the observations.
 # Maybe one plot per model?
 # FigLev2a <- ggplot(data=level2tab) +
-#  geom_point(size=3,alpha=0.01,aes(x=Conc.pred.trunc,y=Conc.obs.trunc,shape=QSAR,color=QSAR))+
+#  geom_point(size=3,alpha=0.01,aes(x=Conc.pred.trunc,y=Conc.obs.trunc,shape=QSPR,color=QSPR))+
 #  scale_x_log10(label=scientific_10) +
 #  scale_y_log10(label=scientific_10)+
 #    geom_abline(intercept = 0, slope = 1,linetype="dashed", colour="Blue") +
@@ -2156,7 +2179,7 @@ plot(dat[,2],dat[,13])
 # print(FigLev2a)
 
 ```{r make_pred_vs_obs_plots, eval = TRUE}
-FigLev2a <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-InVitro",]) +
+FigLev2a <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-InVitro",]) +
  geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
@@ -2173,7 +2196,7 @@ FigLev2a <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-InVitro",]) +
 #print(FigLev2a)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKInVitro",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
-FigLev2b <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-ADmet",]) +
+FigLev2b <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-ADmet",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
   scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
   scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
@@ -2190,7 +2213,7 @@ FigLev2b <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-ADmet",]) +
 #print(FigLev2b)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKADmet",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
-FigLev2c <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Pradeep",]) +
+FigLev2c <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Pradeep",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
   scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
   scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
@@ -2211,7 +2234,7 @@ FigLev2c <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Pradeep",]) +
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeep",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
 
-FigLev2d <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Dawson",]) +
+FigLev2d <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Dawson",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
   scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
   scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
@@ -2228,7 +2251,7 @@ FigLev2d <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-Dawson",]) +
 #print(FigLev2d)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKDawson",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
-FigLev2e <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-OPERA" ,]) +
+FigLev2e <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-OPERA" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
   scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
   scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
@@ -2245,7 +2268,7 @@ FigLev2e <- ggplot(data=level2tab[level2tab$QSAR=="HTTK-OPERA" ,]) +
 #print(FigLev2e)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKOPERA",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
-FigLev2f <- ggplot(data=level2tab[level2tab$QSAR=="FitsToData" ,]) +
+FigLev2f <- ggplot(data=level2tab[level2tab$QSPR=="FitsToData" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
   scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
   scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
@@ -2269,7 +2292,7 @@ grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, nrow = 
 # vs. estimates from CvT data (invivoPKfit)
 # 
 # Jon Arnot provide two models that directly predicted half-life. All the other
-# QSAR values were used with HTTK to predict half-life and Vd. Hopefully we
+# QSPR values were used with HTTK to predict half-life and Vd. Hopefully we
 # can also have Admet predict these values.
 #
 # As with level II, we can only compare the HTTK+in vitro measured preditions
@@ -2284,7 +2307,7 @@ grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, nrow = 
 # We have values for 83/100 chemicals. As with level II, when we make predictions
 
 # Jon Arnot:
-#We suggest using the QSARs for HUMAN total elimination half-life (HLT; hours) 
+#We suggest using the QSPRs for HUMAN total elimination half-life (HLT; hours) 
 #as these are most relevant to the rodent time course data (half-lives/clearance)
 # half-life (HLB; hours) predictions for possible comparisons. For each 
 # prediction Alessandro has reported an indication of the AD (i.e. "OK" or 
@@ -2294,30 +2317,30 @@ grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, nrow = 
 #I have scaled the half-lives from 70 kg bw (assumed humans) to 0.25 kg bw for 
 #typical rat body weight using a  bw allometric scaling factor.
 #
-#The human half-life QSARs are detailed in these publications:
+#The human half-life QSPRs are detailed in these publications:
 #
-#1.	IFS-QSAR Human HLB and HLT predictions:
+#1.	IFS-QSPR Human HLB and HLT predictions:
 #Arnot, J. A.; Brown, T. N.; Wania, F., Estimating screening-level organic 
 #chemical half-lives in humans. Environ. Sci. Technol. 2014, 48, 723-730.
-#2.	QSARINS Human HLB and HLT predictions:
+#2.	QSPRINS Human HLB and HLT predictions:
 #Papa, E.; Sangion, A.; Arnot, J. A.; Gramatica, P., Development of human 
-#biotransformation QSARs and application for PBT assessment refinement. Food 
+#biotransformation QSPRs and application for PBT assessment refinement. Food 
 #Chem. Toxicol. 2018, 112, 535-543.
 #
-#We have also included Biotransformation HL in fish (hours) by QSARINS, IFS and 
+#We have also included Biotransformation HL in fish (hours) by QSPRINS, IFS and 
 #EPI suite models as well as that were used in the 
 #training/testing sets. I don''t think they are as comparable to rodent data as 
 #the human predictions, but they were developed with different training sets 
 #(and for fish, not mammals!).
 ```{r level3_load_arnot, eval = TRUE}
-level3.arnot <- read_excel("TK_QSAR_evaluation_set_HumanQSARHLPredictions.xlsx")
+level3.arnot <- read_excel("TK_QSPR_evaluation_set_HumanQSPRHLPredictions.xlsx")
 level3.arnot <- subset(level3.arnot,administration_route_normalized=="iv")
 level3tab.arnot1 <- level3tab.opera
 level3tab.arnot1$Vd.pred <- NA
 level3tab.arnot1$thalf.pred <- NA
 level3tab.arnot2 <- level3tab.arnot1
-level3tab.arnot1$QSAR <- "QSARINS"
-level3tab.arnot2$QSAR <- "IFS-QSAR"
+level3tab.arnot1$QSPR <- "QSPRINS"
+level3tab.arnot2$QSPR <- "IFS-QSPR"
 for (this.dtxsid in level3.arnot$test_substance_dtxsid)
   if (this.dtxsid %in% level3tab.arnot1$DTXSID)
 {
@@ -2377,12 +2400,12 @@ print(Cmax.stats.table)
 print(AUC.stats.table)
 
 halflife.stats.table <- NULL
-for (this.qsar in unique(level3tab$QSAR))
+for (this.qspr in unique(level3tab$QSPR))
 {
-  this.subset <- subset(level3tab,QSAR==this.qsar)
+  this.subset <- subset(level3tab,QSPR==this.qspr)
   this.fit <- lm(data=this.subset,log10(thalf.obs)~log10(thalf.pred))
   this.row <- data.frame(
-    this.qsar,
+    this.qspr,
     R2=signif(summary(this.fit)$adj.r.squared,3),
     RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
     )
@@ -2391,15 +2414,15 @@ for (this.qsar in unique(level3tab$QSAR))
 print(halflife.stats.table)
 
 vd.stats.table <- NULL
-for (this.qsar in unique(level3tab$QSAR))
-if (!(this.qsar %in% c("IFS-QSAR","QSARINS")))
+for (this.qspr in unique(level3tab$QSPR))
+if (!(this.qspr %in% c("IFS-QSPR","QSPRINS")))
 {
-  this.subset <- subset(level3tab,QSAR==this.qsar&!is.na(Vd.obs)&!is.na(Vd.pred))
+  this.subset <- subset(level3tab,QSPR==this.qspr&!is.na(Vd.obs)&!is.na(Vd.pred))
   if (any(!is.na(this.subset$Vd.pred)))
   {
     this.fit <- lm(data=this.subset,log10(Vd.obs)~log10(Vd.pred))
     this.row <- data.frame(
-      this.qsar,
+      this.qspr,
       R2=signif(summary(this.fit)$adj.r.squared,3),
       RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
      )
@@ -2410,14 +2433,14 @@ print(vd.stats.table)
 
 
 cl.stats.table <- NULL
-for (this.qsar in unique(level3tab$QSAR))
+for (this.qspr in unique(level3tab$QSPR))
 {
-  this.subset <- subset(level3tab,QSAR==this.qsar&!is.na(Vd.obs)&!is.na(Vd.pred))
+  this.subset <- subset(level3tab,QSPR==this.qspr&!is.na(Vd.obs)&!is.na(Vd.pred))
   if (any(!is.na(this.subset$Vd.pred)))
   {
     this.fit <- lm(data=this.subset,log10(Cl.obs)~log10(Cl.pred))
     this.row <- data.frame(
-      this.qsar,
+      this.qspr,
       R2=signif(summary(this.fit)$adj.r.squared,3),
       RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
      )
@@ -2430,7 +2453,7 @@ print(cl.stats.table)
 ```{r make_level3_halflife_scatter_plot, eval = TRUE}
 
 FigLev3a <- ggplot(data=level3tab) +
-  geom_point(size=3,aes(x=thalf.pred,y=thalf.obs,shape=QSAR,color=QSAR))+
+  geom_point(size=3,aes(x=thalf.pred,y=thalf.obs,shape=QSPR,color=QSPR))+
   scale_x_log10(label=scientific_10)+
   scale_y_log10(label=scientific_10)+
   scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
@@ -2441,7 +2464,7 @@ FigLev3a <- ggplot(data=level3tab) +
   ylab(bquote('Observed'~t[half]~"(h)")) +
   scale_shape_manual(values = 0:10)+
   theme_bw()+
-  facet_grid(cols=vars(QSAR))+
+  facet_grid(cols=vars(QSPR))+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 8),
@@ -2453,14 +2476,14 @@ print(FigLev3a)
 
 ```{r make_level3_halflife_box_plot, eval = TRUE}
 
-FigLev3b <- ggplot(data=level3tab, aes(x=QSAR, y=thalf.RPE)) + 
+FigLev3b <- ggplot(data=level3tab, aes(x=QSPR, y=thalf.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
   geom_boxplot(outlier.colour="red",
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab(bquote('RPE in '~t[half]~"(h)")) +
   scale_y_continuous(limits=c(-2,6)) +
 #  scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
@@ -2471,8 +2494,8 @@ print(FigLev3b)
 
 ```
 ```{r make_level3_vd_scatter_plot, eval = TRUE}
-FigLev3c <- ggplot(data=subset(level3tab,!(QSAR %in% c("IFS-QSAR","QSARINS")))) +
-  geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,shape=QSAR,color=QSAR))+
+FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS")))) +
+  geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,shape=QSPR,color=QSPR))+
   scale_x_log10(label=scientific_10)+
   scale_y_log10(label=scientific_10)+
   scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
@@ -2483,7 +2506,7 @@ FigLev3c <- ggplot(data=subset(level3tab,!(QSAR %in% c("IFS-QSAR","QSARINS")))) 
   ylab(bquote('Observed'~V[d]~"(L/kg BW)")) +
   scale_shape_manual(values = 0:10)+
   theme_bw()+
-  facet_grid(cols=vars(QSAR))+
+  facet_grid(cols=vars(QSPR))+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 10),
@@ -2494,15 +2517,15 @@ print(FigLev3c)
 ```
 ```{r make_level3_vd_box_plot, eval = TRUE}
 
-FigLev3d <- ggplot(data=subset(level3tab,!(QSAR %in% c("IFS-QSAR","QSARINS"))), 
-  aes(x=QSAR, y=Vd.RPE)) + 
+FigLev3d <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS"))), 
+  aes(x=QSPR, y=Vd.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
   geom_boxplot(outlier.colour="red",
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab(bquote('RPE in '~V[d]~"(L/kg BW)")) +
   scale_y_continuous(limits=c(-1.2,1)) +
 #  scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
@@ -2513,7 +2536,7 @@ print(FigLev3d)
 ```                 
 ```{r make_level3_cl_scatter_plot, eval = TRUE}
 FigLev3e <- ggplot(data=level3tab) +
-  geom_point(size=3,aes(x=Cl.pred,y=Cl.obs,shape=QSAR,color=QSAR))+
+  geom_point(size=3,aes(x=Cl.pred,y=Cl.obs,shape=QSPR,color=QSPR))+
   scale_x_log10(label=scientific_10)+
   scale_y_log10(label=scientific_10)+
   scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
@@ -2524,7 +2547,7 @@ FigLev3e <- ggplot(data=level3tab) +
   ylab(bquote('Observed'~Cl[tot]~"(L/h/kg BW)")) +
   scale_shape_manual(values = 0:10)+
   theme_bw()+
-  facet_grid(cols=vars(QSAR))+
+  facet_grid(cols=vars(QSPR))+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 8),
@@ -2536,14 +2559,14 @@ print(FigLev3e)
 ```{r make_level3_cl_box_plot, eval = TRUE}
 
 FigLev3f <- ggplot(data=level3tab, 
-  aes(x=QSAR, y=Vd.RPE)) + 
+  aes(x=QSPR, y=Vd.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
   geom_boxplot(outlier.colour="red",
     outlier.size=2,
     outlier.alpha=0.1)+
-  xlab("QSAR") +
+  xlab("QSPR") +
   ylab(bquote('RPE in'~Cl[tot]~"(L/h/kg BW)")) +
   scale_y_continuous(limits=c(-1.2,1)) +
 #  scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
