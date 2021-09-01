@@ -428,6 +428,13 @@ for (this.row in 1:dim(level1tab)[1])
     }
   }
 }
+
+for (this.col in colnames(possible.training.chems))
+  if (is.numeric(possible.training.chems[1,this.col]))
+    possible.training.chems[,this.col] <- 
+  signif(possible.training.chems[,this.col],3)
+write.csv(possible.training.chems,row.names=FALSE,
+          file="SupTable-PossibleTrainingChems.txt")
 ```
 
 Calculate RPE:     
