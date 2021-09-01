@@ -89,6 +89,8 @@ CvT.chems <- unique(CvT.data$DTXSID)
 CvT.data[,"Dose"] <- as.numeric(CvT.data[,"Dose"])
 
 CvT.data <- subset(CvT.data,Time>0)
+
+write.csv(CvT.data,row.names=FALSE,file="SupTable-CvTData.txt")
 ```
 Calculate a limit of quantification (90% of lowest observation)
 ```{r calc_loq, eval = TRUE}
@@ -269,20 +271,13 @@ Master Table:
 for (this.col in 12:21) 
 {
   CvT.chems[,this.col] <- as.numeric(CvT.chems[,this.col])
-  # Make the "zeros" log-transformable:
-  for (this.row in 1:dim(CvT.chems)[1])
-  {
-    if (!is.na(CvT.chems[this.row,this.col]))
-    {
-      if (CvT.chems[this.row,this.col]==0)
-      {
-        
-      }
-    }
-  }
 }
 
-
+sup.table <- CvT.chems
+for (this.col in 1:dim(sup.table)[2])
+  if (is.numeric(sup.table[1,this.col]))
+    sup.table[,this.col] <- signif(sup.table[,this.col],3)
+write.csv(sup.table, row.names=FALSE,file="SupTable-QSPRPredsandInVitroData.txt")
 ```
 
 Heatmap of the Data Set:
@@ -2023,7 +2018,7 @@ chems <- qsarbychem.table2$Compound
 qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)[,1:7]
 rownames(qsarbychem.table2) <- chems
 colnames(qsarbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep","Y-Random")
-write.csv(qsarbychem.table2,row.names=FALSE,file="SupTable-RMSLEbyChem.txt")
+write.csv(signif(qsarbychem.table2,3),file="SupTable-RMSLEbyChem.txt")
 ```
 
 ```{r make_rmse_heatmap, eval = TRUE}
@@ -2550,3 +2545,14 @@ FigLev3f <- ggplot(data=level3tab,
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev3f)  
 ``` 
+
+```{r make_level3_sup_table, eval=TRUE}
+lev3suptable <- level3tab
+for (this.col in 1:dim(lev3suptable)[2])
+  if (is.numeric(lev3suptable[1,this.col]))
+    lev3suptable[,this.col] <- signif(lev3suptable[,this.col],3)
+  
+write.csv(lev3suptable,row.names=FALSE,file="SupTable-Level3.txt")
+
+```
+
