@@ -880,6 +880,8 @@ for (this.col in c("AIC.1comp","AIC.2comp","Vdist","kelim","halflife"))
 
 # We have parameters estimated for 86 chemicals:
 dim(fittable)[1]
+
+write.csv(fittable,file="SupTable-TKFits.txt",row.names=FALSE)
 ```
 There are ten chemicals where only opera could make predictions:
 ```{r separate_out_opera_only, eval=TRUE}
@@ -1368,7 +1370,7 @@ AUC.stats.table <- NULL
 for (this.qsar in unique(level2tab.stats$QSAR))
 {
   this.subset <- subset(level2tab.stats,QSAR==this.qsar)
-  this.fit <- lm(data=this.subset,AUC.obs~AUC.pred)
+  this.fit <- lm(data=this.subset,log10(AUC.obs)~log10(AUC.pred))
   this.row <- data.frame(
     this.qsar,
     R2=signif(summary(this.fit)$adj.r.squared,3),
@@ -1381,7 +1383,7 @@ Cmax.stats.table <- NULL
 for (this.qsar in unique(level2tab.stats$QSAR))
 {
   this.subset <- subset(level2tab.stats,QSAR==this.qsar)
-  this.fit <- lm(data=this.subset,Cmax.obs~Cmax.pred)
+  this.fit <- lm(data=this.subset,log10(Cmax.obs)~log10(Cmax.pred))
   this.row <- data.frame(
     this.qsar,
     R2=signif(summary(this.fit)$adj.r.squared,3),
@@ -1676,7 +1678,7 @@ FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
   scale_shape_manual(values = 0:10)+
   theme( text  = element_text(size=20),
          legend.position = "none",
-         strip.text.x = element_text(size = 10),
+         strip.text.x = element_text(size = 8),
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=10))
 
@@ -1756,7 +1758,7 @@ FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
   facet_grid(cols=vars(QSAR))+
   theme( text  = element_text(size=20),
          legend.position = "none",
-         strip.text.x = element_text(size = 10),
+         strip.text.x = element_text(size = 8),
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=10))
 
@@ -1848,6 +1850,7 @@ print(FigLev2RMSE)
 texty <- 2.5
 xshift <- 0.2
 these.stats <- c("RMSLE.early","AAFE.early")
+stat.labels <- c("RMSLE","AAFE")
 FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
    ggtitle("Early Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
@@ -1862,7 +1865,7 @@ FigLev2RMSE.early <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.early)) +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(
-    tableGrob(these.stats, theme = ttheme_minimal(base_size = 12)),
+    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
     tableGrob(stats.table[these.stats,"FitsToData"],
@@ -1905,6 +1908,7 @@ print(FigLev2RMSE.early)
 texty <- 2.5
 xshift <- 0.2
 these.stats <- c("RMSLE.late","AAFE.late")
+stat.labels <- c("RMSLE","AAFE")
 FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
    ggtitle("Late Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
@@ -1919,7 +1923,7 @@ FigLev2RMSE.late <- ggplot(data=qsarbychem.table, aes(x=QSAR, y=RMSLE.late)) +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(
-    tableGrob(these.stats, theme = ttheme_minimal(base_size = 12)),
+    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
     tableGrob(stats.table[these.stats,"FitsToData"],
@@ -2007,9 +2011,9 @@ Need heatmap of RMSE x chemical, can add phys-chem
 ```{r analyze_admet, eval = TRUE}
 qsarbychem.table2 <- dcast(qsarbychem.table,Compound~QSAR,value.var="RMSLE")
 chems <- qsarbychem.table2$Compound
-qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)[,1:6]
+qsarbychem.table2 <- apply(qsarbychem.table2[,2:(1+length(QSARs))],2,as.numeric)[,1:7]
 rownames(qsarbychem.table2) <- chems
-colnames(qsarbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep")
+colnames(qsarbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep","Y-Random")
 ```
 
 ```{r make_rmse_heatmap, eval = TRUE}
@@ -2315,7 +2319,20 @@ for (this.dtxsid in level3.arnot$test_substance_dtxsid)
   level3tab.arnot2[level3tab.arnot1$DTXSID==this.dtxsid,"thalf.pred"]  <- 
     as.numeric(level3.arnot[level3.arnot$test_substance_dtxsid==this.dtxsid,
     "IFS_Hum_HLT_Hour"]) 
+  }
+
+# Pull in some Vd's so we can calculated clearance:
+for (this.chem in level3tab.arnot1$DTXSID)
+{
+  level3tab.arnot1[level3tab.arnot1$DTXSID==this.chem,"Vd.pred"] <- 
+    level3tab.invitro[level3tab.invitro$DTXSID==this.chem,"Vd.pred"]
 }
+for (this.chem in level3tab.arnot2$DTXSID)
+{
+  level3tab.arnot2[level3tab.arnot2$DTXSID==this.chem,"Vd.pred"] <- 
+    level3tab.invitro[level3tab.invitro$DTXSID==this.chem,"Vd.pred"]
+}
+
 ```
 ```{r prep_level3, eval = TRUE}
 level3tab <- rbind(
@@ -2344,6 +2361,13 @@ level3tab$thalf.RPE <-
   (level3tab$thalf.pred - level3tab$thalf.obs)/level3tab$thalf.obs
 level3tab$Vd.RPE <- (level3tab$Vd.pred - level3tab$Vd.obs)/level3tab$Vd.obs
 
+level3tab$Cl.obs <- level3tab$Vd.obs * log(2) / level3tab$thalf.obs
+level3tab$Cl.pred <- level3tab$Vd.pred * log(2) / level3tab$thalf.pred
+level3tab$Cl.RPE <- (level3tab$Cl.pred - level3tab$Cl.obs)/level3tab$Cl.obs
+
+print(Cmax.stats.table)
+print(AUC.stats.table)
+
 halflife.stats.table <- NULL
 for (this.qsar in unique(level3tab$QSAR))
 {
@@ -2360,6 +2384,7 @@ print(halflife.stats.table)
 
 vd.stats.table <- NULL
 for (this.qsar in unique(level3tab$QSAR))
+if (!(this.qsar %in% c("IFS-QSAR","QSARINS")))
 {
   this.subset <- subset(level3tab,QSAR==this.qsar&!is.na(Vd.obs)&!is.na(Vd.pred))
   if (any(!is.na(this.subset$Vd.pred)))
@@ -2374,6 +2399,24 @@ for (this.qsar in unique(level3tab$QSAR))
   }
 }
 print(vd.stats.table)
+
+
+cl.stats.table <- NULL
+for (this.qsar in unique(level3tab$QSAR))
+{
+  this.subset <- subset(level3tab,QSAR==this.qsar&!is.na(Vd.obs)&!is.na(Vd.pred))
+  if (any(!is.na(this.subset$Vd.pred)))
+  {
+    this.fit <- lm(data=this.subset,log10(Cl.obs)~log10(Cl.pred))
+    this.row <- data.frame(
+      this.qsar,
+      R2=signif(summary(this.fit)$adj.r.squared,3),
+      RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+     )
+    cl.stats.table <- rbind(cl.stats.table,this.row)
+  }
+}
+print(cl.stats.table)
 ```
 # Half-life scatter plot:
 ```{r make_level3_halflife_scatter_plot, eval = TRUE}
@@ -2460,4 +2503,44 @@ FigLev3d <- ggplot(data=subset(level3tab,!(QSAR %in% c("IFS-QSAR","QSARINS"))),
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev3d)  
 ```                 
-                
+```{r make_level3_cl_scatter_plot, eval = TRUE}
+FigLev3e <- ggplot(data=level3tab) +
+  geom_point(size=3,aes(x=Cl.pred,y=Cl.obs,shape=QSAR,color=QSAR))+
+  scale_x_log10(label=scientific_10)+
+  scale_y_log10(label=scientific_10)+
+  scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
+  geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
+  geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
+  xlab(bquote('Predicted'~Cl[tot]~"(L/h/kg BW)")) +
+  ylab(bquote('Observed'~Cl[tot]~"(L/h/kg BW)")) +
+  scale_shape_manual(values = 0:10)+
+  theme_bw()+
+  facet_grid(cols=vars(QSAR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         strip.text.x = element_text(size = 8),
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=10))
+print(FigLev3e)
+
+```
+```{r make_level3_cl_box_plot, eval = TRUE}
+
+FigLev3f <- ggplot(data=level3tab, 
+  aes(x=QSAR, y=Vd.RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSAR") +
+  ylab(bquote('RPE in'~Cl[tot]~"(L/h/kg BW)")) +
+  scale_y_continuous(limits=c(-1.2,1)) +
+#  scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=19))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+print(FigLev3f)  
+``` 
