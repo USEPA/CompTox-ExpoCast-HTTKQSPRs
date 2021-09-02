@@ -155,11 +155,17 @@ httk.data <- httk.data[,c(
 # Set insignificant trends to zero:
 httk.data[httk.data$Human.Clint.pvalue < 0.05,"Human.Clint"] <- 0
 colnames(httk.data)  
+
 # Use medians from distributions:
 httk.data$Human.Clint <- unlist(lapply(strsplit(httk.data$Human.Clint,","),function(x) as.numeric(x[1])))
+
+# Make sure everything is numeric:
 httk.data$Human.Funbound.plasma <- 
   unlist(lapply(strsplit(httk.data$Human.Funbound.plasma,","),
   function(x) as.numeric(x[1])))
+
+# Treat fup = 0 as non-measurment:
+httk.data[httk.data$Human.Fup == 0,"Human.Fup"] <- NA
 ```
 
 Add HTTK measured data to CvT.chems table:
@@ -1030,6 +1036,30 @@ dim(CvT.data)
 CvT.data <- subset(CvT.data,CAS%in%CvT.chems.nobad$CASRN)
 dim(CvT.data)
 ```
+
+```{r create_consensus_preds, eval=TRUE}
+clint.cols <- colnames(CvT.chems.nobad)[
+  regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
+CvT.chems.nobad$Human.Clint.Consensus <- apply(
+  CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE))
+
+logit <- function(x)
+{
+  return(sapply(x, function(x) log(x/(1-x))))
+}
+invlogit <- function(x)
+{
+  return(sapply(x, function(x) exp(x)/(exp(x)+1)))
+}
+
+
+fup.cols <- colnames(CvT.chems.nobad)[
+  regexpr("Fup",colnames(CvT.chems.nobad))!=-1]
+CvT.chems.nobad$Human.Fup.Consensus <- apply(
+  CvT.chems.nobad[,fup.cols],1,function(x) invlogit(mean(sapply(x, function(y) logit(min(max(y,1e-8),(1-1e-8)))),na.rm=TRUE)))
+```
+
+
 Make a version of the prediction matrix where we've smoothed out missing data:
 ```{r remove_missing_predictions, eval = TRUE}
 CvT.chems.nona <- CvT.chems.nobad
