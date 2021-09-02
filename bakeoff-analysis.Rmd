@@ -165,7 +165,8 @@ httk.data$Human.Funbound.plasma <-
   function(x) as.numeric(x[1])))
 
 # Treat fup = 0 as non-measurment:
-httk.data[httk.data$Human.Fup == 0,"Human.Fup"] <- NA
+httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma == 0] <- NA
+httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma==0.005] <- NA
 ```
 
 Add HTTK measured data to CvT.chems table:
@@ -198,12 +199,12 @@ OPERA (in prep.?)
 Get the in vitro measured values:
 In Vitro Measured:
 ```{r add_invitro, eval = TRUE}
-reset_httk()
-invitro <- subset(get_cheminfo(info="all"),DTXSID %in% CvT.chems$DTXSID)
-invitro$Human.Clint <- sapply(invitro$Human.Clint,function(x) signif(as.numeric(strsplit(x,",")[[1]][[1]]),4))
-invitro$Human.Funbound.plasma[invitro$Human.Funbound.plasma==0.005] <- NA
-invitro$Human.Funbound.plasma <- sapply(invitro$Human.Funbound.plasma,function(x) signif(as.numeric(strsplit(x,",")[[1]][[1]]),4))
-paste(dim(invitro)[1],"chemicals with in vitro measured data")
+invitro <- httk.data
+
+print(paste("Evaluation data for Clint for",
+      sum(sapply(invitro$Human.Clint,function(x) !is.na(x))),
+      "chemicals and Fup for",
+      sum(sapply(invitro$Human.Funbound.plasma,function(x) !is.na(x)))))
 
 ```
 
@@ -1040,9 +1041,10 @@ dim(CvT.data)
 ```{r create_consensus_preds, eval=TRUE}
 clint.cols <- colnames(CvT.chems.nobad)[
   regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
-CvT.chems.nobad$Human.Clint.Consensus <- apply(
+CvT.chems.nobad$Human.Clint.Max<- apply(
   CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE))
-
+CvT.chems.nobad$Human.Clint.Mean<- apply(
+  CvT.chems.nobad[,clint.cols],1,function(x) mean(x,na.rm=TRUE))
 logit <- function(x)
 {
   return(sapply(x, function(x) log(x/(1-x))))
@@ -1055,7 +1057,7 @@ invlogit <- function(x)
 
 fup.cols <- colnames(CvT.chems.nobad)[
   regexpr("Fup",colnames(CvT.chems.nobad))!=-1]
-CvT.chems.nobad$Human.Fup.Consensus <- apply(
+CvT.chems.nobad$Human.Fup.Mean <- apply(
   CvT.chems.nobad[,fup.cols],1,function(x) invlogit(mean(sapply(x, function(y) logit(min(max(y,1e-8),(1-1e-8)))),na.rm=TRUE)))
 ```
 
@@ -1063,8 +1065,7 @@ CvT.chems.nobad$Human.Fup.Consensus <- apply(
 Make a version of the prediction matrix where we've smoothed out missing data:
 ```{r remove_missing_predictions, eval = TRUE}
 CvT.chems.nona <- CvT.chems.nobad
-clint.cols <- c(12,14,16,18,20)
-fup.cols <- c(13,15,17,19,21)
+
 # Can't run PBTK for fup=0
 for (this.col in fup.cols)
   CvT.chems.nona[is.na(CvT.chems.nona[,this.col]),this.col]<-0
@@ -1081,10 +1082,10 @@ for (this.chem in CvT.chems.nona$DTXSID)
     CvT.chems.nona <- subset(CvT.chems.nona,DTXSID!=this.chem)
   } else if (any(is.na(CvT.chems.nona[this.row,clint.cols])))
   {
-    this.mean <- mean(as.numeric(CvT.chems.nona[this.row,clint.cols]),na.rm=T)
     for (this.col in clint.cols)
       if (is.na(CvT.chems.nona[this.row,this.col])) 
-        CvT.chems.nona[this.row,this.col] <- this.mean
+        CvT.chems.nona[this.row,this.col] <- 
+          CvT.chems.nona[this.row,"Human.Clint.Mean"] 
   }
 # Check fups:
   if (all(is.na(CvT.chems.nona[this.row,fup.cols])))
@@ -1093,11 +1094,11 @@ for (this.chem in CvT.chems.nona$DTXSID)
   } else if (any(is.na(CvT.chems.nona[this.row,fup.cols])) |
       any(sapply(CvT.chems.nona[this.row,fup.cols],is.nan)))
   {
-    this.mean <- mean(as.numeric(CvT.chems.nona[this.row,fup.cols]),na.rm=T)
     for (this.col in fup.cols)
       if (is.na(CvT.chems.nona[this.row,this.col]) |
           is.nan(CvT.chems.nona[this.row,this.col])) 
-        CvT.chems.nona[this.row,this.col] <- this.mean
+        CvT.chems.nona[this.row,this.col] <- 
+          CvT.chems.nona[this.row,"Human.Fup.Mean"]
   }
 }
 ```
@@ -1226,6 +1227,29 @@ level2tab.opera.stats <- level2tab.opera.list$stats
 level3tab.opera <- maketkstatpreds(CvT.data,fittable,"HTTK-OPERA")
 ```
 
+# Add consensus predictions:
+```{r cvt_compare_consensus, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.Mean",
+    Clint="Human.Clint.Max"),
+  species="Human",
+  reference="Consensus",
+  overwrite=T)
+print(paste("Consensus parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
+level2tab.yrandom.list <- makeCvTpreds(CvT.data,"HTTK-Consensus")
+level2tab.yrandom <- level2tab.yrandom.list$cvt
+level2tab.yrandom.stats <- level2tab.yrandom.list$stats
+level3tab.yrandom <- maketkstatpreds(CvT.data,fittable,"HTTK-Consensus")
+```
+
 # Add y-random predictions:
 ```{r cvt_compare_yrandom, eval = TRUE}
 clear_httk()
@@ -1270,7 +1294,8 @@ level2tab <- rbind(
   level2tab.pradeep,
   level2tab.opera,
   level2tab.fits,
-  level2tab.yrandom)
+  level2tab.yrandom,
+  level2tab.consensus)
 level2tab <- subset(level2tab,!duplicated(level2tab))
 
 level2tab.stats <- rbind(
@@ -1280,7 +1305,8 @@ level2tab.stats <- rbind(
   level2tab.pradeep.stats,
   level2tab.opera.stats,
   level2tab.fits.stats,
-  level2tab.yrandom.stats)
+  level2tab.yrandom.stats,
+  level2tab.consensus.stats)
 level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
 # Occasionally we can't calculate AUC, get rid of these data:
 level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
@@ -1309,7 +1335,8 @@ Assign average to missing predictions:
               this.subset6 <- subset(this.subset5,Conc.obs==this.obs)
               # Omit the fits and y-randomization from the mean:
               mean.pred <- mean(subset(this.subset6,
-                !(QSPR %in% c("FitsToData","YRandom")))$Conc.pred,na.rm=TRUE)
+                !(QSPR %in% c(
+                  "FitsToData","YRandom","Consensus")))$Conc.pred,na.rm=TRUE)
               for (this.QSPR in QSPRs)
               {
                 if (!(this.QSPR %in% this.subset6$QSPR))
