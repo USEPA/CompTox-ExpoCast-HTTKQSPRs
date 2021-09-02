@@ -451,13 +451,45 @@ write.csv(possible.training.chems,row.names=FALSE,
 
 ```{r fold_error_differences, eval = TRUE}
 ks.tests.clint <- data.frame()
+ks.tests.fup <- data.frame()
+FE.table <- data.frame()
 for (this.qspr1 in unique(level1tab$QSPR))
+{
+  this.subset <-subset(level1tab,QSPR==this.qspr1)
+  FE.table[this.qspr1,"Median.Clint.AbsFE"] <- 
+    median(this.subset$Human.Clint.AbsFE,na.rm=TRUE)
+  FE.table[this.qspr1,"Median.Clint.FE"] <- 
+    median(this.subset$Human.Clint.FE,na.rm=TRUE)
+  FE.table[this.qspr1,"Min.Clint.FE"] <- 
+    min(this.subset$Human.Clint.FE,na.rm=TRUE)
+  FE.table[this.qspr1,"Max.Clint.FE"] <- 
+    max(this.subset$Human.Clint.FE,na.rm=TRUE)
+  FE.table[this.qspr1,"Median.fup.AbsFE"] <- 
+    median(this.subset$Human.fup.AbsFE,na.rm=TRUE)
+  FE.table[this.qspr1,"Median.fup.FE"] <- 
+    median(this.subset$Human.fup.FE,na.rm=TRUE)
+  FE.table[this.qspr1,"Min.fup.FE"] <- 
+    min(this.subset$Human.fup.FE,na.rm=TRUE)
+  FE.table[this.qspr1,"Max.fup.FE"] <- 
+    max(this.subset$Human.fup.FE,na.rm=TRUE)
+  
   for (this.qspr2 in unique(level1tab$QSPR))
   {
-    set1 <- subset(level1tab,QSPR==this.qspr1)$Human.Clint.FE
+    set1 <- this.subset$Human.Clint.FE
     set2 <- subset(level1tab,QSPR==this.qspr2)$Human.Clint.FE
-    ks.tests.clint[this.qspr1,this.qspr2] <- kstest(set1,set2)$p.value
+    ks.tests.clint[this.qspr1,this.qspr2] <- suppressWarnings(
+      ks.test(set1,set2)$p.value)
+    set1 <- this.subset$Human.fup.FE
+    set2 <- subset(level1tab,QSPR==this.qspr2)$Human.fup.FE
+    ks.tests.fup[this.qspr1,this.qspr2] <- suppressWarnings(
+      ks.test(set1,set2)$p.value)
   }
+}
+
+FE.table <- apply(FE.table,2,function(x) signif(x,3))
+print(ks.tests.clint)
+print(ks.tests.fup)
+write.csv(FE.table,file="Table-Level1FoldErrors.txt")
 ```
 
 Calculate RPE:     

@@ -1,0 +1,5 @@
+"","Median.Clint.AbsFE","Median.Clint.FE","Min.Clint.FE","Max.Clint.FE","Median.fup.AbsFE","Median.fup.FE","Min.fup.FE","Max.fup.FE"
+"SPlus",0.503,0.105,-2.34,2.1,0.272,-0.0179,-1.47,6.27
+"Dawson",0.347,0.0374,-2.54,1.42,0.128,0.00696,-0.327,6.39
+"Pradeep",0.241,0.00983,-2.2,2.21,0.154,-0.0189,-0.506,1.92
+"OPERA",0.00144,-3.17e-05,-1.86,0.63,0.0287,0,-1.11,7.1
