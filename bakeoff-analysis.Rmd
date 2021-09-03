@@ -1506,7 +1506,8 @@ for (this.qspr in unique(level2tab.stats$QSPR))
   AUC.stats.table <- rbind(AUC.stats.table,this.row)
 }
 # Add HTTK without in silico predicitons:
-this.subset <- subset(level2tab.stats,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.qspr <- "HTTK-InVitro"
+this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(AUC.obs)~log10(AUC.pred))
 this.row <- data.frame(
   QSPR=paste(this.qspr,"Measured",sep="-"),
@@ -1514,6 +1515,7 @@ this.row <- data.frame(
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
 AUC.stats.table <- rbind(AUC.stats.table,this.row)
+save(AUC.stats.table,file="AUC-stats.txt")
 
 Cmax.stats.table <- NULL
 for (this.qspr in unique(level2tab.stats$QSPR))
@@ -1527,7 +1529,8 @@ for (this.qspr in unique(level2tab.stats$QSPR))
     )
   Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
 }
-this.subset <- subset(level2tab.stats,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.qspr <- "HTTK-InVitro"
+this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(Cmax.obs)~log10(Cmax.pred))
 this.row <- data.frame(
   QSPR=paste(this.qspr,"Measured",sep="-"),
@@ -1535,6 +1538,7 @@ this.row <- data.frame(
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
 Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
+save(Cmax.stats.table,file="Cmax-stats.txt")
 ```
 
 Heatmap with Level 2 stats
@@ -2514,7 +2518,7 @@ for (this.qspr in unique(level3tab$QSPR))
   this.subset <- subset(level3tab,QSPR==this.qspr)
   this.fit <- lm(data=this.subset,log10(thalf.obs)~log10(thalf.pred))
   this.row <- data.frame(
-    this.qspr,
+    QSPR=this.qspr,
     R2=signif(summary(this.fit)$adj.r.squared,3),
     RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
     )
@@ -2523,12 +2527,13 @@ for (this.qspr in unique(level3tab$QSPR))
 this.subset <- subset(level3tab,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(thalf.obs)~log10(thalf.pred))
 this.row <- data.frame(
-  this.qspr,
+  QSPR=paste("HTTK-InVitro","Measured",sep="-"),
   R2=signif(summary(this.fit)$adj.r.squared,3),
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
 halflife.stats.table <- rbind(halflife.stats.table,this.row)
 print(halflife.stats.table)
+save(halflife.stats.table,file="halflife-stats.txt")
 
 vd.stats.table <- NULL
 for (this.qspr in unique(level3tab$QSPR))
@@ -2539,22 +2544,23 @@ if (!(this.qspr %in% c("IFS-QSPR","QSPRINS")))
   {
     this.fit <- lm(data=this.subset,log10(Vd.obs)~log10(Vd.pred))
     this.row <- data.frame(
-      this.qspr,
+      QSPR=this.qspr,
       R2=signif(summary(this.fit)$adj.r.squared,3),
       RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
      )
     vd.stats.table <- rbind(vd.stats.table,this.row)
   }
 }
-this.subset <- subset(level3tab. QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.subset <- subset(level3tab, QSPR=="HTTK-InVitro" & CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(Vd.obs)~log10(Vd.pred))
 this.row <- data.frame(
-  this.qspr,
+  QSPR=paste("HTTK-InVitro","Measured",sep="-"),
   R2=signif(summary(this.fit)$adj.r.squared,3),
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
 vd.stats.table <- rbind(vd.stats.table,this.row)
 print(vd.stats.table)
+save(vd.stats.table,file="VD-stats.txt")
 
 cl.stats.table <- NULL
 for (this.qspr in unique(level3tab$QSPR))
@@ -2564,7 +2570,7 @@ for (this.qspr in unique(level3tab$QSPR))
   {
     this.fit <- lm(data=this.subset,log10(Cl.obs)~log10(Cl.pred))
     this.row <- data.frame(
-      this.qspr,
+      QSPR=this.qspr,
       R2=signif(summary(this.fit)$adj.r.squared,3),
       RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
      )
@@ -2574,12 +2580,13 @@ for (this.qspr in unique(level3tab$QSPR))
 this.subset <- subset(level3tab,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(Cl.obs)~log10(Cl.pred))
 this.row <- data.frame(
-  this.qspr,
+  QSPR=paste("HTTK-InVitro","Measured",sep="-"),
   R2=signif(summary(this.fit)$adj.r.squared,3),
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
 cl.stats.table <- rbind(cl.stats.table,this.row)
 print(cl.stats.table)
+save(cl.stats.table,file="Cl-stats.txt")
 ```
 # Half-life scatter plot:
 ```{r make_level3_halflife_scatter_plot, eval = TRUE}
