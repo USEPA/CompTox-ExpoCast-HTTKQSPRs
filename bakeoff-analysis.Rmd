@@ -167,6 +167,10 @@ httk.data$Human.Funbound.plasma <-
 # Treat fup = 0 as non-measurment:
 httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma == 0] <- NA
 httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma==0.005] <- NA
+
+# Which chemicals would we normally use with HTTK PBTK:
+httk.both <- httk.data[,"CAS"][(apply(httk.data,1,function(x) 
+  !is.na(x["Human.Clint"]) & !is.na(x["Human.Funbound.plasma"])))]
 ```
 
 Add HTTK measured data to CvT.chems table:
@@ -1244,10 +1248,10 @@ chem.physical_and_invitro.data <- add_chemtable(
   overwrite=T)
 print(paste("Consensus parameters for",length(get_cheminfo(model="pbtk")),
             "chemicals for PBTK"))
-level2tab.yrandom.list <- makeCvTpreds(CvT.data,"HTTK-Consensus")
-level2tab.yrandom <- level2tab.yrandom.list$cvt
-level2tab.yrandom.stats <- level2tab.yrandom.list$stats
-level3tab.yrandom <- maketkstatpreds(CvT.data,fittable,"HTTK-Consensus")
+level2tab.consensus.list <- makeCvTpreds(CvT.data,"HTTK-Consensus")
+level2tab.consensus <- level2tab.consensus.list$cvt
+level2tab.consensus.stats <- level2tab.consensus.list$stats
+level3tab.consensus <- maketkstatpreds(CvT.data,fittable,"HTTK-Consensus")
 ```
 
 # Add y-random predictions:
@@ -1294,8 +1298,8 @@ level2tab <- rbind(
   level2tab.pradeep,
   level2tab.opera,
   level2tab.fits,
-  level2tab.yrandom,
-  level2tab.consensus)
+  level2tab.yrandom)#,
+#  level2tab.consensus)
 level2tab <- subset(level2tab,!duplicated(level2tab))
 
 level2tab.stats <- rbind(
@@ -1305,8 +1309,8 @@ level2tab.stats <- rbind(
   level2tab.pradeep.stats,
   level2tab.opera.stats,
   level2tab.fits.stats,
-  level2tab.yrandom.stats,
-  level2tab.consensus.stats)
+  level2tab.yrandom.stats)#,
+#  level2tab.consensus.stats)
 level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
 # Occasionally we can't calculate AUC, get rid of these data:
 level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
@@ -1495,26 +1499,42 @@ for (this.qspr in unique(level2tab.stats$QSPR))
   this.subset <- subset(level2tab.stats,QSPR==this.qspr)
   this.fit <- lm(data=this.subset,log10(AUC.obs)~log10(AUC.pred))
   this.row <- data.frame(
-    this.qspr,
+    QSPR=this.qspr,
     R2=signif(summary(this.fit)$adj.r.squared,3),
     RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
     )
   AUC.stats.table <- rbind(AUC.stats.table,this.row)
 }
+# Add HTTK without in silico predicitons:
+this.subset <- subset(level2tab.stats,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.fit <- lm(data=this.subset,log10(AUC.obs)~log10(AUC.pred))
+this.row <- data.frame(
+  QSPR=paste(this.qspr,"Measured",sep="-"),
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+  )
+AUC.stats.table <- rbind(AUC.stats.table,this.row)
 
 Cmax.stats.table <- NULL
 for (this.qspr in unique(level2tab.stats$QSPR))
 {
-  this.subset <- subset(level2tab.stats,QSPR==this.qspr)
+  QSPR=this.subset <- subset(level2tab.stats,QSPR==this.qspr)
   this.fit <- lm(data=this.subset,log10(Cmax.obs)~log10(Cmax.pred))
   this.row <- data.frame(
-    this.qspr,
+    QSPR=this.qspr,
     R2=signif(summary(this.fit)$adj.r.squared,3),
     RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
     )
   Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
 }
-
+this.subset <- subset(level2tab.stats,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.fit <- lm(data=this.subset,log10(Cmax.obs)~log10(Cmax.pred))
+this.row <- data.frame(
+  QSPR=paste(this.qspr,"Measured",sep="-"),
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+  )
+Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
 ```
 
 Heatmap with Level 2 stats
@@ -2422,14 +2442,14 @@ grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, nrow = 
 #the human predictions, but they were developed with different training sets 
 #(and for fish, not mammals!).
 ```{r level3_load_arnot, eval = TRUE}
-level3.arnot <- read_excel("TK_QSPR_evaluation_set_HumanQSPRHLPredictions.xlsx")
+level3.arnot <- read_excel("TK_QSAR_evaluation_set_HumanQSARHLPredictions.xlsx")
 level3.arnot <- subset(level3.arnot,administration_route_normalized=="iv")
 level3tab.arnot1 <- level3tab.opera
 level3tab.arnot1$Vd.pred <- NA
 level3tab.arnot1$thalf.pred <- NA
 level3tab.arnot2 <- level3tab.arnot1
-level3tab.arnot1$QSPR <- "QSPRINS"
-level3tab.arnot2$QSPR <- "IFS-QSPR"
+level3tab.arnot1$QSPR <- "QSARINS"
+level3tab.arnot2$QSPR <- "IFS-QAPR"
 for (this.dtxsid in level3.arnot$test_substance_dtxsid)
   if (this.dtxsid %in% level3tab.arnot1$DTXSID)
 {
@@ -2500,6 +2520,14 @@ for (this.qspr in unique(level3tab$QSPR))
     )
   halflife.stats.table <- rbind(halflife.stats.table,this.row)
 }
+this.subset <- subset(level3tab,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.fit <- lm(data=this.subset,log10(thalf.obs)~log10(thalf.pred))
+this.row <- data.frame(
+  this.qspr,
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+  )
+halflife.stats.table <- rbind(halflife.stats.table,this.row)
 print(halflife.stats.table)
 
 vd.stats.table <- NULL
@@ -2518,8 +2546,15 @@ if (!(this.qspr %in% c("IFS-QSPR","QSPRINS")))
     vd.stats.table <- rbind(vd.stats.table,this.row)
   }
 }
+this.subset <- subset(level3tab. QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.fit <- lm(data=this.subset,log10(Vd.obs)~log10(Vd.pred))
+this.row <- data.frame(
+  this.qspr,
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+  )
+vd.stats.table <- rbind(vd.stats.table,this.row)
 print(vd.stats.table)
-
 
 cl.stats.table <- NULL
 for (this.qspr in unique(level3tab$QSPR))
@@ -2536,6 +2571,14 @@ for (this.qspr in unique(level3tab$QSPR))
     cl.stats.table <- rbind(cl.stats.table,this.row)
   }
 }
+this.subset <- subset(level3tab,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.fit <- lm(data=this.subset,log10(Cl.obs)~log10(Cl.pred))
+this.row <- data.frame(
+  this.qspr,
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+  )
+cl.stats.table <- rbind(cl.stats.table,this.row)
 print(cl.stats.table)
 ```
 # Half-life scatter plot:

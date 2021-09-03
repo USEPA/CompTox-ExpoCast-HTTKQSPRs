@@ -100,8 +100,8 @@ makeCvTpreds <- function(CvT.data,label)
       }
     }
   }
-  cvt.table$QSAR <- label
-  stats.table$QSAR <- label
+  cvt.table$QSPR <- label
+  stats.table$QSPR <- label
   return(list(
     cvt=cvt.table,
     stats=stats.table))
@@ -426,8 +426,8 @@ makeCvTpredsfromfits <- function(
       }
     }
   }
-  cvt.table$QSAR <- label
-  stats.table$QSAR <- label
+  cvt.table$QSPR <- label
+  stats.table$QSPR <- label
   return(list(
     cvt=cvt.table,
     stats=stats.table))
@@ -480,6 +480,6 @@ maketkstatpreds <- function(
       }
     }
   }
-  out.table$QSAR <- label
+  out.table$QSPR <- label
   return(out.table)
 }
