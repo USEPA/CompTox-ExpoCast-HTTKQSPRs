@@ -64,7 +64,7 @@ colnames(series_res_set)[colnames(series_res_set)=="analyte_name_original"] <- "
 colnames(series_res_set)[colnames(series_res_set)=="fk_study_id"] <- "Source"
 
 
-# A list of the chemcials in the evaluation:
+# A list of the chemicals in the evaluation:
 # There are 101 chemicals with CvT data for which the collaborators have been asked
 # to make predictions
 eval.cas <- unique(series_res_set$CAS)
@@ -236,27 +236,21 @@ CvT.chems <- merge(CvT.chems,
   all.x=TRUE,
   by="DTXSID")
 colnames(CvT.chems)[colnames(CvT.chems)=="Human.Clint"] <- "Human.Clint.Dawson"
-colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- "Human.Fup.Dawson"
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- 
+  "Human.Fup.Dawson"
 ```
 
 Pradeep 2020:
 ```{r add_pradeep, eval = TRUE}
-pradeep.clint <- read_excel("pradeep-Tox21_httk_predictions.xlsx",sheet=3)
-pradeep.clint <- subset(pradeep.clint, pradeep.clint$...1 %in% CvT.chems$DTXSID)
+clear_httk()
+load_pradeep2020(overwrite=T)
+pradeep <- subset(get_cheminfo(info="all"),DTXSID %in% CvT.chems$DTXSID)
 CvT.chems <- merge(CvT.chems,
-  pradeep.clint[,c("...1","pred_clint_rf")],
+  pradeep[,c("DTXSID","Human.Clint","Human.Funbound.plasma")],
   all.x=TRUE,
-  by.x="DTXSID",
-  by.y="...1")
-colnames(CvT.chems)[colnames(CvT.chems)=="pred_clint_rf"] <- "Human.Clint.Pradeep"
-pradeep.fup <- read_excel("pradeep-Tox21_httk_predictions.xlsx",sheet=2)
-pradeep.fup <- subset(pradeep.fup, pradeep.fup$dsstox_sid %in% CvT.chems$DTXSID)
-CvT.chems <- merge(CvT.chems,
-  pradeep.fup[,c("dsstox_sid","Consensus (SVM,RF)")],
-  all.x=TRUE,
-  by.x="DTXSID",
-  by.y="dsstox_sid")
-colnames(CvT.chems)[colnames(CvT.chems)=="Consensus (SVM,RF)"] <- 
+  by="DTXSID")
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Clint"] <- "Human.Clint.Pradeep"
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- 
   "Human.Fup.Pradeep"
 ```
 
@@ -568,8 +562,8 @@ Make Level1 predictions vs. observed plot for Clint (faceted):
 
 ## Tiff image for manuscript (facet to see the individual predictions over Clint value)
 FigLev1a_facet <- ggplot(data=level1tab) +
-  geom_point(size=2,aes(x=Human.Clint.pred+10^-4,y=Human.Clint.httk+10^-4,shape=QSPR,color=QSPR))+
-  scale_x_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits=c(30^-1,3000)) +
+  geom_point(size=2,aes(x=Human.Clint.pred+10^-1,y=Human.Clint.httk+10^-1,shape=QSPR,color=QSPR))+
+  scale_x_log10(breaks=c(1,10^2),label=scientific_10,limits=c(30^-1,3000)) +
   #scale_y_log10(label=scientific_10)+
   scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 3000))+
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
@@ -828,9 +822,10 @@ cyps <- rbind(pharm,pest)
 # the parameter values twice).
 # TK Stats (including Vd and thalf) calculated from CvTdb:
 ```{r load_compartmental_model_parameters, eval = TRUE}
-fits1comp <- read.csv("PK.fit.table.1comp.new.nobounds.csv")
+setwd("C:/Users/jwambaug/git/tkqsars/")
+fits1comp <- read.csv("PK.fit.table.1comp.alpha.fix.csv")
 fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
-fits2comp <- read.csv("PK.fit.table.2comp.new.nobounds.csv")
+fits2comp <- read.csv("PK.fit.table.2comp.new.alpha.fix.csv")
 fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
 
 #How many chemicals have 1 or 2 compartment fits:
@@ -1501,21 +1496,27 @@ for (this.qspr in unique(level2tab.stats$QSPR))
   this.row <- data.frame(
     QSPR=this.qspr,
     R2=signif(summary(this.fit)$adj.r.squared,3),
-    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+    RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+    RPE=signif(median(this.subset$AUC.RPE),3),
+    RPE.low=signif(median(subset(this.subset,AUC.obs<10)$AUC.RPE),3),
+    RPE.high=signif(median(subset(this.subset,AUC.obs>=10)$AUC.RPE),3)
     )
   AUC.stats.table <- rbind(AUC.stats.table,this.row)
 }
-# Add HTTK without in silico predicitons:
+# Add HTTK without in silico predictions:
 this.qspr <- "HTTK-InVitro"
 this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(AUC.obs)~log10(AUC.pred))
 this.row <- data.frame(
   QSPR=paste(this.qspr,"Measured",sep="-"),
   R2=signif(summary(this.fit)$adj.r.squared,3),
-  RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+  RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+  RPE=signif(median(this.subset$AUC.RPE),3),
+  RPE.low=signif(median(subset(this.subset,AUC.obs<10)$AUC.RPE),3),
+  RPE.high=signif(median(subset(this.subset,AUC.obs>=10)$AUC.RPE),3)
   )
 AUC.stats.table <- rbind(AUC.stats.table,this.row)
-save(AUC.stats.table,file="AUC-stats.txt")
+write.csv(AUC.stats.table,file="AUC-stats.txt")
 
 Cmax.stats.table <- NULL
 for (this.qspr in unique(level2tab.stats$QSPR))
@@ -1525,7 +1526,8 @@ for (this.qspr in unique(level2tab.stats$QSPR))
   this.row <- data.frame(
     QSPR=this.qspr,
     R2=signif(summary(this.fit)$adj.r.squared,3),
-    RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+    RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+    RPE=signif(median(this.subset$Cmax.RPE),3)
     )
   Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
 }
@@ -1535,10 +1537,11 @@ this.fit <- lm(data=this.subset,log10(Cmax.obs)~log10(Cmax.pred))
 this.row <- data.frame(
   QSPR=paste(this.qspr,"Measured",sep="-"),
   R2=signif(summary(this.fit)$adj.r.squared,3),
-  RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
+  RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+  RPE=signif(median(this.subset$Cmax.RPE),3)
   )
 Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
-save(Cmax.stats.table,file="Cmax-stats.txt")
+write.csv(Cmax.stats.table,file="Cmax-stats.txt")
 ```
 
 Heatmap with Level 2 stats
@@ -2171,7 +2174,7 @@ write.csv(signif(qsprbychem.table2,3),file="SupTable-RMSLEbyChem.txt")
 #    lhei=c(0.3,1),
     margins=c(10,8),
 #    labRow = FALSE,
-    cexCol=0.25,
+    cexCol=0.5,
     cexRow=1.0,
     trace="none",
     col=mypalette)
@@ -2337,11 +2340,15 @@ FigLev2c <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Pradeep",]) +
   geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
   #  xlab(bquote('Predicted Conc HTTK-PradeepNEW')) +  ##Pradeep NEW ##
   xlab(bquote('HTTK-Pradeep')) +
-  ylab(bquote('Observed Conc In Vivo')) +
+  ylab(expression(paste("Obs. Conc. ",
+    italic("In Vivo"),
+    " (", 
+    mu, 
+    "M)"))) +
   theme_bw()+
   theme( text  = element_text(size=20),
          axis.title.y = element_text(size=14),
-         axis.text.y = element_text(size=10))
+         axis.text.y = element_text(size=12))
 #print(FigLev2c)
 #ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeep",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
@@ -2398,7 +2405,8 @@ FigLev2f <- ggplot(data=level2tab[level2tab$QSPR=="FitsToData" ,]) +
 #print(FigLev2f)
 ggsave(paste("figs/FigLev2_Conc_scatter_FitsToData",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 
-grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, nrow = 3)
+grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, 
+  nrow = 3, bottom=expression(paste("Predicted Conc. (mg/L)")))
 ```
 
 #Level III Predictions -- predicted half-life or volume of distribution (Vd)
@@ -2533,7 +2541,7 @@ this.row <- data.frame(
   )
 halflife.stats.table <- rbind(halflife.stats.table,this.row)
 print(halflife.stats.table)
-save(halflife.stats.table,file="halflife-stats.txt")
+write.csv(halflife.stats.table,file="halflife-stats.txt")
 
 vd.stats.table <- NULL
 for (this.qspr in unique(level3tab$QSPR))
@@ -2560,7 +2568,7 @@ this.row <- data.frame(
   )
 vd.stats.table <- rbind(vd.stats.table,this.row)
 print(vd.stats.table)
-save(vd.stats.table,file="VD-stats.txt")
+write.csv(vd.stats.table,file="VD-stats.txt")
 
 cl.stats.table <- NULL
 for (this.qspr in unique(level3tab$QSPR))
@@ -2586,7 +2594,7 @@ this.row <- data.frame(
   )
 cl.stats.table <- rbind(cl.stats.table,this.row)
 print(cl.stats.table)
-save(cl.stats.table,file="Cl-stats.txt")
+write.csv(cl.stats.table,file="Cl-stats.txt")
 ```
 # Half-life scatter plot:
 ```{r make_level3_halflife_scatter_plot, eval = TRUE}
