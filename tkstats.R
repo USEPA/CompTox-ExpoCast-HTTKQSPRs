@@ -346,16 +346,16 @@ makeCvTpredsfromfits <- function(
           if (model == "cp_1comp")
           {
             params$Vdist <- as.numeric(this.fit[fit.index,"Vdist"])
-            params$kelim <- as.numeric(this.fit[fit.index,"kelim"]) 
+            params$kelim <- as.numeric(this.fit[fit.index,"kelim"])*24 
           } else {
             params$V1 <- as.numeric(this.fit[fit.index,"V1"])
-            params$kelim <- as.numeric(this.fit[fit.index,"kelim"]) 
+            params$kelim <- as.numeric(this.fit[fit.index,"kelim"])*24 
             params$Ralphatokelim <- as.numeric(this.fit[fit.index,"Ralphatokelim"])
             params$Fbetaofalpha <- as.numeric(this.fit[fit.index,"Fbetaofalpha"])
           }
           
           params$Fgutabs <- as.numeric(this.fit[1,"Fgutabs"])
-          params$kgutabs<- as.numeric(this.fit[1,"kgutabs"])
+          params$kgutabs<- as.numeric(this.fit[1,"kgutabs"])*24
 
           this.subset2 <- subset(this.subset1,tolower(Species)==this.species)
           for (this.route in unique(this.subset2$Route))
