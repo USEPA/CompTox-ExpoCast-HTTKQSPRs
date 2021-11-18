@@ -823,9 +823,9 @@ cyps <- rbind(pharm,pest)
 # TK Stats (including Vd and thalf) calculated from CvTdb:
 ```{r load_compartmental_model_parameters, eval = TRUE}
 setwd("C:/Users/jwambaug/git/tkqsars/")
-fits1comp <- read.csv("PK.fit.table.1comp.alpha.fix.csv")
+fits1comp <- read.csv("PK.fit.table.1comp.10292021.csv")
 fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
-fits2comp <- read.csv("PK.fit.table.2comp.new.alpha.fix.csv")
+fits2comp <- read.csv("PK.fit.table.2comp.10292021.csv")
 fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
 
 #How many chemicals have 1 or 2 compartment fits:
@@ -1106,11 +1106,14 @@ for (this.chem in CvT.chems.nona$DTXSID)
 # Randomize the in vitro descriptors as a sort of prediction "floor"
 ```{r cvt_yrandomize_desc, eval = TRUE}
 set.seed(123456)
-yrandom.ids <- sample(1:dim(CvT.chems.nona)[1],dim(CvT.chems.nona)[1])
-CvT.chems.nona[,"Human.Clint.YRandom"] <- 
-  CvT.chems.nona[yrandom.ids, "Human.Clint.httk"]
-CvT.chems.nona[,"Human.Fup.YRandom"] <- 
-  CvT.chems.nona[yrandom.ids, "Human.Fup.httk"]
+for (i in 1:10) # Ten sets of parameters
+{
+  yrandom.ids <- sample(1:dim(CvT.chems.nona)[1],dim(CvT.chems.nona)[1])
+  CvT.chems.nona[,paste("Human.Clint.YRandom",i,sep="")] <- 
+    CvT.chems.nona[yrandom.ids, "Human.Clint.httk"]
+  CvT.chems.nona[,paste("Human.Fup.YRandom",i,sep="")] <- 
+    CvT.chems.nona[yrandom.ids, "Human.Fup.httk"]
+}
 ```
 
 Make predictions of CvT using in vitro measured data. Rather than use default
@@ -1253,25 +1256,31 @@ level3tab.consensus <- maketkstatpreds(CvT.data,fittable,"HTTK-Consensus")
 
 # Add y-random predictions:
 ```{r cvt_compare_yrandom, eval = TRUE}
-clear_httk()
-chem.physical_and_invitro.data <- add_chemtable(
-  CvT.chems.nona,
-  current.table=chem.physical_and_invitro.data,
-  data.list=list(
-    Compound="PREFERRED_NAME",
-    DTXSID="DTXSID",
-    CAS="CASRN",
-    Funbound.plasma="Human.Fup.YRandom",
-    Clint="Human.Clint.YRandom"),
-  species="Human",
-  reference="YRandom",
-  overwrite=T)
-print(paste("Y-randomized parameters for",length(get_cheminfo(model="pbtk")),
-            "chemicals for PBTK"))
-level2tab.yrandom.list <- makeCvTpreds(CvT.data,"HTTK-YRandom")
-level2tab.yrandom <- level2tab.yrandom.list$cvt
-level2tab.yrandom.stats <- level2tab.yrandom.list$stats
-level3tab.yrandom <- maketkstatpreds(CvT.data,fittable,"HTTK-YRandom")
+level2tab.yrandom <- NULL
+level2tab.yrandom.stats <- NULL
+level3tab.yrandom <- NULL
+for (i in 1:10)
+{
+  clear_httk()
+  chem.physical_and_invitro.data <- add_chemtable(
+    CvT.chems.nona,
+    current.table=chem.physical_and_invitro.data,
+    data.list=list(
+      Compound="PREFERRED_NAME",
+      DTXSID="DTXSID",
+      CAS="CASRN",
+      Funbound.plasma=paste("Human.Fup.YRandom",i,sep=""),
+      Clint=paste("Human.Clint.YRandom",i,sep="")),
+    species="Human",
+    reference="YRandom",
+    overwrite=T)
+  print(paste("Y-randomized parameters for",length(get_cheminfo(model="pbtk")),
+              "chemicals for PBTK #",i))
+  level2tab.yrandom.list <- makeCvTpreds(CvT.data,"HTTK-YRandom")
+  level2tab.yrandom <- rbind(level2tab.yrandom,level2tab.yrandom.list$cvt)
+  level2tab.yrandom.stats <- rbind(level2tab.yrandom.stats,level2tab.yrandom.list$stats)
+  level3tab.yrandom <- rbind(level3tab.yrandom,maketkstatpreds(CvT.data,fittable,"HTTK-YRandom"))
+}
 ```
 
 # The performance of actual 1 compartment model fits provides an upper limit
@@ -1625,7 +1634,7 @@ heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
 ```
 
 
-```{r make_level2_plot_stats, eval = TRUE}
+```{r make_level2_plot_stats, eval = FALSE}
 #### add AAFE & RMSLE to the table
 texty <- 20
 xshift <- 0.3
@@ -1683,7 +1692,7 @@ print(FigLev2)
 ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
 
-```{r make_level2_plot_stats_early, eval = TRUE}
+```{r make_level2_plot_stats_early, eval = FALSE}
 #### add AAFE & RMSLE to the table
 texty <- 1
 xshift <- 0.1
@@ -1740,7 +1749,7 @@ print(FigLev2)
 ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
 
-```{r make_level2_plot_stats_late, eval = TRUE}
+```{r make_level2_plot_stats_late, eval = FALSE}
 #### add AAFE & RMSLE to the table
 texty <- 1
 xshift <- 0.1
@@ -1797,7 +1806,7 @@ print(FigLev2)
 ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
 
-```{r make_level2_auc_plot, eval = TRUE}
+```{r make_level2_auc_plot, eval = FALSE}
 FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSPR, y=AUC.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1841,7 +1850,7 @@ print(FigLev2AUC_facet)
 print(AUC.stats.table)
 ```
 
-```{r make_level2_auc_plot, eval = TRUE}
+```{r make_level2_auc_plot, eval = FALSE}
 FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSPR, y=AUC.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1859,7 +1868,7 @@ FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSPR, y=AUC.RPE)) +
 print(FigLev2.auc)  
 ```
 
-```{r make_level2_cmax_plot, eval = TRUE}
+```{r make_level2_cmax_plot, eval = FALSE}
 FigLev2.cmax <- ggplot(data=level2tab.stats, aes(x=QSPR, y=Cmax.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1876,7 +1885,7 @@ FigLev2.cmax <- ggplot(data=level2tab.stats, aes(x=QSPR, y=Cmax.RPE)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev2.cmax)  
 ```
-```{r make_level2_plot, eval = TRUE}
+```{r make_level2_plot, eval = FALSE}
 FigLev2 <- ggplot(data=level2tab, aes(x=QSPR, y=RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1943,12 +1952,36 @@ for (this.chemical in unique(level2tab$Compound))
     qsprbychem.table <- rbind(qsprbychem.table,this.row)
   }                    
 }
+
+for (this.qspr in unique(qsprbychem.table$QSPR))
+{
+  stats.table["RMSLE.bychem",this.qspr] <- 
+    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE),3)
+  stats.table["RMSLE.bychem.early",this.qspr] <-
+    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.early),3)
+  stats.table["RMSLE.bychem.late",this.qspr] <-
+    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.late),3)
+}
+write.csv(stats.table,file="main-stats-table.txt",row.names=FALSE)
+
 ```
 ```{r make_RMSE_bychem_plot, eval = TRUE}
-#### add AAFE & RMSLE to the table
+#### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2.5
 xshift <- 0.2
 these.stats <- c("RMSLE","AAFE")
+
+#### Set order from left to right:
+qsprs.rmsle.bychem <- NULL
+for (this.qspr in unique(qsprbychem.table$QSPR)) 
+  qsprs.rmsle.bychem[this.qspr] <-
+  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE) 
+
+qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
+qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
+                                   levels = qsprs.order)
+         
+#### Make Plot
 FigLev2RMSE <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE)) + 
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
@@ -1965,33 +1998,33 @@ FigLev2RMSE <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE)) +
     tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[c("RMSLE","AAFE"),"FitsToData"],
+    tableGrob(stats.table[these.stats,qsprs.order[1]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-ADmet"],
+    tableGrob(stats.table[these.stats,qsprs.order[2]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-Dawson"],
+    tableGrob(stats.table[these.stats,qsprs.order[3]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-InVitro"],
+    tableGrob(stats.table[these.stats,qsprs.order[4]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-OPERA"],
+    tableGrob(stats.table[these.stats,qsprs.order[5]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-Pradeep"],
+    tableGrob(stats.table[these.stats,qsprs.order[6]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[c("RMSLE","AAFE"),"HTTK-YRandom"],
+    tableGrob(stats.table[these.stats,qsprs.order[7]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+  
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
@@ -2001,11 +2034,23 @@ FigLev2RMSE <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE)) +
 print(FigLev2RMSE) 
 ```
 ```{r make_RMSE_bychem_early_plot, eval = TRUE}
-#### add AAFE & RMSLE to the table
+#### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2.5
 xshift <- 0.2
 these.stats <- c("RMSLE.early","AAFE.early")
 stat.labels <- c("RMSLE","AAFE")
+
+#### Set order from left to right:
+qsprs.rmsle.bychem <- NULL
+for (this.qspr in unique(qsprbychem.table$QSPR)) 
+  qsprs.rmsle.bychem[this.qspr] <-
+  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.early) 
+
+qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
+qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
+                                   levels = qsprs.order)
+ 
+#### Make Plot
 FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
    ggtitle("Early Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
@@ -2023,31 +2068,31 @@ FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
     tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"FitsToData"],
+    tableGrob(stats.table[these.stats,qsprs.order[1]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-ADmet"],
+    tableGrob(stats.table[these.stats,qsprs.order[2]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-Dawson"],
+    tableGrob(stats.table[these.stats,qsprs.order[3]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-InVitro"],
+    tableGrob(stats.table[these.stats,qsprs.order[4]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-OPERA"],
+    tableGrob(stats.table[these.stats,qsprs.order[5]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-Pradeep"],
+    tableGrob(stats.table[these.stats,qsprs.order[6]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-YRandom"],
+    tableGrob(stats.table[these.stats,qsprs.order[7]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
@@ -2059,11 +2104,23 @@ FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
 print(FigLev2RMSE.early) 
 ```
 ```{r make_RMSE_bychem_late_plot, eval = TRUE}
-#### add AAFE & RMSLE to the table
+#### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2.5
 xshift <- 0.2
 these.stats <- c("RMSLE.late","AAFE.late")
 stat.labels <- c("RMSLE","AAFE")
+
+#### Set order from left to right:
+qsprs.rmsle.bychem <- NULL
+for (this.qspr in unique(qsprbychem.table$QSPR)) 
+  qsprs.rmsle.bychem[this.qspr] <-
+  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.late) 
+
+qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
+qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
+                                   levels = qsprs.order)
+ 
+#### Make Plot
 FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
    ggtitle("Late Time Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
@@ -2081,31 +2138,31 @@ FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
     tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"FitsToData"],
+    tableGrob(stats.table[these.stats,qsprs.order[1]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-ADmet"],
+    tableGrob(stats.table[these.stats,qsprs.order[2]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-Dawson"],
+    tableGrob(stats.table[these.stats,qsprs.order[3]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-InVitro"],
+    tableGrob(stats.table[these.stats,qsprs.order[4]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-OPERA"],
+    tableGrob(stats.table[these.stats,qsprs.order[5]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-Pradeep"],
+    tableGrob(stats.table[these.stats,qsprs.order[6]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,"HTTK-YRandom"],
+    tableGrob(stats.table[these.stats,qsprs.order[7]],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
