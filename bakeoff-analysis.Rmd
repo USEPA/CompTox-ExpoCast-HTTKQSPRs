@@ -1451,7 +1451,7 @@ for (this.study in unique(level2tab$Source))
 }
 ```
 
-```{r calc_setspeific_stats, eval = TRUE}
+```{r calc_setspecific_cvt_stats, eval = TRUE}
 AAFE <- list()
 AAFE.early <- list()
 AAFE.late <- list()
@@ -1485,6 +1485,36 @@ for (this.qspr in unique(level2tab$QSPR))
   MRPE.early[[this.qspr]] <- median(subset(level2tab.early,QSPR==this.qspr)$RPE)
   MRPE.late[[this.qspr]] <- median(subset(level2tab.late,QSPR==this.qspr)$RPE)
 }
+#Subset to just the measured in vitro chemicals:
+meassub <- subset(level2tab, CAS %in% httk.both)
+meassub.early <- subset(level2tab.early, CAS %in% httk.both)
+meassub.late <- subset(level2tab.late, CAS %in% httk.both)
+#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
+  AAFE[["HTTK-InVitro-Measured"]] <- 10^(mean(meassub$AbsFE[
+    meassub$QSPR=="HTTK-InVitro"],na.rm=TRUE))
+  AAFE.early[["HTTK-InVitro-Measured"]] <- 10^(mean(meassub.early$AbsFE[
+    meassub.early$QSPR=="HTTK-InVitro"],na.rm=TRUE))
+  AAFE.late[["HTTK-InVitro-Measured"]] <- 10^(mean(meassub.late$AbsFE[
+    meassub.late$QSPR=="HTTK-InVitro"],na.rm=TRUE))
+#RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
+  RMSLE[["HTTK-InVitro-Measured"]] <- sqrt(mean((log10(meassub$Conc.pred[
+    meassub$QSPR=="HTTK-InVitro"] /
+    meassub$Conc.obs[meassub$QSPR=="HTTK-InVitro"]))^2,na.rm=TRUE))
+  RMSLE.early[["HTTK-InVitro-Measured"]] <-
+    sqrt(mean((log10(meassub.early$Conc.pred[
+    meassub.early$QSPR=="HTTK-InVitro"] /
+    meassub.early$Conc.obs[meassub.early$QSPR==this.qspr]))^2,na.rm=TRUE))
+  RMSLE.late[["HTTK-InVitro-Measured"]] <-
+    sqrt(mean((log10(meassub.late$Conc.pred[
+    meassub.late$QSPR=="HTTK-InVitro"] /
+    meassub.late$Conc.obs[meassub.late$QSPR=="HTTK-InVitro"]))^2,na.rm=TRUE))
+  MRPE[["HTTK-InVitro-Measured"]] <- 
+    median(subset(meassub,QSPR=="HTTK-InVitro")$RPE)
+  MRPE.early[["HTTK-InVitro-Measured"]] <- 
+    median(subset(meassub.early,QSPR=="HTTK-InVitro")$RPE)
+  MRPE.late[["HTTK-InVitro-Measured"]] <- 
+    median(subset(meassub.late,QSPR=="HTTK-InVitro")$RPE)
+
 
 stats.table <- data.frame()
 for (this.qspr in names(RMSLE))
@@ -1499,8 +1529,9 @@ for (this.qspr in names(RMSLE))
   stats.table["MRPE.early",this.qspr] <- round(MRPE.early[[this.qspr]],2)
   stats.table["MRPE.late",this.qspr] <- round(MRPE.late[[this.qspr]],2)
 }
-  
+```
 
+```{r calc_setspecific_summary_stats, eval = TRUE}
 AUC.stats.table <- NULL
 for (this.qspr in unique(level2tab.stats$QSPR))
 {
@@ -1555,6 +1586,7 @@ this.row <- data.frame(
   )
 Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
 write.csv(Cmax.stats.table,file="Cmax-stats.txt",row.names=FALSE)
+
 ```
 
 Heatmap with Level 2 stats
@@ -1962,9 +1994,20 @@ for (this.qspr in unique(qsprbychem.table$QSPR))
   stats.table["RMSLE.bychem.late",this.qspr] <-
     signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.late),3)
 }
-write.csv(stats.table,file="main-stats-table.txt",row.names=FALSE)
+meassub <- subset(qsprbychem.table, CAS %in% httk.both)
+this.qspr <- "HTTK-InVitro-Measured"
+stats.table["RMSLE.bychem",this.qspr] <- 
+  signif(median(subset(meassub,QSPR=="HTTK-InVitro")$RMSLE),3)
+stats.table["RMSLE.bychem.early",this.qspr] <-
+  signif(median(subset(meassub,QSPR=="HTTK-InVitro")$RMSLE.early),3)
+stats.table["RMSLE.bychem.late",this.qspr] <-
+  signif(median(subset(meassub,QSPR=="HTTK-InVitro")$RMSLE.late),3)
+
+write.csv(stats.table,file="main-stats-table.txt",row.names=TRUE)
 
 ```
+
+
 ```{r make_RMSE_bychem_plot, eval = TRUE}
 #### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2.5
