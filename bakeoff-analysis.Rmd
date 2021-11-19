@@ -2012,7 +2012,8 @@ write.csv(stats.table,file="main-stats-table.txt",row.names=TRUE)
 #### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2.5
 xshift <- 0.2
-these.stats <- c("RMSLE","AAFE")
+these.stats <- c("RMSLE.bychem","AAFE")
+stat.labels <- c("RMSLE","AAFE")
 
 #### Set order from left to right:
 qsprs.rmsle.bychem <- NULL
@@ -2038,34 +2039,34 @@ FigLev2RMSE <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE)) +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
   annotation_custom(
-    tableGrob(c("RMSLE","AAFE"), theme = ttheme_minimal(base_size = 12)),
+    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[1]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[2]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[3]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[4]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[5]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[6]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[7]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
@@ -2080,7 +2081,7 @@ print(FigLev2RMSE)
 #### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2.5
 xshift <- 0.2
-these.stats <- c("RMSLE.early","AAFE.early")
+these.stats <- c("RMSLE.bychem.early","AAFE.early")
 stat.labels <- c("RMSLE","AAFE")
 
 #### Set order from left to right:
@@ -2111,31 +2112,31 @@ FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
     tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[1]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[2]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[3]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[4]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[5]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[6]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[7]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
@@ -2150,7 +2151,7 @@ print(FigLev2RMSE.early)
 #### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2.5
 xshift <- 0.2
-these.stats <- c("RMSLE.late","AAFE.late")
+these.stats <- c("RMSLE.bychem.late","AAFE.late")
 stat.labels <- c("RMSLE","AAFE")
 
 #### Set order from left to right:
@@ -2181,31 +2182,31 @@ FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
     tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
     xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[1]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[2]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[3]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[4]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[5]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[6]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
   annotation_custom(
-    tableGrob(stats.table[these.stats,qsprs.order[7]],
+    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
