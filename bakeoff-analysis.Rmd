@@ -1503,7 +1503,7 @@ meassub.late <- subset(level2tab.late, CAS %in% httk.both)
   RMSLE.early[["HTTK-InVitro-Measured"]] <-
     sqrt(mean((log10(meassub.early$Conc.pred[
     meassub.early$QSPR=="HTTK-InVitro"] /
-    meassub.early$Conc.obs[meassub.early$QSPR==this.qspr]))^2,na.rm=TRUE))
+    meassub.early$Conc.obs[meassub.early$QSPR=="HTTK-InVitro"]))^2,na.rm=TRUE))
   RMSLE.late[["HTTK-InVitro-Measured"]] <-
     sqrt(mean((log10(meassub.late$Conc.pred[
     meassub.late$QSPR=="HTTK-InVitro"] /
