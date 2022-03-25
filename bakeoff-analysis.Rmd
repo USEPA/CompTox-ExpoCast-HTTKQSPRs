@@ -2059,17 +2059,20 @@ for (this.chemical in unique(level2tab$Compound))
   for (this.qspr in QSPRs)
   {
     this.subset <- subset(level2tab,QSPR==this.qspr & Compound==this.chemical)
-    this.row <- this.subset[1,c(1:3,13)]
-    this.row$RMSLE <- sqrt(mean((log10(this.subset$Conc.pred/
-      this.subset$Conc.obs))^2,na.rm=TRUE))
-    this.subset <- subset(level2tab.early,QSPR==this.qspr & Compound==this.chemical)
-    this.row$RMSLE.early <- sqrt(mean((log10(this.subset$Conc.pred/
-      this.subset$Conc.obs))^2,na.rm=TRUE))
-    this.subset <- subset(level2tab.late,QSPR==this.qspr & Compound==this.chemical)
-    this.row$RMSLE.late <- sqrt(mean((log10(this.subset$Conc.pred/
-      this.subset$Conc.obs))^2,na.rm=TRUE))
-    qsprbychem.table <- rbind(qsprbychem.table,this.row)
-  }                    
+    if (dim(this.subset)[1]>0)
+    {
+      this.row <- this.subset[1,c(1:3,13)]
+      this.row$RMSLE <- sqrt(mean((log10(this.subset$Conc.pred/
+                                           this.subset$Conc.obs))^2,na.rm=TRUE))
+      this.subset <- subset(level2tab.early,QSPR==this.qspr & Compound==this.chemical)
+      this.row$RMSLE.early <- sqrt(mean((log10(this.subset$Conc.pred/
+                                                 this.subset$Conc.obs))^2,na.rm=TRUE))
+      this.subset <- subset(level2tab.late,QSPR==this.qspr & Compound==this.chemical)
+      this.row$RMSLE.late <- sqrt(mean((log10(this.subset$Conc.pred/
+                                                this.subset$Conc.obs))^2,na.rm=TRUE))
+      qsprbychem.table <- rbind(qsprbychem.table,this.row)
+    }
+  }
 }
 
 for (this.qspr in unique(qsprbychem.table$QSPR))
