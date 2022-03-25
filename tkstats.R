@@ -7,6 +7,7 @@ makeCvTpreds <- function(CvT.data,label)
   {
     if (this.cas %in% get_cheminfo(model="pbtk"))
     {
+ #     print(this.cas)
       this.subset1 <- subset(CvT.data,CAS==this.cas & 
         !is.na(Time) & 
         !is.na(Value))
@@ -251,7 +252,7 @@ makeCvTpredsfromfits <- function(
       {
         if (length(unique(tolower(this.fit1$Species)))==1)
         {
-          this.fit1 <- subset(this.fit1, Data.Analyzed=="Joint Analysis")
+          this.fit1 <- subset(this.fit1, Data.Analyzed=="Joint Analysis")[1,]
         } else {
           this.fit1.new <- NULL
           for (this.species in unique(tolower(this.fit1$Species)))
@@ -261,7 +262,7 @@ makeCvTpredsfromfits <- function(
             if (dim(this.fit1.speciessub)[1]>1)
             {
               this.fit1.new <- rbind(this.fit1.new, 
-                subset(this.fit1.speciessub, Data.Analyzed=="Joint Analysis"))
+                subset(this.fit1.speciessub, Data.Analyzed=="Joint Analysis"))[1,]
             } else {
               this.fit1.new <- rbind(this.fit1.new, this.fit1.speciessub)
             }
@@ -282,7 +283,7 @@ makeCvTpredsfromfits <- function(
         {
           if (length(unique(tolower(this.fit2$Species)))==1)
           {
-            this.fit2 <- subset(this.fit2, Data.Analyzed=="Joint Analysis")
+            this.fit2 <- subset(this.fit2, Data.Analyzed=="Joint Analysis")[1,]
           } else {
             this.fit2.new <- NULL
             for (this.species in unique(tolower(this.fit2$Species)))
@@ -293,7 +294,7 @@ makeCvTpredsfromfits <- function(
               {
                 this.fit2.new <- rbind(this.fit2.new, 
                                        subset(this.fit2.speciessub, 
-                                              Data.Analyzed=="Joint Analysis"))
+                                              Data.Analyzed=="Joint Analysis"))[1,]
               } else {
                 this.fit2.new <- rbind(this.fit2.new, this.fit2.speciessub)
               }

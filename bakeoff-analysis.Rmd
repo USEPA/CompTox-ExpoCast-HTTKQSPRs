@@ -196,8 +196,8 @@ We don't have those values for all the chemicals, so we only are comnparing on
 a subset.
 
 ADmet Sipes et al. (2017)
-Pradeep et al. (submitted)
-Dawson et al. (submitted)
+Pradeep et al. (2020)
+Dawson et al. (2021)
 OPERA (in prep.?)
 
 Get the in vitro measured values:
@@ -271,9 +271,34 @@ colnames(CvT.chems)[colnames(CvT.chems)=="Clint_pred"] <- "Human.Clint.OPERA"
 colnames(CvT.chems)[colnames(CvT.chems)=="FUB_pred"] <- "Human.Fup.OPERA"
 ```
 
+IVBP Predictor:
+```{r add_ivbp, eval = TRUE}
+ivbp <- as.data.frame(read_excel("BakeOff_IVBP_Suite.xlsx",sheet=2))
+ivbp <- subset(ivbp,DTXSID%in%CvT.chems$DTXSID)
+# Domain of applicability:
+ivbp[tolower(ivbp[,"AD"])=="out ad","IVBP Final Pred Log Clint_mL/h/10^6 hep"] <- NA
+
+# mL to uL:
+ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"] <- 
+  as.numeric(ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"]) * 1000
+
+# Get ird of negatives:
+ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"] <-
+  sapply(ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"], function(x)
+    ifelse(!is.na(x),ifelse(x<0,0,x),NA))
+
+CvT.chems <- merge(CvT.chems,
+  ivbp[,c("DTXSID","IVBP Final Pred Log Clint_mL/h/10^6 hep")],
+  all.x=TRUE,
+  by="DTXSID")
+colnames(CvT.chems)[colnames(CvT.chems)=="IVBP Final Pred Log Clint_mL/h/10^6 hep"] <- "Human.Clint.IVBP"
+#colnames(CvT.chems)[colnames(CvT.chems)=="FUB_pred"] <- "Human.Fup.IVBP
+```
+
+
 Master Table:
 ```{r prediction_table, eval = TRUE}
-for (this.col in 12:21) 
+for (this.col in 12:(dim(CvT.chems)[2])) 
 {
   CvT.chems[,this.col] <- as.numeric(CvT.chems[,this.col])
 }
@@ -298,7 +323,7 @@ Heatmap of the Data Set:
   colnames(CvT.chems.scale)[11] <- "Water Solubility"
   rownames(CvT.chems.scale) <- CvT.chems.scale$PREFERRED_NAME 
 # Make sure everything is numeric:
-  for (this.col in 4:21) CvT.chems.scale[,this.col] <- 
+  for (this.col in 4:(dim(CvT.chems.scale)[2])) CvT.chems.scale[,this.col] <- 
     as.numeric(CvT.chems.scale[,this.col])
 # Scale and center
   for (this.col in 4:11) CvT.chems.scale[,this.col] <- 
@@ -309,7 +334,7 @@ clint.mean <- mean(CvT.chems.scale[,12], na.rm=TRUE)
 fup.mean <- mean(CvT.chems.scale[,13], na.rm=TRUE)
 clint.sd <- sd(CvT.chems.scale[,12], na.rm=TRUE)
 fup.sd <- sd(CvT.chems.scale[,13], na.rm=TRUE)
-for (this.col in seq(12,20,2)) CvT.chems.scale[,this.col] <- 
+for (this.col in seq(12,22,2)) CvT.chems.scale[,this.col] <- 
     (CvT.chems.scale[,this.col] - clint.mean) / clint.sd
 for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <- 
     (CvT.chems.scale[,this.col] - fup.mean) / fup.sd
@@ -317,7 +342,7 @@ for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <-
 
   
     mypalette<-brewer.pal(11,"RdYlBu")
-  heatmap.2(as.matrix(CvT.chems.scale[,4:21]),
+  heatmap.2(as.matrix(CvT.chems.scale[,4:(dim(CvT.chems.scale)[2])]),
     lwid=c(0.4,1),
     lhei=c(0.4,1),
     margins=c(15,1),
@@ -365,7 +390,17 @@ level1tab4 <- level1tab[,c(
 level1tab4$QSPR <- "OPERA"
 colnames(level1tab4)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
 
-level1tab <- rbind(level1tab1,level1tab2,level1tab3,level1tab4)
+level1tab5 <- level1tab[,c(
+  "DTXSID",
+  "PREFERRED_NAME",
+  "CASRN","Human.Clint.httk","Human.Fup.httk",
+  "Human.Clint.IVBP")]
+level1tab5 <- cbind(level1tab5,NA)
+level1tab5$QSPR <- "IVBP"
+colnames(level1tab5)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
+
+
+level1tab <- rbind(level1tab1,level1tab2,level1tab3,level1tab4,level1tab5)
 level1tab$Human.Fup.pred <- as.numeric(level1tab$Human.Fup.pred)
 level1tab$Human.Clint.pred <- as.numeric(level1tab$Human.Clint.pred)
 ```
@@ -482,11 +517,11 @@ for (this.qspr1 in unique(level1tab$QSPR))
   {
     set1 <- this.subset$Human.Clint.FE
     set2 <- subset(level1tab,QSPR==this.qspr2)$Human.Clint.FE
-    ks.tests.clint[this.qspr1,this.qspr2] <- suppressWarnings(
+    if (any(!is.na(set1)) & any(!is.na(set2))) ks.tests.clint[this.qspr1,this.qspr2] <- suppressWarnings(
       ks.test(set1,set2)$p.value)
     set1 <- this.subset$Human.fup.FE
     set2 <- subset(level1tab,QSPR==this.qspr2)$Human.fup.FE
-    ks.tests.fup[this.qspr1,this.qspr2] <- suppressWarnings(
+    if (any(!is.na(set1)) & any(!is.na(set2))) ks.tests.fup[this.qspr1,this.qspr2] <- suppressWarnings(
       ks.test(set1,set2)$p.value)
   }
 }
@@ -823,28 +858,38 @@ cyps <- rbind(pharm,pest)
 # TK Stats (including Vd and thalf) calculated from CvTdb:
 ```{r load_compartmental_model_parameters, eval = TRUE}
 setwd("C:/Users/jwambaug/git/tkqsars/")
-fits1comp <- read.csv("PK.fit.table.1comp.10292021.csv")
-fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
-fits2comp <- read.csv("PK.fit.table.2comp.10292021.csv")
-fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
+fitsflat <- read.csv("PK.fit.table.flat.03012022.csv")
+fits1comp <- read.csv("PK.fit.table.1comp.03012022.csv")
+#fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
+fits2comp <- read.csv("PK.fit.table.2comp.03012022.csv")
+#fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
 
 #How many chemicals have 1 or 2 compartment fits:
-length(unique(c(fits1comp$CAS,fits2comp$CAS)))
+length(unique(c(fitsflat$CAS,fits1comp$CAS,fits2comp$CAS)))
 
 fittable <- NULL
 for (this.cas in unique(c(fits1comp$CAS,fits2comp$CAS)))
 {
-  if (this.cas %in% fits1comp$CAS) this.compound <- fits1comp[
-    fits1comp$CAS==this.cas,"Compound"][1]
-  else this.compound <- fits2comp[
+  if (this.cas %in% fits1comp$CAS) 
+  { 
+    this.compound <- fits1comp[
+      fits1comp$CAS==this.cas,"Compound"][1]
+  } else if (this.cas %in% fits2comp$CAS) {
+    this.compound <- fits2comp[
+    fits2comp$CAS==this.cas,"Compound"][1]    
+  } else {
+    this.compound <- fitsflat[
     fits2comp$CAS==this.cas,"Compound"][1]
-  
+  }
+    
   this.data.1comp <- subset(fits1comp,CAS==this.cas)
   this.data.2comp <- subset(fits2comp,CAS==this.cas)
+  this.data.flat <- subset(fitsflat,CAS==this.cas)
   
   for (this.species in unique(tolower(c(
     this.data.1comp$Species,
-    this.data.2comp$Species))))
+    this.data.2comp$Species,
+    this.data.flat$Species))))
   {
     Vdist.1comp <- NA
     kelim.1comp <- NA
@@ -853,17 +898,37 @@ for (this.cas in unique(c(fits1comp$CAS,fits2comp$CAS)))
     
     this.data.1comp.species <- subset(this.data.1comp,tolower(Species)==this.species)
     this.data.2comp.species <- subset(this.data.2comp,tolower(Species)==this.species)
+    this.data.flat.species <- subset(this.data.flat,tolower(Species)==this.species)
     
     this.row <- data.frame(
       Compound=this.compound,
       CAS=this.cas,
       Species=this.species,
       Reference=NA,
+      AIC.flat=NA,
       AIC.1comp=NA,
       AIC.2comp=NA,
       Model=NA,
       Vdist=NA,
       kelim=NA)
+    
+    if (this.cas %in% fitsflat$CAS)
+    {
+      this.data.flat.species <- subset(this.data.flat.species,
+        param.value.type=="Fitted geometric mean")
+
+    # If more than one source, require that the joint analysis worked:
+     if (dim(this.data.flat.species)[1]>1)
+      {
+        this.data.flat.species<- subset(this.data.flat.species, 
+                                         Data.Analyzed=="Joint Analysis")[1,]
+      }
+      if (dim(this.data.1comp.species)[1]>0) 
+      {
+        this.row$AIC.flat <- this.data.flat.species$AIC
+        this.row$Reference <- this.data.flat.species$Reference
+      }
+    }
     
     if (this.cas %in% fits1comp$CAS)
     {
@@ -874,7 +939,7 @@ for (this.cas in unique(c(fits1comp$CAS,fits2comp$CAS)))
      if (dim(this.data.1comp.species)[1]>1)
       {
         this.data.1comp.species<- subset(this.data.1comp.species, 
-                                         Data.Analyzed=="Joint Analysis")
+                                         Data.Analyzed=="Joint Analysis")[1,]
       }
       if (dim(this.data.1comp.species)[1]>0) 
       {
@@ -894,7 +959,7 @@ for (this.cas in unique(c(fits1comp$CAS,fits2comp$CAS)))
       if (dim(this.data.2comp.species)[1]>1)
       {
         this.data.2comp.species <- subset(this.data.2comp.species, 
-                            Data.Analyzed=="Joint Analysis")
+                            Data.Analyzed=="Joint Analysis")[1,]
       }
       if (dim(this.data.2comp.species)[1]>0) 
       {
@@ -905,21 +970,27 @@ for (this.cas in unique(c(fits1comp$CAS,fits2comp$CAS)))
       }
     }
 
-    if (!is.na(this.row$AIC.1comp))
+    
+    
+    if (is.na(this.row$AIC.flat)) this.row$AIC.flat <- Inf
+    if (is.na(this.row$AIC.1comp)) this.row$AIC.1comp <- Inf
+    if (is.na(this.row$AIC.2comp)) this.row$AIC.2comp <- Inf
+    
+    AICs <- c(this.row$AIC.flat,this.row$AIC.1comp,this.row$AIC.2comp)
+    if (all(AICs==Inf))
     {
-      if (!is.na(this.row$AIC.2comp))
-      {
-        if (this.row$AIC.1comp < this.row$AIC.2comp)
-        {
-          this.row$Model <- "1Comp"
-        } else this.row$Model <- "2Comp"
-      } else this.row$Model <- "1Comp"
-    } else if (!is.na(this.row$AIC.2comp))
+      this.row$Model <- "None"
+    } else if (this.row$AIC.2comp == min(AICs))
     {
       this.row$Model <- "2Comp"
+    } else if (this.row$AIC.1comp == min(AICs))
+    {
+      this.row$Model <- "1Comp"
+    } else {
+      this.row$Model <- "Flat"
     }
     
-    if (!is.na(this.row$Model))
+    if (this.row$Model != "Flat")
       if (this.row$Model == "1Comp")
       {
         this.row$Vdist <- Vdist.1comp
@@ -1000,13 +1071,19 @@ write.csv(CvT.chems.opera[,c(
 There are chemicals where the in vivo data don't permit empirical fits, drop
 those from the level II/III evaluation:
 ```{r separate_out_badfits, eval=TRUE}
-CvT.chems.nofits <- CvT.chems[!(CvT.chems$CASRN%in%fittable$CAS),]
+CvT.chems.nofits <- CvT.chems[
+  !(CvT.chems$CASRN%in%fittable$CAS) |
+  CvT.chems$CASRN %in%subset(fittable,Model=="Flat")$CAS |
+  CvT.chems$CASRN %in%subset(fittable,Model=="None")$CAS
+  , ]
+                                
+
 write.csv(CvT.chems.nofits[,c(
   "DTXSID",
   "PREFERRED_NAME",                               
   "CASRN")], row.names=FALSE,file="SupTable-NoEmpiricalFitChems.txt")
 
-CvT.data <- subset(CvT.data, CAS %in% fittable$CAS)
+CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CASRN))
 length(unique(CvT.data$CAS)) # Number of chemicals with good fits
 ```
 Get rid of chemical predictions that are possibly just training set lookups:
@@ -1288,8 +1365,12 @@ for (i in 1:10)
 ```{r cvt_compare_fits, eval = TRUE}
 level2tab.fits.list <- makeCvTpredsfromfits(
   CvT.data,
-  fits1comp,
-  fits2comp,
+  subset(fits1comp,
+    param.value.type=="Fitted geometric mean" &
+    (regexpr(",",Reference)==-1 | Data.Analyzed=="Joint Analysis")),
+  subset(fits2comp,
+    param.value.type=="Fitted geometric mean" &
+    (regexpr(",",Reference)==-1 | Data.Analyzed=="Joint Analysis")),
   "FitsToData")
 level2tab.fits <-  level2tab.fits.list$cvt
 level2tab.fits.stats <- level2tab.fits.list$stats
@@ -1367,13 +1448,16 @@ Assign average to missing predictions:
   
 ```{r calc_level2_rpe, eval = TRUE}
   RPE.THRESH <- 20
-
+  # Can't work with NA's:
+  level2tab <- subset(level2tab,!is.na(Conc.pred))
+ 
   # Calculate RPE:
   level2tab$Conc.obs <- as.numeric(level2tab$Conc.obs)
   level2tab$Conc.pred <- as.numeric(level2tab$Conc.pred) 
   # Let's treat all "low" values as the same, where we define low with loq:
   level2tab$Conc.obs[level2tab$Conc.obs<level2tab$calc_loq] <- 
     level2tab[level2tab$Conc.obs<level2tab$calc_loq,"calc_loq"]
+
   level2tab$Conc.pred[level2tab$Conc.pred<level2tab$calc_loq] <- 
     level2tab[level2tab$Conc.pred<level2tab$calc_loq,"calc_loq"]
   
@@ -1965,6 +2049,9 @@ print(Cmax.stats.table)
 
 
 ```{r make_RMSE_bychem_analysis, eval = TRUE}
+# Get rid of NA QSPRs:
+level2tab <- subset(level2tab, !is.na(QSPR))
+
 qsprbychem.table <- NULL
 QSPRs <- unique(level2tab$QSPR)
 for (this.chemical in unique(level2tab$Compound))
