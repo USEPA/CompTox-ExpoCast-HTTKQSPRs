@@ -12,6 +12,8 @@ vignette: >
 ```{r}
 knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
 ```
+
+
 To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
 ```{r load_packages, eval = TRUE}
 # Clear the memory:
@@ -27,6 +29,8 @@ library(DescTools)
 library(gridExtra)
 library(reshape2)
 ```
+
+
 Load custom code 
 ```{r load_code, eval = TRUE}
 setwd("C:/Users/jwambaug/git/tkqsars/")
@@ -42,6 +46,7 @@ scientific_10 <- function(x) {
 }  
 ```
 
+
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
@@ -49,7 +54,10 @@ output.prefix <- toupper(format(Sys.Date(),"%Y%b%d"))
 ```
 
 
+
 Load the CvTdb in vivo data from Sayre et al. (2020):
+
+
 ```{r load_data, eval = TRUE}
 series_res_set <- read.csv("cvt_query_for_john_27may2021.csv")
 colnames(series_res_set)[colnames(series_res_set)=="species"] <- "Species"
@@ -118,6 +126,195 @@ CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
 ```
 
 
+#Load the curve fits from invivoPKfit (Chris Cook):
+```{r load_compartmental_model_parameters, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+fitsflat <- read.csv("PK.fit.table.flat.03012022.csv")
+fits1comp <- read.csv("PK.fit.table.1comp.03012022.csv")
+#fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
+fits2comp <- read.csv("PK.fit.table.2comp.03012022.csv")
+#fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
+
+#How many chemicals have 1 or 2 compartment fits:
+length(unique(c(fitsflat$CAS,fits1comp$CAS,fits2comp$CAS)))
+```
+
+# Concatanate the curve fits into a single table (should be part of invivoPKfit eventually):
+```{r merge_curve_fits, eval = TRUE}
+fittable <- NULL
+for (this.dtxsid in unique(c(fits1comp$DTXSID,fits2comp$DTXSID,fitsflat$DTXSID)))
+{
+  if (this.dtxsid %in% fits1comp$DTXSID) 
+  { 
+    this.compound <- subset(fits1comp,DTXSID==this.dtxsid)$PREFERRED_NAME[1]
+    this.cas <- subset(fits1comp,DTXSID==this.dtxsid)$CASRN[1]
+  } else if (this.cas %in% fits2comp$CAS) {
+    this.compound <- subset(fits2comp,DTXSID==this.dtxsid)$PREFERRED_NAME[1]
+    this.cas <- subset(fits2comp,DTXSID==this.dtxsid)$CASRN[1]
+  } else {
+    this.compound <- subset(fitsflat,DTXSID==this.dtxsid)$PREFERRED_NAME[1]
+    this.cas <- subset(fitsflat,DTXSID==this.dtxsid)$CASRN[1]
+  }
+    
+  this.data.1comp <- subset(fits1comp,DTXSID==this.dtxsid)
+  this.data.2comp <- subset(fits2comp,DTXSID==this.dtxsid)
+  this.data.flat <- subset(fitsflat,DTXSID==this.dtxsid)
+  
+  for (this.species in unique(tolower(c(
+    this.data.1comp$Species,
+    this.data.2comp$Species,
+    this.data.flat$Species))))
+  {
+    Vdist.1comp <- NA
+    kelim.1comp <- NA
+    Vdist.2comp <- NA
+    kelim.2comp <- NA
+    
+    this.data.1comp.species <- subset(this.data.1comp,tolower(Species)==this.species)
+    this.data.2comp.species <- subset(this.data.2comp,tolower(Species)==this.species)
+    this.data.flat.species <- subset(this.data.flat,tolower(Species)==this.species)
+    
+    this.row <- data.frame(
+      DTXSID=this.dtxsid,
+      Compound=this.compound,
+      CAS=this.cas,
+      Species=this.species,
+      Reference=NA,
+      AIC.flat=NA,
+      AIC.1comp=NA,
+      AIC.2comp=NA,
+      AIC.best=NA,
+      Model=NA,
+      Vdist=NA,
+      kelim=NA,
+      Fgutabs=NA,
+      Vdist.1comp=NA,
+      kelim.1comp=NA,
+      Fgutabs.1comp=NA,
+      Vdist.2comp=NA,
+      V1.2comp=NA,
+      k12.2comp=NA,
+      k21.2comp=NA,
+      kelim.2comp=NA,
+      Fgutabs.2comp=NA)
+    
+    if (this.cas %in% fitsflat$CASRN)
+    {
+      this.data.flat.species <- subset(this.data.flat.species,
+        param.value.type=="Fitted geometric mean")
+
+    # If more than one source, require that the joint analysis worked:
+     if (dim(this.data.flat.species)[1]>1)
+      {
+        this.data.flat.species<- subset(this.data.flat.species, 
+                                         Data.Analyzed=="Joint Analysis")[1,]
+      }
+      if (dim(this.data.1comp.species)[1]>0) 
+      {
+        this.row$AIC.flat <- this.data.flat.species$AIC
+        this.row$Reference <- this.data.flat.species$Reference
+      }
+    }
+    
+    if (this.cas %in% fits1comp$CASRN)
+    {
+      this.data.1comp.species <- subset(this.data.1comp.species,
+        param.value.type=="Fitted geometric mean")
+
+    # If more than one source, require that the joint analysis worked:
+     if (dim(this.data.1comp.species)[1]>1)
+      {
+        this.data.1comp.species<- subset(this.data.1comp.species, 
+                                         Data.Analyzed=="Joint Analysis")[1,]
+      }
+      if (dim(this.data.1comp.species)[1]>0) 
+      {
+        this.row$AIC.1comp <- this.data.1comp.species$AIC
+        this.row$Vdist.1comp <- this.data.1comp.species$Vdist
+        this.row$kelim.1comp <- this.data.1comp.species$kelim
+        this.row$Fgutabs.1comp <- this.data.1comp.species$Fgutabs
+        this.row$Reference <- this.data.1comp.species$Reference
+      }
+    }
+    
+    if (this.cas %in% fits2comp$CASRN)
+    {
+      this.data.2comp.species <- subset(this.data.2comp.species,
+        param.value.type=="Fitted geometric mean")
+
+    # If more than one source, require that the joint analysis worked:
+      if (dim(this.data.2comp.species)[1]>1)
+      {
+        this.data.2comp.species <- subset(this.data.2comp.species, 
+                            Data.Analyzed=="Joint Analysis")[1,]
+      }
+      if (dim(this.data.2comp.species)[1]>0) 
+      {
+        this.row$AIC.2comp <- this.data.2comp.species$AIC
+        this.row$Vdist.2comp <- this.data.2comp.species$Vss
+        this.row$kelim.2comp <- this.data.2comp.species$kelim
+        this.row$V1.2comp <- this.data.2comp.species$V1
+        this.row$k12.2comp <- this.data.2comp.species$k12
+        this.row$k21.2comp <- this.data.2comp.species$k21
+        this.row$Fgutabs.2comp <- this.data.2comp.species$Fgutabs
+        this.row$Reference <- this.data.2comp.species$Reference
+      }
+    }
+
+    
+    
+    if (is.na(this.row$AIC.flat)) this.row$AIC.flat <- Inf
+    if (is.na(this.row$AIC.1comp)) this.row$AIC.1comp <- Inf
+    if (is.na(this.row$AIC.2comp)) this.row$AIC.2comp <- Inf
+    
+    AICs <- c(this.row$AIC.flat,this.row$AIC.1comp,this.row$AIC.2comp)
+    if (all(AICs==Inf))
+    {
+      this.row$Model <- "None"
+      this.row$AIC.best <- NA
+    } else if (this.row$AIC.2comp == min(AICs))
+    {
+      this.row$Model <- "2Comp"
+      this.row$AIC.best <- this.row$AIC.2comp
+    } else if (this.row$AIC.1comp == min(AICs))
+    {
+      this.row$Model <- "1Comp"
+      this.row$AIC.best <- this.row$AIC.1comp
+    } else {
+      this.row$Model <- "Flat"
+      this.row$AIC.best <- this.row$AIC.flat
+    }
+    
+    if (this.row$Model != "Flat")
+      if (this.row$Model == "1Comp")
+      {
+        this.row$Vdist <- Vdist.1comp
+        this.row$kelim <- kelim.1comp
+        this.row$Fgutabs <- this.row$Fgutabs.1comp
+      } else 
+      {
+        this.row$Vdist <- Vdist.2comp
+        this.row$kelim <- kelim.2comp
+        this.row$Fgutabs <- this.row$Fgutabs.2comp
+      }      
+    
+    fittable <- rbind(fittable,this.row)
+  }
+}
+fittable$halflife <- log(2)/fittable$kelim
+
+#Lets only keep chemicals where we can fit a PK model:
+fittable <- subset(fittable, !is.na(Model))
+
+for (this.col in c("AIC.1comp","AIC.2comp","Vdist","kelim","halflife"))
+  fittable[,this.col] <- signif(as.numeric(fittable[,this.col]),4)
+
+# We have parameters estimated for 86 chemicals:
+dim(fittable)[1]
+
+write.csv(fittable,file="SupTable-TKFits.txt",row.names=FALSE)
+```
+# Load phys-chem information:
 ```{r load_physchem, eval = TRUE}
 CvT.chems <-read_excel("eval-chems3.xls")
 for (this.col in 6:18) CvT.chems[,this.col] <- suppressWarnings(signif(
@@ -137,6 +334,21 @@ CvT.chems <- CvT.chems[,c(
   )]
 
 ```
+
+
+# Throw out the CvT data for chemicals that could not be described by empirical PK models
+```{r subset_cvt_data, eval = TRUE}
+fittable <- subset(fittable,!(Model%in% c("Flat","None")))
+
+print(length(unique(CvT.data$DTXSID)))
+CvT.data <- subset(CvT.data,DTXSID %in% fittable$DTXSID)
+print(length(unique(CvT.data$DTXSID)))
+
+print(length(unique(CvT.chems$DTXSID)))
+CvT.chems<- subset(CvT.chems,DTXSID %in% fittable$DTXSID)
+print(length(unique(CvT.chems$DTXSID)))
+```
+
 
 Create a default table of in vitro measured values:
 ```{r default_table, eval = TRUE}
@@ -856,167 +1068,7 @@ cyps <- rbind(pharm,pest)
 # the Level II and III calculations are the same time (rather than rewriting 
 # the parameter values twice).
 # TK Stats (including Vd and thalf) calculated from CvTdb:
-```{r load_compartmental_model_parameters, eval = TRUE}
-setwd("C:/Users/jwambaug/git/tkqsars/")
-fitsflat <- read.csv("PK.fit.table.flat.03012022.csv")
-fits1comp <- read.csv("PK.fit.table.1comp.03012022.csv")
-#fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
-fits2comp <- read.csv("PK.fit.table.2comp.03012022.csv")
-#fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
 
-#How many chemicals have 1 or 2 compartment fits:
-length(unique(c(fitsflat$CAS,fits1comp$CAS,fits2comp$CAS)))
-
-fittable <- NULL
-for (this.cas in unique(c(fits1comp$CAS,fits2comp$CAS)))
-{
-  if (this.cas %in% fits1comp$CAS) 
-  { 
-    this.compound <- fits1comp[
-      fits1comp$CAS==this.cas,"Compound"][1]
-  } else if (this.cas %in% fits2comp$CAS) {
-    this.compound <- fits2comp[
-    fits2comp$CAS==this.cas,"Compound"][1]    
-  } else {
-    this.compound <- fitsflat[
-    fits2comp$CAS==this.cas,"Compound"][1]
-  }
-    
-  this.data.1comp <- subset(fits1comp,CAS==this.cas)
-  this.data.2comp <- subset(fits2comp,CAS==this.cas)
-  this.data.flat <- subset(fitsflat,CAS==this.cas)
-  
-  for (this.species in unique(tolower(c(
-    this.data.1comp$Species,
-    this.data.2comp$Species,
-    this.data.flat$Species))))
-  {
-    Vdist.1comp <- NA
-    kelim.1comp <- NA
-    Vdist.2comp <- NA
-    kelim.2comp <- NA
-    
-    this.data.1comp.species <- subset(this.data.1comp,tolower(Species)==this.species)
-    this.data.2comp.species <- subset(this.data.2comp,tolower(Species)==this.species)
-    this.data.flat.species <- subset(this.data.flat,tolower(Species)==this.species)
-    
-    this.row <- data.frame(
-      Compound=this.compound,
-      CAS=this.cas,
-      Species=this.species,
-      Reference=NA,
-      AIC.flat=NA,
-      AIC.1comp=NA,
-      AIC.2comp=NA,
-      Model=NA,
-      Vdist=NA,
-      kelim=NA)
-    
-    if (this.cas %in% fitsflat$CAS)
-    {
-      this.data.flat.species <- subset(this.data.flat.species,
-        param.value.type=="Fitted geometric mean")
-
-    # If more than one source, require that the joint analysis worked:
-     if (dim(this.data.flat.species)[1]>1)
-      {
-        this.data.flat.species<- subset(this.data.flat.species, 
-                                         Data.Analyzed=="Joint Analysis")[1,]
-      }
-      if (dim(this.data.1comp.species)[1]>0) 
-      {
-        this.row$AIC.flat <- this.data.flat.species$AIC
-        this.row$Reference <- this.data.flat.species$Reference
-      }
-    }
-    
-    if (this.cas %in% fits1comp$CAS)
-    {
-      this.data.1comp.species <- subset(this.data.1comp.species,
-        param.value.type=="Fitted geometric mean")
-
-    # If more than one source, require that the joint analysis worked:
-     if (dim(this.data.1comp.species)[1]>1)
-      {
-        this.data.1comp.species<- subset(this.data.1comp.species, 
-                                         Data.Analyzed=="Joint Analysis")[1,]
-      }
-      if (dim(this.data.1comp.species)[1]>0) 
-      {
-        this.row$AIC.1comp <- this.data.1comp.species$AIC
-        Vdist.1comp <- this.data.1comp.species$Vdist
-        kelim.1comp <- this.data.1comp.species$kelim
-        this.row$Reference <- this.data.1comp.species$Reference
-      }
-    }
-    
-    if (this.cas %in% fits2comp$CAS)
-    {
-      this.data.2comp.species <- subset(this.data.2comp.species,
-        param.value.type=="Fitted geometric mean")
-
-    # If more than one source, require that the joint analysis worked:
-      if (dim(this.data.2comp.species)[1]>1)
-      {
-        this.data.2comp.species <- subset(this.data.2comp.species, 
-                            Data.Analyzed=="Joint Analysis")[1,]
-      }
-      if (dim(this.data.2comp.species)[1]>0) 
-      {
-        this.row$AIC.2comp <- this.data.2comp.species$AIC
-        Vdist.2comp <- this.data.2comp.species$Vss
-        kelim.2comp <- this.data.2comp.species$kelim
-        this.row$Reference <- this.data.2comp.species$Reference
-      }
-    }
-
-    
-    
-    if (is.na(this.row$AIC.flat)) this.row$AIC.flat <- Inf
-    if (is.na(this.row$AIC.1comp)) this.row$AIC.1comp <- Inf
-    if (is.na(this.row$AIC.2comp)) this.row$AIC.2comp <- Inf
-    
-    AICs <- c(this.row$AIC.flat,this.row$AIC.1comp,this.row$AIC.2comp)
-    if (all(AICs==Inf))
-    {
-      this.row$Model <- "None"
-    } else if (this.row$AIC.2comp == min(AICs))
-    {
-      this.row$Model <- "2Comp"
-    } else if (this.row$AIC.1comp == min(AICs))
-    {
-      this.row$Model <- "1Comp"
-    } else {
-      this.row$Model <- "Flat"
-    }
-    
-    if (this.row$Model != "Flat")
-      if (this.row$Model == "1Comp")
-      {
-        this.row$Vdist <- Vdist.1comp
-        this.row$kelim <- kelim.1comp
-      } else 
-      {
-        this.row$Vdist <- Vdist.2comp
-        this.row$kelim <- kelim.2comp
-      }      
-    
-    fittable <- rbind(fittable,this.row)
-  }
-}
-fittable$halflife <- log(2)/fittable$kelim
-
-#Lets only keep chemicals where we can fit a PK model:
-fittable <- subset(fittable, !is.na(Model))
-
-for (this.col in c("AIC.1comp","AIC.2comp","Vdist","kelim","halflife"))
-  fittable[,this.col] <- signif(as.numeric(fittable[,this.col]),4)
-
-# We have parameters estimated for 86 chemicals:
-dim(fittable)[1]
-
-write.csv(fittable,file="SupTable-TKFits.txt",row.names=FALSE)
-```
 There are ten chemicals where only opera could make predictions:
 ```{r separate_out_opera_only, eval=TRUE}
 CvT.chems.opera <- subset(CvT.chems,DTXSID %in% c(
