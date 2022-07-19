@@ -187,16 +187,23 @@ for (this.dtxsid in unique(c(fits1comp$DTXSID,fits2comp$DTXSID,fitsflat$DTXSID))
       Model=NA,
       Vdist=NA,
       kelim=NA,
+      kgutabs=NA,
       Fgutabs=NA,
       Vdist.1comp=NA,
       kelim.1comp=NA,
+      kgutabs.1comp=NA,
       Fgutabs.1comp=NA,
       Vdist.2comp=NA,
       V1.2comp=NA,
       k12.2comp=NA,
       k21.2comp=NA,
       kelim.2comp=NA,
-      Fgutabs.2comp=NA)
+      kgutabs.2comp=NA,
+      Fgutabs.2comp=NA,
+      Ralphatokelim.2comp=NA,
+      Fbetaofalpha.2comp=NA,
+      alpha.2comp=NA,
+      beta.2comp=NA)
     
     if (this.cas %in% fitsflat$CASRN)
     {
@@ -232,6 +239,7 @@ for (this.dtxsid in unique(c(fits1comp$DTXSID,fits2comp$DTXSID,fitsflat$DTXSID))
         this.row$AIC.1comp <- this.data.1comp.species$AIC
         this.row$Vdist.1comp <- this.data.1comp.species$Vdist
         this.row$kelim.1comp <- this.data.1comp.species$kelim
+        this.row$kgutabs.1comp <- this.data.1comp.species$kgutabs
         this.row$Fgutabs.1comp <- this.data.1comp.species$Fgutabs
         this.row$Reference <- this.data.1comp.species$Reference
       }
@@ -256,7 +264,12 @@ for (this.dtxsid in unique(c(fits1comp$DTXSID,fits2comp$DTXSID,fitsflat$DTXSID))
         this.row$V1.2comp <- this.data.2comp.species$V1
         this.row$k12.2comp <- this.data.2comp.species$k12
         this.row$k21.2comp <- this.data.2comp.species$k21
+        this.row$kgutabs.2comp <- this.data.2comp.species$kgutabs
         this.row$Fgutabs.2comp <- this.data.2comp.species$Fgutabs
+        this.row$Ralphatokelim.2comp <- this.data.2comp.species$Ralphatokelim
+        this.row$Fbetaofalpha.2comp <- this.data.2comp.species$Fbetaofalpha
+        this.row$alpha.2comp <- this.data.2comp.species$alpha
+        this.row$beta.2comp <- this.data.2comp.species$beta
         this.row$Reference <- this.data.2comp.species$Reference
       }
     }
@@ -288,13 +301,15 @@ for (this.dtxsid in unique(c(fits1comp$DTXSID,fits2comp$DTXSID,fitsflat$DTXSID))
     if (this.row$Model != "Flat")
       if (this.row$Model == "1Comp")
       {
-        this.row$Vdist <- Vdist.1comp
-        this.row$kelim <- kelim.1comp
+        this.row$Vdist <- this.row$Vdist.1comp
+        this.row$kelim <- this.row$kelim.1comp
+        this.row$kgutabs <- this.row$kgutabs.1comp
         this.row$Fgutabs <- this.row$Fgutabs.1comp
       } else 
       {
-        this.row$Vdist <- Vdist.2comp
-        this.row$kelim <- kelim.2comp
+        this.row$Vdist <- this.row$Vdist.2comp
+        this.row$kelim <- this.row$kelim.2comp
+        this.row$kgutabs <- this.row$kgutabs.2comp
         this.row$Fgutabs <- this.row$Fgutabs.2comp
       }      
     
@@ -306,11 +321,28 @@ fittable$halflife <- log(2)/fittable$kelim
 #Lets only keep chemicals where we can fit a PK model:
 fittable <- subset(fittable, !is.na(Model))
 
-for (this.col in c("AIC.1comp","AIC.2comp","Vdist","kelim","halflife"))
-  fittable[,this.col] <- signif(as.numeric(fittable[,this.col]),4)
+```
 
-# We have parameters estimated for 86 chemicals:
+# Set the signfifant digits to something reasonable:
+```{r subset_cvt_data, eval = TRUE}
+CvT.data$Value <- signif(CvT.data$Value,3)
+CvT.data$Time <- signif(CvT.data$Time,3)
+CvT.data$calc_loq <- signif(CvT.data$calc_loq,3)
+
+for (this.col in c(
+  "AIC.flat", "AIC.1comp", "AIC.2comp", "AIC.best", "Vdist", "kelim", "kgutabs",
+  "Fgutabs", "kgutabs.1comp","kgutabs.2comp",    
+  "Vdist.1comp", "kelim.1comp", "Fgutabs.1comp", "Vdist.2comp", "V1.2comp",
+  "k12.2comp", "k21.2comp", "kelim.2comp", "Fgutabs.2comp", 
+  "Ralphatokelim.2comp","Fbetaofalpha.2comp","alpha.2comp","beta.2comp",
+  "halflife"))
+  fittable[,this.col] <- signif(fittable[,this.col], 3)
+```
+
+# We have TK parameters estimated for 262 chemicals:
+```{r load_physchem, eval = TRUE}
 dim(fittable)[1]
+length(unique(fittable$DTXSID))
 
 write.csv(fittable,file="SupTable-TKFits.txt",row.names=FALSE)
 ```
@@ -348,6 +380,7 @@ print(length(unique(CvT.chems$DTXSID)))
 CvT.chems<- subset(CvT.chems,DTXSID %in% fittable$DTXSID)
 print(length(unique(CvT.chems$DTXSID)))
 ```
+
 
 
 Create a default table of in vitro measured values:
@@ -1262,7 +1295,9 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="InVitro",
   overwrite=TRUE)
-print(paste("HTTK parameters for",length(get_cheminfo(model="pbtk")),
+print(paste("HTTK parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
             "chemicals for PBTK"))
 level2tab.invitro.list <- makeCvTpreds(CvT.data,"HTTK-InVitro")
 level2tab.invitro <- level2tab.invitro.list$cvt
@@ -1306,7 +1341,9 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="Dawson",
   overwrite=TRUE)
-print(paste("Dawson (2021) parameters for",length(get_cheminfo(model="pbtk")),
+print(paste("Dawson (2021) parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
             "chemicals for PBTK"))
 level2tab.dawson.list <- makeCvTpreds(CvT.data,"HTTK-Dawson")
 level2tab.dawson <- level2tab.dawson.list$cvt
@@ -1328,7 +1365,9 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="Pradeep",
   overwrite=TRUE)
-print(paste("Pradeep (2020) parameters for",length(get_cheminfo(model="pbtk")),
+print(paste("Pradeep (2020) parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
             "chemicals for PBTK"))
 level2tab.pradeep.list <- makeCvTpreds(CvT.data,"HTTK-Pradeep")
 level2tab.pradeep <- level2tab.pradeep.list$cvt
@@ -1352,7 +1391,9 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="OPERA",
   overwrite=T)
-print(paste("OPERA parameters for",length(get_cheminfo(model="pbtk")),
+print(paste("OPERA parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
             "chemicals for PBTK"))
 level2tab.opera.list <- makeCvTpreds(CvT.data,"HTTK-OPERA")
 level2tab.opera <- level2tab.opera.list$cvt
@@ -1375,7 +1416,9 @@ chem.physical_and_invitro.data <- add_chemtable(
   species="Human",
   reference="Consensus",
   overwrite=T)
-print(paste("Consensus parameters for",length(get_cheminfo(model="pbtk")),
+print(paste("Consensus parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
             "chemicals for PBTK"))
 level2tab.consensus.list <- makeCvTpreds(CvT.data,"HTTK-Consensus")
 level2tab.consensus <- level2tab.consensus.list$cvt
@@ -1403,7 +1446,9 @@ for (i in 1:10)
     species="Human",
     reference="YRandom",
     overwrite=T)
-  print(paste("Y-randomized parameters for",length(get_cheminfo(model="pbtk")),
+  print(paste("Y-randomized parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
               "chemicals for PBTK #",i))
   level2tab.yrandom.list <- makeCvTpreds(CvT.data,"HTTK-YRandom")
   level2tab.yrandom <- rbind(level2tab.yrandom,level2tab.yrandom.list$cvt)
@@ -1417,13 +1462,7 @@ for (i in 1:10)
 ```{r cvt_compare_fits, eval = TRUE}
 level2tab.fits.list <- makeCvTpredsfromfits(
   CvT.data,
-  subset(fits1comp,
-    param.value.type=="Fitted geometric mean" &
-    (regexpr(",",Reference)==-1 | Data.Analyzed=="Joint Analysis")),
-  subset(fits2comp,
-    param.value.type=="Fitted geometric mean" &
-    (regexpr(",",Reference)==-1 | Data.Analyzed=="Joint Analysis")),
-  "FitsToData")
+  fittable)
 level2tab.fits <-  level2tab.fits.list$cvt
 level2tab.fits.stats <- level2tab.fits.list$stats
 ```

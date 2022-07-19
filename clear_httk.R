@@ -6,31 +6,24 @@ clear_httk <- function(
 {
   for (this.species in species)
   {
-    delete.table <- get_cheminfo(info="all",species=this.species,
-      suppress.messages=TRUE)
+    delete.table <- chem.physical_and_invitro.data[,c("Compound","CAS","DTXSID")]
+
     if (!is.null(target.dtxsids)) delete.table <- subset(delete.table,
       DTXSID %in% target.dtxsids)
-    if (dim(delete.table)[1]>0)
+    
+    if (length(delete.table[,"DTXSID"])>0)
     {
-      delete.table$Clint <- NA
-      delete.table$Funbound.plasma <- NA
-      delete.table$Rblood2plasma <- NA
-      delete.table$Clint.pValue <- NA
-      chem.physical_and_invitro.data <- 
-        suppressWarnings(add_chemtable(delete.table,
-          current.table=chem.physical_and_invitro.data,
-          data.list=list(
-          Compound="Compound",
-          CAS="CAS",
-          DTXSID="DTXSID",
-          Funbound.plasma="Funbound.plasma",
-          Rblood2plasma="Rblood2plasma",
-          Clint.pValue="Clint.pValue",
-          Clint="Clint"),
-          species=this.species,
-          reference="Deleted",
-          overwrite=T,
-          allow.na=T))      
+      these.indices <- chem.physical_and_invitro.data[,"DTXSID"] %in%
+        delete.table[,"DTXSID"]
+      
+      for (this.col in c(
+        "Clint","Funbound.plasma","Rblood2plasma","Clint.pValue"))
+      {
+        col.name <- paste(this.species,this.col,sep=".")
+        chem.physical_and_invitro.data[these.indices, col.name] <- NA
+        chem.physical_and_invitro.data[these.indices, paste(
+          col.name,"Reference",sep=".")] <- "Deleted"
+      }
     }
   }
     
