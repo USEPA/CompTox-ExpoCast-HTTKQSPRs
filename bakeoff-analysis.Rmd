@@ -134,6 +134,36 @@ fits1comp <- read.csv("PK.fit.table.1comp.03012022.csv")
 #fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
 fits2comp <- read.csv("PK.fit.table.2comp.03012022.csv")
 #fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
+# Units on Volumes:
+fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Vdist"] <-
+  fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Vdist"] /
+  1000
+fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"CLtot"] <-
+  fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"CLtot"] /
+  1000
+fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Css"] <-
+  fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Css"] *
+  1000
+fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Cpeak.oral.1mgkg"] <-
+  fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Cpeak.oral.1mgkg"] *
+  1000
+fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"V1"] <-
+  fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"V1"] /
+  1000
+fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"Vss"] <-
+  fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"Vss"] /
+  1000
+fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"CLtot"] <-
+  fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"CLtot"] /
+  1000
+fits2comp$Css <- 1/fits2comp$CLtot
+
+# Negative k12 indicates bad fit:
+badfits <- fits2comp$k12
+badfits[is.na(badfits)]<-0
+badfits <- ifelse(badfits<0,TRUE,FALSE)
+fits2comp[badfits,"AIC"] <- Inf
+
 
 #How many chemicals have 1 or 2 compartment fits:
 length(unique(c(fitsflat$CAS,fits1comp$CAS,fits2comp$CAS)))
