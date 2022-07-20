@@ -261,10 +261,10 @@ makeCvTpredsfromfits <- function(
     {
       this.fit1 <- subset(fittable, CAS==this.cas)
 
-      for (this.species in unique(tolower(this.subset1$Species)))
+      for (this.species in unique(tolower(this.fit1$Species)))
       {
         this.fit2 <- subset(this.fit1,tolower(Species)==this.species)
-        
+
         model <- NULL
         if (this.fit2$Model %in% c("1Comp","2Comp"))
         {
