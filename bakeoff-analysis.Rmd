@@ -4,7 +4,7 @@ author: "John Wambaugh and Nisha Sipes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{TKQSPR Bakeoff}
+  %\VignetteIndexEntry{QSPR Bakeoff}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -50,7 +50,7 @@ scientific_10 <- function(x) {
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- toupper(format(Sys.Date(),"%Y%b%d"))
+output.prefix <- "Jan2024"
 ```
 
 
@@ -72,6 +72,11 @@ colnames(series_res_set)[colnames(series_res_set)=="analyte_name_original"] <- "
 colnames(series_res_set)[colnames(series_res_set)=="fk_study_id"] <- "Source"
 ```
 
+# Get chemical names, ids', and phys-chem properties:
+```{r load_dashboard_info}
+test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
+```
+
 ```{r load_cvt_data, eval = TRUE}
 series_res_set <- read.csv("CvTdb/CvTdb_fullData_20230906.csv")
 series_res_set$Species <- series_res_set$subjects.species_harmonized
@@ -79,9 +84,19 @@ series_res_set$Media <- series_res_set$series.conc_medium_normalized
 series_res_set$Time <- series_res_set$conc_time_values.time_h
 series_res_set$Value <- series_res_set$conc_time_values.conc
 series_res_set$Dose <- series_res_set$studies.dose_level_normalized
+series_res_set$Route <- series_res_set$studies.administration_route_normalized
 series_res_set$calc_loq <- series_res_set$series.loq_normalized
 series_res_set$DTXSID <- series_res_set$series.analyte_dtxsid
+for (this.chem in unique(series_res_set$DTXSID))
+{
+  this.compound <- test.chems.dashboard[test.chems.dashboard$DTXSID %in% this.chem,
+                                         "PREFERRED_NAME"]
+  series_res_set[series_res_set$DTXSID %in% this.chem, "Compound"] <-
+    this.compound
+}
 series_res_set$CAS <- series_res_set$series.test_substance_casrn
+series_res_set$Reference <- series_res_set$documents_extraction.pmid
+series_res_set$Source <- series_res_set$documents_extraction.pmid
 ```
 
 ```{r organize_eval_chems, eval = TRUE}
@@ -94,6 +109,12 @@ length(eval.cas)
 # We have both human and rat:
 series_res_set$Species <- tolower(series_res_set$Species)
 unique(series_res_set$Species)
+
+# Although CvTdb has expanded, keep focus on human and rat:
+series_res_set <- subset(series_res_set, tolower(Species) %in%
+                           c("rat", "human"))
+unique(series_res_set$Species)
+
 # We habe both blood and plasma:
 series_res_set$Media <- tolower(series_res_set$Media)
 unique(series_res_set$Media)
@@ -371,9 +392,40 @@ fittable <- subset(fittable, !is.na(Model))
 fittable <- read.csv("CvTdb/CvTdb_fullCoefsAIC_2023.10.30.csv")
 fittable$DTXSID <- fittable$Chemical
 fittable$Model <- fittable$model
+fittable[fittable$Model=="model_1comp","Model"] <- "1Comp"
+fittable[fittable$Model=="model_2comp","Model"] <- "2Comp"
 CASinfo <- CvT.data[,c("DTXSID","CAS")]
 CASinfo <- subset(CASinfo,!duplicated(CASinfo))
 fittable <- merge(fittable,CASinfo,by="DTXSID")
+# Calculate halflife:
+fittable$halflife <- signif(log(2)/fittable$kelim,3)
+# Although CvTdb has expanded, keep focus on human and rat:
+fittable <- subset(fittable, tolower(Species) %in%
+                           c("rat", "human"))
+unique(fittable$Species)
+
+for (this.chem in unique(fittable$DTXSID))
+  for (this.species in unique(fittable$Species))
+  {
+    this.subset <- subset(CvT.data, 
+                          DTXSID %in% this.chem &
+                          Species %in% this.species)
+    these.refs <- paste(unique(sort(this.subset$Reference)),
+                        collapse=", ")
+    fittable[fittable$DTXSID %in% this.chem &
+                     fittable$Species %in% this.species,
+                   "Reference"] <- these.refs
+  }
+```
+# Load predictions made with fits
+```{r load_fit_preds, eval = TRUE}
+fit.preds <- as.data.frame(read_excel("CvTdb/Predictions_CvTwinningModel_20240109.xlsx"))
+
+fit.preds <- merge(fit.preds,
+      test.chems.dashboard[,c("DTXSID","CASRN","PREFERRED_NAME")],
+      by.x="Chemical",
+      by.y="DTXSID")
+colnames(fit.preds)[colnames(fit.preds)=="CASRN"] <- "CAS"
 ```
 
 #How many chemicals have 1 or 2 compartment fits:
@@ -424,7 +476,10 @@ CvT.chems <- CvT.chems[,c(
 
 # Throw out the CvT data for chemicals that could not be described by empirical PK models
 ```{r subset_cvt_data, eval = TRUE}
-fittable <- subset(fittable,!(Model%in% c("model_flat")))
+# Don't want data where the flat model wins:
+fittable <- subset(fittable, !(Model%in% c("model_flat")))
+# Don't want data where couldn't estimate Vdist or V1:
+fittable <- subset(fittable, !is.na(Vdist) | !is.na(V1))
 
 print(length(unique(CvT.data$DTXSID)))
 CvT.data <- subset(CvT.data,DTXSID %in% fittable$DTXSID)
@@ -1892,6 +1947,18 @@ heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
   cexCol=1,
   trace="none",
   col=mypalette)
+tiff(paste("figs/FigProperiesHeatmap",output.prefix,".tiff",sep=""), 
+     width=5, height=4, dpi=300))
+heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
+  4:dim(CvT.chems.stats.heatmap)[2]]),
+  lwid=c(0.4,1),
+  lhei=c(0.4,1),
+  margins=c(10,1),
+  labRow = FALSE,
+  cexCol=1,
+  trace="none",
+  col=mypalette)
+dev.off()
 ```
 
 

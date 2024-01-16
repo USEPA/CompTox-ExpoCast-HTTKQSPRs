@@ -205,38 +205,53 @@ cp_2comp <- function(params, time, dose, iv.dose)
   {
     params$kgutabs<-1
   }
-  if (is.null(params$Fbetaofalpha)) params$Fbetaofalpha<-1
-  if (is.null(params$Ralphatokelim)) params$Ralphatokelim<-1
+  # if (is.null(params$Fbetaofalpha)) params$Fbetaofalpha<-1
+  # if (is.null(params$Ralphatokelim)) params$Ralphatokelim<-1
+  # 
+  # if (is.na(params$Fbetaofalpha)) params$Fbetaofalpha<-1
+  # if (is.na(params$Ralphatokelim)) params$Ralphatokelim<-1
+  # 
+  # if (params$Fgutabs>1) params$Fgutabs<-1
+  # if (params$Fbetaofalpha>1) params$Fbetaofalpha<-1
+  # if (params$Ralphatokelim<0) params$Ralphatokelim<-1
+  # 
+  # alpha <- params$Ralphatokelim*(params$kelim+10^-6)
+  # beta <- params$Fbetaofalpha*alpha
+  # 
+  # # try to keep k21 and k12 positive:
+  # k21 <- max(min(alpha*beta/params$kelim,alpha+beta-params$kelim),0)
+  # k12 <- alpha + beta - params$kelim - k21
   
-  if (is.na(params$Fbetaofalpha)) params$Fbetaofalpha<-1
-  if (is.na(params$Ralphatokelim)) params$Ralphatokelim<-1
+  # Elimination rate from the body:
+  kelim <- params$kelim
+  # Transfer rate from deep tissue to primary:
+  k21 <- params$k21
+  # Transfer rate from primary to deep tissue:
+  k12 <- params$k12
+  # Absorption rate from gut:
+  kgutabs <- params$kgutabs
+  # Primary compartment volume:
+  V1 <- params$V1
+  # Fraction systemically bioavailable from oral dose:
+  Fgutabs <- params$Fgutabs
   
-  if (params$Fgutabs>1) params$Fgutabs<-1
-  if (params$Fbetaofalpha>1) params$Fbetaofalpha<-1
-  if (params$Ralphatokelim<0) params$Ralphatokelim<-1
-  
-  alpha <- params$Ralphatokelim*(params$kelim+10^-6)
-  beta <- params$Fbetaofalpha*alpha
-  
-  # try to keep k21 and k12 positive:
-  k21 <- max(min(alpha*beta/params$kelim,alpha+beta-params$kelim),0)
-  k12 <- alpha + beta - params$kelim - k21
-  
-  alphabeta.sum <- alpha + beta
-  alphabeta.prod <- alpha*beta
+  alphabeta.sum <- k12 + k21 + kelim
+  alphabeta.prod <- k21*kelim
+ 
+  beta <- 1/2*(alphabeta.sum - (alphabeta.sum^2-4*alphabeta.prod)^(1/2))
+  alpha <- 1/2*(alphabeta.sum + (alphabeta.sum^2-4*alphabeta.prod)^(1/2))   
   
   if (iv.dose){ #for IV dosing
-    A <- (dose*(alpha - k21))/(params$V1*(alpha-beta))
-    B <- (dose*(k21-beta))/(params$V1*(alpha-beta))
-    
-    cp <- A*exp(-alpha*time) + B*exp(-beta*time)
+    A <- (dose*(alpha - k21))/(V1*(alpha-beta))
+    B <- (dose*(k21-beta))/(V1*(alpha-beta))
+    C <- 0
   }else{ #for oral dosing
-    A <- (params$Fgutabs*dose*(alpha - k21))/(params$V1*(alpha-beta))
-    B <- (params$Fgutabs*dose*(k21-beta))/(params$V1*(alpha-beta))
+    A <- dose*(Fgutabs/V1)*(kgutabs/(kgutabs-alpha))*((alpha - k21)/(alpha-beta))
+    B <- dose*(Fgutabs/V1)*(kgutabs/(kgutabs-beta))*((k21-beta)/(alpha-beta))
     C <- -(A+B)
-    cp <-  A*exp(-alpha*time) + B*exp(-beta*time) + C*exp(-params$kgutabs*time)
   }
-  
+
+  cp <-  A*exp(-alpha*time) + B*exp(-beta*time) + C*exp(-kgutabs*time)
   cp[cp < 10^-20] <- 10^-20
   return(cp)
 }
@@ -275,20 +290,17 @@ makeCvTpredsfromfits <- function(
           fit.index <- 1
           if (model == "cp_1comp")
           {
-            params$Vdist <- as.numeric(this.fit2[fit.index, "Vdist.1comp"])
-            params$kelim <- as.numeric(this.fit2[fit.index, "kelim.1comp"])*24 
+            params$Vdist <- as.numeric(this.fit2[fit.index, "Vdist"])
           } else {
-            params$V1 <- as.numeric(this.fit2[fit.index, "V1.2comp"])
-            params$kelim <- as.numeric(this.fit2[fit.index,"kelim.2comp"])*24 
-            params$Ralphatokelim <- as.numeric(this.fit2[fit.index,
-              "Ralphatokelim.2comp"])
-            params$Fbetaofalpha <- as.numeric(this.fit2[fit.index,
-              "Fbetaofalpha.2comp"])
+            params$V1 <- as.numeric(this.fit2[fit.index, "V1"])
+            params$k12 <- as.numeric(this.fit2[fit.index,"k12"])
+            params$k21 <- as.numeric(this.fit2[fit.index,"k21"])
           }
           
           # Same parameter names regardless of model:  
+          params$kelim <- as.numeric(this.fit2[fit.index,"kelim"]) 
           params$Fgutabs <- as.numeric(this.fit2[fit.index, "Fgutabs"])
-          params$kgutabs<- as.numeric(this.fit2[fit.index, "kgutabs"])*24
+          params$kgutabs<- as.numeric(this.fit2[fit.index, "kgutabs"])
           
           this.subset2 <- subset(this.subset1,tolower(Species)==this.species)
           for (this.route in unique(this.subset2$Route))
@@ -306,6 +318,7 @@ makeCvTpredsfromfits <- function(
                   params = params,
                   dose = this.dose,
                   iv.dose = tolower(this.route)=="iv")), 4))
+              if (any(is.na(pred))) browser()
               # I think output is already in ug/mL (mg/L)
               this.subset4means <- NULL
               for (this.time in obs.times)
@@ -367,6 +380,124 @@ makeCvTpredsfromfits <- function(
     cvt=cvt.table,
     stats=stats.table))
 }
+
+# This function does the level II concentration comparisons:
+makeCvTpredsfromfits2 <- function(
+    CvT.data, # Concentration vs. time data
+    fit.preds,
+    label = "FitsToData") # How the predictions should be labeled
+{
+  cvt.table <- NULL
+  stats.table <- NULL
+  for (this.cas in unique(CvT.data$CAS))
+  {
+    this.cvt.subset1 <- subset(CvT.data,
+                               CAS==this.cas & 
+                               !is.na(Time) & 
+                               !is.na(Value))
+    this.pred.subset1 <- subset(fit.preds, 
+                                CAS==this.cas & 
+                                !is.na(Time) & 
+                                !is.na(Value))
+    this.compound <- this.cvt.subset1$Compound[1]
+    this.dtxsid <- this.cvt.subset1$DTXSID[1]
+    
+    for (this.species in unique(tolower(this.cvt.subset1$Species)))
+      if (this.species %in% tolower(this.pred.subset1$Species))
+      {
+        this.pred.subset2 <- subset(this.pred.subset1,
+                                    tolower(Species)==this.species)
+        this.cvt.subset2 <- subset(this.cvt.subset1,
+                                    tolower(Species)==this.species)
+
+        for (this.route in unique(tolower(this.cvt.subset2$Route)))
+          if (this.route %in% tolower(this.pred.subset2$Route))
+          {
+            this.cvt.subset3 <- subset(this.cvt.subset2,
+                                       Route==this.route)
+            this.pred.subset3 <- subset(this.pred.subset2,
+                                        Route==this.route)
+            for (this.dose in unique(this.cvt.subset3$Dose))
+              if (this.dose %in% tolower(this.pred.subset3$Dose))
+            {
+              this.cvt.subset4 <- subset(this.cvt.subset3,
+                                         Dose==this.dose)              
+              this.pred.subset4 <- subset(this.pred.subset3,
+                                          Dose==this.dose)
+              obs.times <- signif(sort(unique(this.cvt.subset4$Time)),4)
+              this.cvt.subset4means <- NULL
+              for (this.time in obs.times)
+              {
+                this.cvt.subset5 <- subset(this.cvt.subset4,
+                                           signif(Time,4)==this.time)
+                new.row <- data.frame(
+                  Compound=this.compound,
+                  DTXSID=this.dtxsid,
+                  CAS=this.cas,
+                  Species=this.species,
+                  Route=this.route,
+                  Dose=this.dose,
+                  Time=this.time,
+                  Conc.pred=this.pred.subset4[obs.times == this.time,"Conc_est"],
+                  stringsAsFactors=FALSE)
+                new.row <- merge(new.row,
+                                 this.cvt.subset5[,c(
+                                   "CAS","Media","Value","Source","calc_loq")], by="CAS")
+                colnames(new.row)[colnames(new.row)=="Value"] <- "Conc.obs"
+                cvt.table <- rbind(cvt.table,new.row)
+                this.cvt.subset4means <- rbind(this.cvt.subset4means,
+                                           data.frame(
+                                             Time=this.time,
+                                             Value=mean(this.cvt.subset5$Value,
+                                                        na.rm=TRUE)))
+              }
+              Cmax.obs <- max(this.cvt.subset4means$Value, na.rm=TRUE)
+              Cmax.pred <- max(this.pred.subset4[,
+                                                 "Conc_est"], 
+                               na.rm=TRUE)
+              if (length(obs.times)>1)
+              {
+                AUC.obs <- AUC(this.cvt.subset4means$Time,
+                               this.cvt.subset4means$Value)
+                if (length(obs.times) != 
+                    length(this.pred.subset4[
+                      !duplicated(this.pred.subset4[,"Time"]),
+                      "Conc_est"])) browser()
+                AUC.pred <- AUC(obs.times,
+                                this.pred.subset4[
+                                  !duplicated(this.pred.subset4[,"Time"]),
+                                                  "Conc_est"])
+              } else {
+                AUC.obs <- NA
+                AUC.pred <- NA
+              }
+              new.row <- data.frame(
+                Compound=this.compound,
+                DTXSID=this.dtxsid,
+                CAS=this.cas,
+                Species=this.species,
+                Route=this.route,
+                Dose=this.dose,
+                Cmax.obs=Cmax.obs,
+                Cmax.pred=Cmax.pred,
+                AUC.obs=AUC.obs,
+                AUC.pred=AUC.pred,
+                stringsAsFactors=FALSE)
+              stats.table <- rbind(stats.table,new.row)            
+            }
+          }
+        
+      }
+    
+  }
+  
+  cvt.table$QSPR <- label
+  stats.table$QSPR <- label
+  return(list(
+    cvt=cvt.table,
+    stats=stats.table))
+}
+
 
 # This function does the level III statistic comparisons:
 maketkstatpreds <- function(
