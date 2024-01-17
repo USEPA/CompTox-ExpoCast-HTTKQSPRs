@@ -1,0 +1,1714 @@
+---
+title: "TK QSPR Bakeoff"
+author: "John Wambaugh and Nisha Sipes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QSPR Bakeoff}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+First we clear the memory to make sure there are no holdovers from previous R runs
+```{r clear_mermor, eval=TRUE}
+rm(list=ls()) 
+```
+
+To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
+```{r load_packages, eval = TRUE}
+library(readxl)
+library(ggplot2)
+library(httk)
+library(scales)
+library(gplots)
+library(RColorBrewer)
+library(DescTools)
+library(gridExtra)
+library(reshape2)
+```
+
+Load custom code 
+```{r load_code, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+source("clear_httk.R")
+source("tkstats.R")
+
+# Function for formating tick labels:
+scientific_10 <- function(x) {                                  
+  out <- gsub("1e", "10^", scientific_format()(x))              
+  out <- gsub("\\+","",out)                                     
+  out <- gsub("10\\^01","10",out)                               
+  out <- parse(text=gsub("10\\^00","1",out))                    
+}  
+```
+
+
+Set the time stamp:
+```{r time_stamp, eval = TRUE}
+# Time stamp:
+output.prefix <- "Jan2024"
+```
+
+```{r load_data, eval= TRUE}
+load(file="data/httkinvitro.RData")
+load(file="data/Cvt-chems.RData")
+load(file="data/Cvt-data.RData")
+load(file="data/fittable.RData")
+load(file="data/operatrainingchems.RData")
+```
+
+#
+#
+#Level II Predictions -- CvT data
+#
+#
+
+# At level II we are comparing predictions made using QSPR values with actual
+# tissue concentration vs. time data. Most of the QSPR values are used with the
+# HTTK PBTK model to make predictions. I hope to get ADmet predictor PBTK
+# predictions too.
+#
+# Level I included the predictions made with the in vitro measured values, but this 
+# is a subset of the total chemicals. Should probably run all statistics both
+# for all chemicals and just the subset to make sure that the QSPRs aren't 
+# affected by weird chemcials with no in vitro measured values. But I haven't 
+# done this yet.
+
+
+# HTTK PBTK with in vitro measured values
+# HTTK PBTK with ADmet
+# HTTK PBTK with Pradeep
+# HTTK PBTK with Dawson
+# HTTK PBTK with OPERA
+# ADmet predictor
+
+# Load metabolism data (chemical-enzyme mapping):
+```{r load_chemcyps, eval = TRUE}
+pharm <- read.csv("jm0613471_si_002.txt",sep="\t")
+pharm <- subset(pharm,DTXSID!="-")
+pest <- read_excel("Abass2012.xlsx")
+pharm <- pharm[,c("Compound","PREFERRED_NAME","DTXSID","CASRN","ISOFORM","Author")]
+pest <- pest[,c("Pesticide","PREFERRED_NAME","DTXSID","CASRN","Enzyme","Reference")]
+colnames(pest) <- colnames(pharm)
+cyps <- rbind(pharm,pest)
+
+```
+
+# We load the TK stats (Level III) at this point because it makes sense to do
+# the Level II and III calculations are the same time (rather than rewriting 
+# the parameter values twice).
+# TK Stats (including Vd and thalf) calculated from CvTdb:
+
+There are ten chemicals where only opera could make predictions:
+```{r separate_out_opera_only, eval=TRUE}
+CvT.chems.opera <- subset(CvT.chems,DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992"))
+CvT.chems <- subset(CvT.chems,!(DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992")))
+CvT.data.opera <- subset(CvT.data,DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992"))
+CvT.data <- subset(CvT.data,!(DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992")))
+write.csv(CvT.chems.opera[,c(
+  "DTXSID",
+  "PREFERRED_NAME",                               
+  "CASRN")], row.names=FALSE,file="SupTable/SupTable-OPERAOnlyChems.txt")
+```
+There are chemicals where the in vivo data don't permit empirical fits, drop
+those from the level II/III evaluation:
+```{r separate_out_badfits, eval=TRUE}
+CvT.chems.nofits <- CvT.chems[
+  !(CvT.chems$CASRN%in%fittable$CAS) |
+  CvT.chems$CASRN %in%subset(fittable,Model=="Flat")$CAS |
+  CvT.chems$CASRN %in%subset(fittable,Model=="None")$CAS
+  , ]
+                                
+
+write.csv(CvT.chems.nofits[,c(
+  "DTXSID",
+  "PREFERRED_NAME",                               
+  "CASRN")], row.names=FALSE,file="SupTable/SupTable-NoEmpiricalFitChems.txt")
+
+CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CASRN))
+length(unique(CvT.data$CAS)) # Number of chemicals with good fits
+```
+Get rid of chemical predictions that are possibly just training set lookups:
+```{r remove_training_chems, eval=TRUE}
+CvT.chems.notraining <- CvT.chems
+for (this.qspr in unique(possible.training.chems$QSPR))
+{
+  this.subset <- subset(possible.training.chems, QSPR==this.qspr)
+  for (this.id in this.subset$DTXSID)
+  {
+    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
+      paste("Human.Clint",this.qspr,sep=".")]<-NA
+    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
+      paste("Human.Fup",this.qspr,sep=".")]<-NA
+  }
+}
+dim(CvT.chems.notraining)
+```
+
+# Get rid of chemicals with only OPERA predictions, or bad empirical fits:
+```{r remove_problem_chems, eval=TRUE}
+CvT.chems.nobad <- subset(CvT.chems.notraining,
+                          !(DTXSID %in% CvT.chems.opera$DTXSID) &
+                          !(DTXSID %in% CvT.chems.nofits$DTXSID))
+dim(CvT.chems.nobad)
+dim(CvT.data)
+CvT.data <- subset(CvT.data,CAS%in%CvT.chems.nobad$CASRN)
+# Hours to days:
+CvT.data$Time <- CvT.data$Time/24
+dim(CvT.data)
+```
+
+```{r create_consensus_preds, eval=TRUE}
+clint.cols <- colnames(CvT.chems.nobad)[
+  regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
+CvT.chems.nobad$Human.Clint.Max<- apply(
+  CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE))
+CvT.chems.nobad$Human.Clint.Mean<- apply(
+  CvT.chems.nobad[,clint.cols],1,function(x) mean(x,na.rm=TRUE))
+logit <- function(x)
+{
+  return(sapply(x, function(x) log(x/(1-x))))
+}
+invlogit <- function(x)
+{
+  return(sapply(x, function(x) exp(x)/(exp(x)+1)))
+}
+
+
+fup.cols <- colnames(CvT.chems.nobad)[
+  regexpr("Fup",colnames(CvT.chems.nobad))!=-1]
+CvT.chems.nobad$Human.Fup.Mean <- apply(
+  CvT.chems.nobad[,fup.cols],1,function(x) invlogit(mean(sapply(x, function(y) logit(min(max(y,1e-8),(1-1e-8)))),na.rm=TRUE)))
+```
+
+
+Make a version of the prediction matrix where we've smoothed out missing data:
+```{r remove_missing_predictions, eval = TRUE}
+CvT.chems.nona <- CvT.chems.nobad
+
+# Can't run PBTK for fup=0
+for (this.col in fup.cols)
+  CvT.chems.nona[is.na(CvT.chems.nona[,this.col]),this.col]<-0
+for (this.col in fup.cols)
+  CvT.chems.nona[CvT.chems.nona[,this.col]==0,this.col]<-NA
+
+
+for (this.chem in CvT.chems.nona$DTXSID)
+{
+  this.row <- which(CvT.chems.nona$DTXSID==this.chem)
+# Check Clints:
+  if (all(is.na(CvT.chems.nona[this.row,clint.cols])))
+  {
+    CvT.chems.nona <- subset(CvT.chems.nona,DTXSID!=this.chem)
+  } else if (any(is.na(CvT.chems.nona[this.row,clint.cols])))
+  {
+    for (this.col in clint.cols)
+      if (is.na(CvT.chems.nona[this.row,this.col])) 
+        CvT.chems.nona[this.row,this.col] <- 
+          CvT.chems.nona[this.row,"Human.Clint.Mean"] 
+  }
+# Check fups:
+  if (all(is.na(CvT.chems.nona[this.row,fup.cols])))
+  {
+    CvT.chems.nona <- subset(CvT.chems.nona,DTXSID!=this.chem)
+  } else if (any(is.na(CvT.chems.nona[this.row,fup.cols])) |
+      any(sapply(CvT.chems.nona[this.row,fup.cols],is.nan)))
+  {
+    for (this.col in fup.cols)
+      if (is.na(CvT.chems.nona[this.row,this.col]) |
+          is.nan(CvT.chems.nona[this.row,this.col])) 
+        CvT.chems.nona[this.row,this.col] <- 
+          CvT.chems.nona[this.row,"Human.Fup.Mean"]
+  }
+}
+```
+# Randomize the in vitro descriptors as a sort of prediction "floor"
+```{r cvt_yrandomize_desc, eval = TRUE}
+set.seed(123456)
+for (i in 1:10) # Ten sets of parameters
+{
+  yrandom.ids <- sample(1:dim(CvT.chems.nona)[1],dim(CvT.chems.nona)[1])
+  CvT.chems.nona[,paste("Human.Clint.YRandom",i,sep="")] <- 
+    CvT.chems.nona[yrandom.ids, "Human.Clint.httk"]
+  CvT.chems.nona[,paste("Human.Fup.YRandom",i,sep="")] <- 
+    CvT.chems.nona[yrandom.ids, "Human.Fup.httk"]
+}
+```
+
+Make predictions of CvT using in vitro measured data. Rather than use default
+HTTK (which also pulls in things like blood to plasma ratio) we'll wipe out 
+everything and then add just Clint and Fup each time:
+```{r cvt_compare_invitro, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.httk",
+    Clint="Human.Clint.httk"),
+  species="Human",
+  reference="InVitro",
+  overwrite=TRUE)
+print(paste("HTTK parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.invitro.list <- makeCvTpreds(CvT.data,"HTTK-InVitro")
+level2tab.invitro <- level2tab.invitro.list$cvt
+level2tab.invitro.stats <- level2tab.invitro.list$stats
+level3tab.invitro <- maketkstatpreds(CvT.data,fittable,"HTTK-InVitro")
+```
+
+```{r cvt_compare_admet, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.SPlus",
+    Clint="Human.Clint.SPlus"),
+  species="Human",
+  reference="SPlus",
+  overwrite=TRUE)
+print(paste("ADMet parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
+level2tab.admet.list <- makeCvTpreds(CvT.data,"HTTK-ADmet")
+level2tab.admet <- level2tab.admet.list$cvt
+level2tab.admet.stats <- level2tab.admet.list$stats
+level3tab.admet <- maketkstatpreds(CvT.data,fittable,"HTTK-ADmet")
+```
+
+```{r cvt_compare_dawson, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.Dawson",
+    Clint="Human.Clint.Dawson"),
+  species="Human",
+  reference="Dawson",
+  overwrite=TRUE)
+print(paste("Dawson (2021) parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.dawson.list <- makeCvTpreds(CvT.data,"HTTK-Dawson")
+level2tab.dawson <- level2tab.dawson.list$cvt
+level2tab.dawson.stats <- level2tab.dawson.list$stats
+level3tab.dawson <- maketkstatpreds(CvT.data,fittable,"HTTK-Dawson")
+```
+
+```{r cvt_compare_pradeep, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.Pradeep",
+    Clint="Human.Clint.Pradeep"),
+  species="Human",
+  reference="Pradeep",
+  overwrite=TRUE)
+print(paste("Pradeep (2020) parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.pradeep.list <- makeCvTpreds(CvT.data,"HTTK-Pradeep")
+level2tab.pradeep <- level2tab.pradeep.list$cvt
+level2tab.pradeep.stats <- level2tab.pradeep.list$stats
+level3tab.pradeep <- maketkstatpreds(CvT.data,fittable,"HTTK-Pradeep")
+
+```
+
+# Add OPERA predictions:
+```{r cvt_compare_opera, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.OPERA",
+    Clint="Human.Clint.OPERA"),
+  species="Human",
+  reference="OPERA",
+  overwrite=T)
+print(paste("OPERA parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.opera.list <- makeCvTpreds(CvT.data,"HTTK-OPERA")
+level2tab.opera <- level2tab.opera.list$cvt
+level2tab.opera.stats <- level2tab.opera.list$stats
+level3tab.opera <- maketkstatpreds(CvT.data,fittable,"HTTK-OPERA")
+```
+
+# Add consensus predictions:
+```{r cvt_compare_consensus, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.Mean",
+    Clint="Human.Clint.Max"),
+  species="Human",
+  reference="Consensus",
+  overwrite=T)
+print(paste("Consensus parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.consensus.list <- makeCvTpreds(CvT.data,"HTTK-Consensus")
+level2tab.consensus <- level2tab.consensus.list$cvt
+level2tab.consensus.stats <- level2tab.consensus.list$stats
+level3tab.consensus <- maketkstatpreds(CvT.data,fittable,"HTTK-Consensus")
+```
+
+# Add y-random predictions:
+```{r cvt_compare_yrandom, eval = TRUE}
+level2tab.yrandom <- NULL
+level2tab.yrandom.stats <- NULL
+level3tab.yrandom <- NULL
+for (i in 1:10)
+{
+  clear_httk()
+  chem.physical_and_invitro.data <- add_chemtable(
+    CvT.chems.nona,
+    current.table=chem.physical_and_invitro.data,
+    data.list=list(
+      Compound="PREFERRED_NAME",
+      DTXSID="DTXSID",
+      CAS="CASRN",
+      Funbound.plasma=paste("Human.Fup.YRandom",i,sep=""),
+      Clint=paste("Human.Clint.YRandom",i,sep="")),
+    species="Human",
+    reference="YRandom",
+    overwrite=T)
+  print(paste("Y-randomized parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+              "chemicals for PBTK #",i))
+  level2tab.yrandom.list <- makeCvTpreds(CvT.data,"HTTK-YRandom")
+  level2tab.yrandom <- rbind(level2tab.yrandom,level2tab.yrandom.list$cvt)
+  level2tab.yrandom.stats <- rbind(level2tab.yrandom.stats,level2tab.yrandom.list$stats)
+  level3tab.yrandom <- rbind(level3tab.yrandom,maketkstatpreds(CvT.data,fittable,"HTTK-YRandom"))
+}
+```
+
+# The performance of actual 1 compartment model fits provides an upper limit
+# of how good we can get (thanks Rusty)
+```{r cvt_compare_fits, eval = TRUE}
+level2tab.fits.list <- makeCvTpredsfromfits(
+  CvT.data,
+  fittable)
+level2tab.fits <-  level2tab.fits.list$cvt
+level2tab.fits.stats <- level2tab.fits.list$stats
+```
+
+# Collect the Concentration vs. time (level 2) predictions from each model:
+```{r cvt_onering, eval = TRUE}
+level2tab <- rbind(
+  level2tab.invitro,
+  level2tab.admet,
+  level2tab.dawson,
+  level2tab.pradeep,
+  level2tab.opera,
+  level2tab.fits,
+  level2tab.yrandom)#,
+#  level2tab.consensus)
+level2tab <- subset(level2tab,!duplicated(level2tab))
+
+level2tab.stats <- rbind(
+  level2tab.invitro.stats,
+  level2tab.admet.stats,
+  level2tab.dawson.stats,
+  level2tab.pradeep.stats,
+  level2tab.opera.stats,
+  level2tab.fits.stats,
+  level2tab.yrandom.stats)#,
+#  level2tab.consensus.stats)
+level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
+# Occasionally we can't calculate AUC, get rid of these data:
+level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
+```
+
+Assign average to missing predictions:
+```{r smooth_missing, eval = TRUE}
+  QSPRs <- unique(level2tab$QSPR)
+  for (this.chem in unique(level2tab$CAS))
+  {
+    this.subset1 <- subset(level2tab,CAS==this.chem)
+    for (this.species in unique(this.subset1$Species))
+    {
+      this.subset2 <- subset(this.subset1,Species==this.species)
+      for (this.route in unique(this.subset2$Route))
+      {
+        this.subset3 <- subset(this.subset2,Route==this.route)
+        for (this.dose in unique(this.subset3$Dose))
+        {
+          this.subset4 <- subset(this.subset3,Dose==this.dose)
+          for (this.time in unique(this.subset4$Time))
+          {
+            this.subset5 <- subset(this.subset4,Time==this.time)
+            for (this.obs in unique(this.subset5$Conc.obs))
+            {
+              this.subset6 <- subset(this.subset5,Conc.obs==this.obs)
+              # Omit the fits and y-randomization from the mean:
+              mean.pred <- mean(subset(this.subset6,
+                !(QSPR %in% c(
+                  "FitsToData","YRandom","Consensus")))$Conc.pred,na.rm=TRUE)
+              for (this.QSPR in QSPRs)
+              {
+                if (!(this.QSPR %in% this.subset6$QSPR))
+                {
+                  this.row <- this.subset6[1,]
+                  this.row$QSPR <- this.QSPR
+                  this.row$Conc.pred <- mean.pred
+                  level2tab <- rbind(level2tab,this.row)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }      
+```
+  
+```{r calc_level2_rpe, eval = TRUE}
+  RPE.THRESH <- 20
+  # Can't work with NA's:
+  level2tab <- subset(level2tab,!is.na(Conc.pred))
+ 
+  # Calculate RPE:
+  level2tab$Conc.obs <- as.numeric(level2tab$Conc.obs)
+  level2tab$Conc.pred <- as.numeric(level2tab$Conc.pred) 
+  # Let's treat all "low" values as the same, where we define low with loq:
+  level2tab$Conc.obs[level2tab$Conc.obs<level2tab$calc_loq] <- 
+    level2tab[level2tab$Conc.obs<level2tab$calc_loq,"calc_loq"]
+
+  level2tab$Conc.pred[level2tab$Conc.pred<level2tab$calc_loq] <- 
+    level2tab[level2tab$Conc.pred<level2tab$calc_loq,"calc_loq"]
+  
+  level2tab$RPE <- (level2tab$Conc.pred-level2tab$Conc.obs)/level2tab$Conc.obs
+  level2tab[level2tab$RPE>RPE.THRESH,"RPE"] <- RPE.THRESH
+  hist(level2tab$RPE)
+
+level2tab.stats$AUC.RPE <- (level2tab.stats$AUC.pred-level2tab.stats$AUC.obs)/level2tab.stats$AUC.obs
+level2tab.stats[level2tab.stats$AUC.RPE>RPE.THRESH,"AUC.RPE"] <- RPE.THRESH
+hist(level2tab.stats$AUC.RPE)
+
+level2tab.stats$Cmax.RPE <- (level2tab.stats$Cmax.pred-level2tab.stats$Cmax.obs)/level2tab.stats$Cmax.obs
+level2tab.stats[level2tab.stats$Cmax.RPE>RPE.THRESH,"Cmax.RPE"] <- RPE.THRESH
+hist(level2tab.stats$Cmax.RPE)
+     
+#level2tab$RPE.trunc[level2tab$RPE.trunc < -100] <- -100
+#level2tab$RPE.trunc[level2tab$RPE.trunc > 100] <- 100
+ 
+#Turn -Inf and Inf into NA .... we don't need this because no $Conc.obs are 0, but it's good practice to write here
+level2tab$RPE[level2tab$RPE=="Inf"]<-NA
+level2tab$RPE[level2tab$RPE=="-Inf"]<-NA
+#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
+
+### but we don't need this because no $Conc.obs are 0, but it's good practice to write here
+level2tab$RPE[level2tab$RPE=="NaN"]<-0
+ 
+
+source.table <- NULL
+for (this.source in unique(level2tab$Source))
+{
+  this.subset <- subset(level2tab,Source==this.source)
+  this.row <- this.subset[1,c(1:3,11)]
+  this.row$RPE <- mean(this.subset$RPE)
+  source.table <- rbind(source.table,this.row)
+}
+for (this.chem in unique(source.table$Compound))
+{
+  this.subset <- subset(source.table,Compound==this.chem)
+  source.table[source.table$Compound==this.chem,"RPE.sd"] <- sd(this.subset$RPE)
+}
+source.table <- source.table[order(source.table$RPE.sd),]
+write.csv(source.table,file="modelerrorsbysource.txt",row.names=F)
+```
+
+#################################################################################
+## calculate some statistics
+```{r calc_level2_AbsFE_RMSE, eval = TRUE}
+#Absolute fold error (AbsFE) : abs(log10(pred/obs))
+level2tab$AbsFE<-abs(log10(level2tab$Conc.pred/level2tab$Conc.obs))
+
+#Turn -Inf and Inf into NA
+level2tab$AbsFE[level2tab$AbsFE=="Inf"]<-4   ######## lots because lots of $Conc.pred is zero
+hist(level2tab$AbsFE)  # 4 seems large but does not to mess up the distribution
+
+#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
+level2tab$AbsFE[level2tab$AbsFE=="NaN"]<-0  #none
+```
+
+
+```{r divide_cvt_bytime, eval = TRUE}
+level2tab.early <- NULL
+level2tab.late <- NULL
+for (this.study in unique(level2tab$Source))
+{
+  this.subset1 <- subset(level2tab,Source==this.study)
+  for (this.chem in unique(this.subset1$CAS))
+  {
+    this.subset2 <- subset(this.subset1,CAS==this.chem)
+    mid.time <- mean(unique(this.subset2$Time))
+    level2tab.early <- rbind(level2tab.early,
+      subset(this.subset2,Time < mid.time))
+    level2tab.late <- rbind(level2tab.late,
+      subset(this.subset2,Time >= mid.time))
+  }
+}
+```
+
+```{r calc_setspecific_cvt_stats, eval = TRUE}
+AAFE <- list()
+AAFE.early <- list()
+AAFE.late <- list()
+RMSLE <- list()
+RMSLE.early <- list()
+RMSLE.late <- list()
+MRPE <- list()
+MRPE.early <- list()
+MRPE.late <- list()
+
+for (this.qspr in unique(level2tab$QSPR))
+{
+#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
+  AAFE[[this.qspr]] <- 10^(mean(level2tab$AbsFE[
+    level2tab$QSPR==this.qspr],na.rm=TRUE))
+  AAFE.early[[this.qspr]] <- 10^(mean(level2tab.early$AbsFE[
+    level2tab.early$QSPR==this.qspr],na.rm=TRUE))
+  AAFE.late[[this.qspr]] <- 10^(mean(level2tab.late$AbsFE[
+    level2tab.late$QSPR==this.qspr],na.rm=TRUE))
+#RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
+  RMSLE[[this.qspr]] <- sqrt(mean((log10(level2tab$Conc.pred[
+    level2tab$QSPR==this.qspr] /
+    level2tab$Conc.obs[level2tab$QSPR==this.qspr]))^2,na.rm=TRUE))
+  RMSLE.early[[this.qspr]] <-sqrt(mean((log10(level2tab.early$Conc.pred[
+    level2tab.early$QSPR==this.qspr]/
+    level2tab.early$Conc.obs[level2tab.early$QSPR==this.qspr]))^2,na.rm=TRUE))
+  RMSLE.late[[this.qspr]] <-sqrt(mean((log10(level2tab.late$Conc.pred[
+    level2tab.late$QSPR==this.qspr]/
+    level2tab.late$Conc.obs[level2tab.late$QSPR==this.qspr]))^2,na.rm=TRUE))
+  MRPE[[this.qspr]] <- median(subset(level2tab,QSPR==this.qspr)$RPE)
+  MRPE.early[[this.qspr]] <- median(subset(level2tab.early,QSPR==this.qspr)$RPE)
+  MRPE.late[[this.qspr]] <- median(subset(level2tab.late,QSPR==this.qspr)$RPE)
+}
+#Subset to just the measured in vitro chemicals:
+meassub <- subset(level2tab, CAS %in% httk.both)
+meassub.early <- subset(level2tab.early, CAS %in% httk.both)
+meassub.late <- subset(level2tab.late, CAS %in% httk.both)
+#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
+  AAFE[["HTTK-InVitro-Measured"]] <- 10^(mean(meassub$AbsFE[
+    meassub$QSPR=="HTTK-InVitro"],na.rm=TRUE))
+  AAFE.early[["HTTK-InVitro-Measured"]] <- 10^(mean(meassub.early$AbsFE[
+    meassub.early$QSPR=="HTTK-InVitro"],na.rm=TRUE))
+  AAFE.late[["HTTK-InVitro-Measured"]] <- 10^(mean(meassub.late$AbsFE[
+    meassub.late$QSPR=="HTTK-InVitro"],na.rm=TRUE))
+#RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
+  RMSLE[["HTTK-InVitro-Measured"]] <- sqrt(mean((log10(meassub$Conc.pred[
+    meassub$QSPR=="HTTK-InVitro"] /
+    meassub$Conc.obs[meassub$QSPR=="HTTK-InVitro"]))^2,na.rm=TRUE))
+  RMSLE.early[["HTTK-InVitro-Measured"]] <-
+    sqrt(mean((log10(meassub.early$Conc.pred[
+    meassub.early$QSPR=="HTTK-InVitro"] /
+    meassub.early$Conc.obs[meassub.early$QSPR=="HTTK-InVitro"]))^2,na.rm=TRUE))
+  RMSLE.late[["HTTK-InVitro-Measured"]] <-
+    sqrt(mean((log10(meassub.late$Conc.pred[
+    meassub.late$QSPR=="HTTK-InVitro"] /
+    meassub.late$Conc.obs[meassub.late$QSPR=="HTTK-InVitro"]))^2,na.rm=TRUE))
+  MRPE[["HTTK-InVitro-Measured"]] <- 
+    median(subset(meassub,QSPR=="HTTK-InVitro")$RPE)
+  MRPE.early[["HTTK-InVitro-Measured"]] <- 
+    median(subset(meassub.early,QSPR=="HTTK-InVitro")$RPE)
+  MRPE.late[["HTTK-InVitro-Measured"]] <- 
+    median(subset(meassub.late,QSPR=="HTTK-InVitro")$RPE)
+
+
+stats.table <- data.frame()
+for (this.qspr in names(RMSLE))
+{
+  stats.table["AAFE",this.qspr] <- round(AAFE[[this.qspr]],2)
+  stats.table["RMSLE",this.qspr] <- round(RMSLE[[this.qspr]],2)
+  stats.table["MRPE",this.qspr] <- round(MRPE[[this.qspr]],2)
+  stats.table["RMSLE.early",this.qspr] <- round(RMSLE.early[[this.qspr]],2)
+  stats.table["RMSLE.late",this.qspr] <- round(RMSLE.late[[this.qspr]],2)
+  stats.table["AAFE.early",this.qspr] <- round(AAFE.early[[this.qspr]],2)
+  stats.table["AAFE.late",this.qspr] <- round(AAFE.late[[this.qspr]],2)
+  stats.table["MRPE.early",this.qspr] <- round(MRPE.early[[this.qspr]],2)
+  stats.table["MRPE.late",this.qspr] <- round(MRPE.late[[this.qspr]],2)
+}
+```
+
+```{r calc_setspecific_summary_stats, eval = TRUE}
+AUC.stats.table <- NULL
+for (this.qspr in unique(level2tab.stats$QSPR))
+{
+  this.subset <- subset(level2tab.stats,QSPR==this.qspr)
+  this.fit <- lm(data=this.subset,log10(AUC.obs)~log10(AUC.pred))
+  this.row <- data.frame(
+    QSPR=this.qspr,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+    RPE=signif(median(this.subset$AUC.RPE),3),
+    RPE.low=signif(median(subset(this.subset,AUC.obs<10)$AUC.RPE),3),
+    RPE.high=signif(median(subset(this.subset,AUC.obs>=10)$AUC.RPE),3)
+    )
+  AUC.stats.table <- rbind(AUC.stats.table,this.row)
+}
+# Add HTTK without in silico predictions:
+this.qspr <- "HTTK-InVitro"
+this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
+this.fit <- lm(data=this.subset,log10(AUC.obs)~log10(AUC.pred))
+this.row <- data.frame(
+  QSPR=paste(this.qspr,"Measured",sep="-"),
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+  RPE=signif(median(this.subset$AUC.RPE),3),
+  RPE.low=signif(median(subset(this.subset,AUC.obs<10)$AUC.RPE),3),
+  RPE.high=signif(median(subset(this.subset,AUC.obs>=10)$AUC.RPE),3)
+  )
+AUC.stats.table <- rbind(AUC.stats.table,this.row)
+write.csv(AUC.stats.table,file="AUC-stats.txt",row.names=FALSE)
+
+Cmax.stats.table <- NULL
+for (this.qspr in unique(level2tab.stats$QSPR))
+{
+  QSPR=this.subset <- subset(level2tab.stats,QSPR==this.qspr)
+  this.fit <- lm(data=this.subset,log10(Cmax.obs)~log10(Cmax.pred))
+  this.row <- data.frame(
+    QSPR=this.qspr,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+    RPE=signif(median(this.subset$Cmax.RPE),3)
+    )
+  Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
+}
+this.qspr <- "HTTK-InVitro"
+this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
+this.fit <- lm(data=this.subset,log10(Cmax.obs)~log10(Cmax.pred))
+this.row <- data.frame(
+  QSPR=paste(this.qspr,"Measured",sep="-"),
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+  RPE=signif(median(this.subset$Cmax.RPE),3)
+  )
+Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
+write.csv(Cmax.stats.table,file="Cmax-stats.txt",row.names=FALSE)
+
+```
+
+Heatmap with Level 2 stats
+```{r make_heatmap, eval = TRUE}
+CvT.chems.stats.heatmap <- CvT.chems.scale
+for (this.qspr in unique(level2tab.stats$QSPR))
+{
+  this.subset <- subset(level2tab.stats,QSPR==this.qspr)
+  print(paste(this.qspr,length(unique(this.subset$Compound))))
+  for (this.chem in unique(this.subset$DTXSID))
+  {
+    this.subset2 <- subset(this.subset,DTXSID==this.chem)
+    this.index <- tolower(CvT.chems.stats.heatmap$DTXSID)==tolower(this.chem)
+    CvT.chems.stats.heatmap[this.index,paste("AUC.RPE",this.qspr,sep=".")] <- 
+      mean(this.subset2$AUC.RPE)
+    CvT.chems.stats.heatmap[this.index,paste("Cmax.RPE",this.qspr,sep=".")] <- 
+      mean(this.subset2$Cmax.RPE)
+    this.subset3 <- subset(level2tab, QSPR==this.qspr & DTXSID==this.chem)
+    CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qspr,sep=".")] <- 
+      mean(log10(this.subset3$Conc.obs/this.subset3$Conc.pred)^2)^(1/2)
+    if (is.na(CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qspr,sep=".")])) browser()
+  }
+}
+```
+
+```{r scale_preds, eval = TRUE}
+for (this.chem in CvT.chems.stats.heatmap$PREFERRED_NAME) 
+{
+#print(this.chem)
+  this.index <- which(CvT.chems.stats.heatmap$PREFERRED_NAME==this.chem)
+  v <- unlist(CvT.chems.stats.heatmap[this.index, regexpr("AUC.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1])
+#  print(v)
+  if (any(!is.na(v)))
+  {
+    m <- mean(v,na.rm=TRUE)
+    s <- sd(v,na.rm=TRUE)
+    CvT.chems.stats.heatmap[this.index, regexpr("AUC.RPE",
+      colnames(CvT.chems.stats.heatmap))!=-1] <- 
+      (v - m)/s
+  }
+  v <- unlist(CvT.chems.stats.heatmap[this.index, regexpr("Cmax.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1])
+  #print(v)
+  if (any(!is.na(v)))
+  {
+    m <- mean(v,na.rm=TRUE)
+    s <- sd(v,na.rm=TRUE)
+  CvT.chems.stats.heatmap[this.index, regexpr("Cmax.RPE",
+    colnames(CvT.chems.stats.heatmap))!=-1] <- 
+    (v - m)/s
+  }
+  v <- unlist(CvT.chems.stats.heatmap[this.index, regexpr("RMSLE",
+    colnames(CvT.chems.stats.heatmap))!=-1])
+  #print(v)
+  if (any(!is.na(v)))
+  {
+    m <- mean(v,na.rm=TRUE)
+    s <- sd(v,na.rm=TRUE)
+    CvT.chems.stats.heatmap[this.index, regexpr("RMSLE",
+      colnames(CvT.chems.stats.heatmap))!=-1] <- 
+      (v - m)/s
+  }
+}
+```
+```{r make_stats_heatmap, eval = TRUE}
+mypalette<-brewer.pal(11,"RdYlBu")
+heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
+  4:dim(CvT.chems.stats.heatmap)[2]]),
+  lwid=c(0.4,1),
+  lhei=c(0.4,1),
+  margins=c(10,1),
+  labRow = FALSE,
+  cexCol=1,
+  trace="none",
+  col=mypalette)
+tiff(paste("figs/FigProperiesHeatmap",output.prefix,".tiff",sep=""), 
+     width=5, height=4, dpi=300))
+heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
+  4:dim(CvT.chems.stats.heatmap)[2]]),
+  lwid=c(0.4,1),
+  lhei=c(0.4,1),
+  margins=c(10,1),
+  labRow = FALSE,
+  cexCol=1,
+  trace="none",
+  col=mypalette)
+dev.off()
+```
+
+
+```{r make_level2_plot_stats, eval = FALSE}
+#### add AAFE & RMSLE to the table
+texty <- 20
+xshift <- 0.3
+fontsize <- 12
+FigLev2 <- ggplot(data=level2tab, aes(x=QSPR, y=RPE)) + 
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-1,21))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSPR") +
+  ylab(bquote("Relative Error for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=fontsize),
+  axis.title.y=element_text(size=12))
+print(FigLev2) 
+#ggsave(paste("figs/FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+```
+
+```{r make_level2_plot_stats_early, eval = FALSE}
+#### add AAFE & RMSLE to the table
+texty <- 1
+xshift <- 0.1
+FigLev2 <- ggplot(data=level2tab.early, aes(x=QSPR, y=RPE)) + 
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSPR") +
+  ylab(bquote("Relative Error for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=12))
+print(FigLev2) 
+#ggsave(paste("figs/FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+```
+
+```{r make_level2_plot_stats_late, eval = FALSE}
+#### add AAFE & RMSLE to the table
+texty <- 1
+xshift <- 0.1
+FigLev2 <- ggplot(data=level2tab.late, aes(x=QSPR, y=RPE)) + 
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-1,2))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSPR") +
+  ylab(bquote("Relative Error for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(tableGrob(c("AAFE","RMSLE"), theme = ttheme_minimal(base_size = 12)),
+                    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"FitsToData"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-ADmet"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-Dawson"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-InVitro"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-OPERA"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-Pradeep"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(stats.table[c("AAFE.late","RMSLE.late"),"HTTK-YRandom"],
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=12))
+print(FigLev2) 
+#ggsave(paste("figs/FigLev2_boxplot_trunc_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_boxplot_trunc",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+```
+
+```{r make_level2_auc_plot, eval = FALSE}
+FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSPR, y=AUC.RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSPR") +
+  ylab("RPE for In Vivo CvTdb AUC")+
+  scale_y_continuous(limits=c(-1.5,3)) +
+#  scale_y_log10(limits=c(10^-1,10),breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=20))   +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+print(FigLev2.auc)  
+```
+
+```{r make_level2_auc_plot, eval = TRUE}
+FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
+  geom_point(size=2,aes(x=AUC.pred,y=AUC.obs,shape=QSPR,color=QSPR))+
+  scale_x_log10(breaks=c(10^-5,10^-2,10),label=scientific_10,limits=c(10^-7,3000)) +
+  #scale_y_log10(label=scientific_10)+
+  scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
+  #geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  xlab('Predicted AUC (mg/L*h)') +
+  ylab('Observed AUC (mg/L*h)') +
+  theme_bw()+
+  facet_grid(cols=vars(QSPR))+
+  scale_shape_manual(values = 0:10)+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         strip.text.x = element_text(size = 8),
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=10))
+
+print(FigLev2AUC_facet)
+print(AUC.stats.table)
+```
+
+```{r make_level2_auc_plot, eval = FALSE}
+FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSPR, y=AUC.RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSPR") +
+  ylab("RPE for In Vivo CvTdb AUC")+
+  scale_y_continuous(limits=c(-1.5,3)) +
+#  scale_y_log10(limits=c(10^-1,10),breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=20))   +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+print(FigLev2.auc)  
+```
+
+```{r make_level2_cmax_plot, eval = FALSE}
+FigLev2.cmax <- ggplot(data=level2tab.stats, aes(x=QSPR, y=Cmax.RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSPR") +
+  ylab("RPE for In Vivo CvTdb Cmax")+
+  scale_y_continuous(limits=c(-1.5,3)) +
+ # scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=20))   +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+print(FigLev2.cmax)  
+```
+```{r make_level2_plot, eval = FALSE}
+FigLev2 <- ggplot(data=level2tab, aes(x=QSPR, y=RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSPR") +
+  ylab("RPE for In Vivo CvT Data")+
+ # scale_y_continuous(limits=c(-10,40)) +
+ # scale_y_log10(limits=c(10-2,100),breaks=c(10^-1,1,3,10),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=20))   +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5))+
+  theme(axis.title.y = element_text(size=18))
+print(FigLev2)  
+```
+
+```{r make_level2_cmax_plot, eval = TRUE}
+FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
+  geom_point(size=2,aes(x=Cmax.pred,y=Cmax.obs,shape=QSPR,color=QSPR))+
+  scale_x_log10(breaks=c(10^-5,10^-2,10^1),label=scientific_10,limits=c(10^-7,3000)) +
+  #scale_y_log10(label=scientific_10)+
+  scale_y_log10(breaks=c(10^-1,1,10,10^2),label=scientific_10,limits = c(30^-1, 300))+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
+  #geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  xlab(bquote('Predicted'~C[max]~'(mg/L)')) +
+  ylab(bquote('Observed'~C[max]~'(mg/L)')) +
+  scale_shape_manual(values = 0:10)+
+  theme_bw()+
+  facet_grid(cols=vars(QSPR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         strip.text.x = element_text(size = 8),
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=10))
+
+print(FigLev2Cmax_facet)
+
+print(Cmax.stats.table)
+```
+
+
+```{r make_RMSE_bychem_analysis, eval = TRUE}
+# Get rid of NA QSPRs:
+level2tab <- subset(level2tab, !is.na(QSPR))
+
+qsprbychem.table <- NULL
+QSPRs <- unique(level2tab$QSPR)
+for (this.chemical in unique(level2tab$Compound))
+{
+  for (this.qspr in QSPRs)
+  {
+    this.subset <- subset(level2tab,QSPR==this.qspr & Compound==this.chemical)
+    if (dim(this.subset)[1]>0)
+    {
+      this.row <- this.subset[1,c(1:3,13)]
+      this.row$RMSLE <- sqrt(mean((log10(this.subset$Conc.pred/
+                                           this.subset$Conc.obs))^2,na.rm=TRUE))
+      this.subset <- subset(level2tab.early,QSPR==this.qspr & Compound==this.chemical)
+      this.row$RMSLE.early <- sqrt(mean((log10(this.subset$Conc.pred/
+                                                 this.subset$Conc.obs))^2,na.rm=TRUE))
+      this.subset <- subset(level2tab.late,QSPR==this.qspr & Compound==this.chemical)
+      this.row$RMSLE.late <- sqrt(mean((log10(this.subset$Conc.pred/
+                                                this.subset$Conc.obs))^2,na.rm=TRUE))
+      qsprbychem.table <- rbind(qsprbychem.table,this.row)
+    }
+  }
+}
+
+for (this.qspr in unique(qsprbychem.table$QSPR))
+{
+  stats.table["RMSLE.bychem",this.qspr] <- 
+    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE),3)
+  stats.table["RMSLE.bychem.early",this.qspr] <-
+    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.early),3)
+  stats.table["RMSLE.bychem.late",this.qspr] <-
+    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.late),3)
+}
+meassub <- subset(qsprbychem.table, CAS %in% httk.both)
+this.qspr <- "HTTK-InVitro-Measured"
+stats.table["RMSLE.bychem",this.qspr] <- 
+  signif(median(subset(meassub,QSPR=="HTTK-InVitro")$RMSLE),3)
+stats.table["RMSLE.bychem.early",this.qspr] <-
+  signif(median(subset(meassub,QSPR=="HTTK-InVitro")$RMSLE.early),3)
+stats.table["RMSLE.bychem.late",this.qspr] <-
+  signif(median(subset(meassub,QSPR=="HTTK-InVitro")$RMSLE.late),3)
+
+write.csv(stats.table,file="main-stats-table.txt",row.names=TRUE)
+
+```
+
+
+```{r make_RMSE_bychem_plot, eval = TRUE}
+#### add AAFE & RMSLE for all points (not per chemical) to the table
+texty <- 2.5
+xshift <- 0.2
+these.stats <- c("RMSLE.bychem","AAFE")
+stat.labels <- c("RMSLE","AAFE")
+
+#### Set order from left to right:
+qsprs.rmsle.bychem <- NULL
+for (this.qspr in unique(qsprbychem.table$QSPR)) 
+  qsprs.rmsle.bychem[this.qspr] <-
+  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE) 
+
+qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
+qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
+                                   levels = qsprs.order)
+         
+#### Make Plot
+FigLev2RMSE <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE)) + 
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSPR") +
+  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(
+    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
+    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=10))
+print(FigLev2RMSE) 
+```
+```{r make_RMSE_bychem_early_plot, eval = TRUE}
+#### add AAFE & RMSLE for all points (not per chemical) to the table
+texty <- 2.5
+xshift <- 0.2
+these.stats <- c("RMSLE.bychem.early","AAFE.early")
+stat.labels <- c("RMSLE","AAFE")
+
+#### Set order from left to right:
+qsprs.rmsle.bychem <- NULL
+for (this.qspr in unique(qsprbychem.table$QSPR)) 
+  qsprs.rmsle.bychem[this.qspr] <-
+  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.early) 
+
+qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
+qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
+                                   levels = qsprs.order)
+ 
+#### Make Plot
+FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
+   ggtitle("Early Time Points")+
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSPR") +
+  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(
+    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
+    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=10))
+print(FigLev2RMSE.early) 
+```
+```{r make_RMSE_bychem_late_plot, eval = TRUE}
+#### add AAFE & RMSLE for all points (not per chemical) to the table
+texty <- 2.5
+xshift <- 0.2
+these.stats <- c("RMSLE.bychem.late","AAFE.late")
+stat.labels <- c("RMSLE","AAFE")
+
+#### Set order from left to right:
+qsprs.rmsle.bychem <- NULL
+for (this.qspr in unique(qsprbychem.table$QSPR)) 
+  qsprs.rmsle.bychem[this.qspr] <-
+  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.late) 
+
+qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
+qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
+                                   levels = qsprs.order)
+ 
+#### Make Plot
+FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
+   ggtitle("Late Time Points")+
+    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+  #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+#  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
+  geom_boxplot(lwd=0.3,
+               outlier.shape = NA)+
+ # Pradeep NEW coord_cartesian(ylim=c(-30,210))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+  coord_cartesian(ylim=c(-0.5,2.5))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
+    xlab("QSPR") +
+  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
+  theme_bw()+
+  annotation_custom(
+    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
+    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+  annotation_custom(
+    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
+    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
+  theme( text  = element_text(size=20),
+  legend.key.height=unit(.5,"line"),
+  legend.text=element_text(size=14),
+  legend.title = element_text(size=14),
+  axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
+  axis.title.y=element_text(size=10))
+print(FigLev2RMSE.late) 
+```
+
+
+```{r analyze_admet1,eval=TRUE}
+admet.better <-NULL
+invitro.better <-NULL
+for (this.cas in unique(level2tab$CAS))
+{
+  this.subset1 <- subset(level2tab,CAS==this.cas)
+  for (this.source in unique(this.subset1$Source))
+  {
+    this.subset2 <- subset(this.subset1,Source==this.source)  
+    for (this.time in unique(this.subset2$Time))
+    {
+      this.subset3 <- subset(this.subset2,Time==this.time)
+      this.subset3.invitro <- subset(this.subset3, QSPR=="HTTK-InVitro")
+      this.subset3.admet <- subset(this.subset3, QSPR=="HTTK-ADmet")
+      this.subset3 <- cbind(this.subset3.invitro,
+        this.subset3.admet[,c("Conc.pred","RPE","AbsFE")])
+      colnames(this.subset3)[16:18] <- paste(
+        colnames(this.subset3)[16:18],"ADmet",sep=".")
+      admet.better <- rbind(admet.better,
+        subset(this.subset3,abs(RPE.ADmet) < abs(RPE)))
+      invitro.better <- rbind(invitro.better,
+        subset(this.subset3,abs(RPE.ADmet) > abs(RPE)))
+    }
+  }
+}
+admet.chems <- unique(admet.better$Compound)
+invitro.chems <- unique(invitro.better$Compound)
+admet.chems[!(admet.chems %in% invitro.chems)]
+admet.better.chems <- admet.chems[!(admet.chems %in% invitro.chems)]
+invitro.better.chems <- invitro.chems[!(invitro.chems %in% admet.chems)]
+
+admet.better.data <- subset(CvT.chems,PREFERRED_NAME%in%admet.better.chems)
+invitro.better.data <- subset(CvT.chems,PREFERRED_NAME%in%invitro.better.chems)
+
+
+dev.new()
+plot(admet.better.data$Human.Fup.httk,admet.better.data$Human.Fup.SPlus)
+plot(admet.better.data$Human.Clint.httk+10^-3,admet.better.data$Human.Clint.SPlus+10^-3,log="xy")
+
+```
+      
+
+
+Need to do invivo vs invitro/insilco plots for AUC & Cmax
+Need heatmap of RMSE x chemical, can add phys-chem
+```{r analyze_admet, eval = TRUE}
+qsprbychem.table2 <- dcast(qsprbychem.table,Compound~QSPR,value.var="RMSLE")
+chems <- qsprbychem.table2$Compound
+qsprbychem.table2 <- apply(qsprbychem.table2[,2:(1+length(QSPRs))],2,as.numeric)[,1:7]
+rownames(qsprbychem.table2) <- chems
+colnames(qsprbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep","Y-Random")
+write.csv(signif(qsprbychem.table2,3),file="SupTable/SupTable-RMSLEbyChem.txt")
+```
+
+```{r make_rmse_heatmap, eval = TRUE}
+  mypalette<-brewer.pal(9,"PuRd")
+  heatmap.2(t(qsprbychem.table2),
+ #   lwid=c(0.3,1),
+#    lhei=c(0.3,1),
+    margins=c(10,8),
+#    labRow = FALSE,
+    cexCol=0.5,
+    cexRow=1.0,
+    trace="none",
+    col=mypalette)
+```
+```{r model_admet_difference, eval = TRUE}
+for (this.chem in unique(rownames(qsprbychem.table2)))
+{
+  DTXSID <- level2tab[level2tab$Compound==this.chem,"DTXSID"][1]
+  CvT.chems.nona[CvT.chems.nona$DTXSID == DTXSID, "ADMetDiff"] <-
+    qsprbychem.table2[this.chem,"ADmet"] - 
+    qsprbychem.table2[this.chem,"InVitro"]
+}
+thresh <- 0.2
+admetdiff <- subset(CvT.chems.nona,!is.na(ADMetDiff))
+  admetdiff[admetdiff$ADMetDiff > thresh, "ADMetDiffCat"]<-3
+  admetdiff[admetdiff$ADMetDiff < (-thresh), "ADMetDiffCat"]<-1
+  admetdiff[admetdiff$ADMetDiff > (-thresh) &
+    admetdiff$ADMetDiff < thresh, "ADMetDiffCat"]<-2
+
+# Add 1 vs. 2 comp:
+admetdiff <- merge(admetdiff,fittable[,c("CAS","Model")],by.x="CASRN",by.y="CAS")
+  
+# Add enzymes:
+for (this.chem in admetdiff$DTXSID)
+  if (this.chem %in% cyps$DTXSID)
+  {
+    this.subset <- subset(cyps,DTXSID==this.chem)
+    for (this.cyp in this.subset$ISOFORM)
+    {
+      admetdiff[admetdiff$DTXSID==this.chem,paste("CYP",this.cyp,sep="")] <- "1"
+    }
+  }
+for (this.col in c("CYP2C9",
+                     "CYP2C19",                                      
+                     "CYP3A4",
+                     "CYP2D6",                                       
+                     "CYP2B6",
+                     "CYP1A2",
+                     "CYP1A1")) 
+  admetdiff[is.na(admetdiff[,this.col]),this.col] <- 0
+
+dat <- admetdiff[,c("AVERAGE_MASS",                                 
+ "BOILING_POINT_DEGC_OPERA_PRED",
+ "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",            
+ "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED",
+ "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED",
+ "MELTING_POINT_DEGC_OPERA_PRED",
+ "VAPOR_PRESSURE_MMHG_OPERA_PRED",
+ "WATER_SOLUBILITY_MOL/L_OPERA_PRED",
+ "Human.Clint.httk",                             
+ "Human.Fup.httk",
+ "Human.Clint.SPlus",                            
+ "Human.Fup.SPlus",
+ "ADMetDiff",                                    
+ "Model",                                        
+ "CYP2C9",
+ "CYP2C19",                                      
+ "CYP3A4",
+ "CYP2D6",                                       
+ "CYP2B6",
+ "CYP1A2",
+ "CYP1A1")]
+
+# Turn into factor:
+for (this.col in c("Model",                                        
+ "CYP2C9",
+ "CYP2C19",                                      
+ "CYP3A4",
+ "CYP2D6",                                       
+ "CYP2B6",
+ "CYP1A2",
+ "CYP1A1")) dat[,this.col] <- as.factor(dat[,this.col])
+  
+# Add contrast between ADmet and HTTK 
+dat$Clint.Ratio <- dat$Human.Clint.SPlus/dat$Human.Clint.httk
+dat$Clint.Ratio[is.nan(dat$Clint.Ratio)] <- 1
+dat$Clint.Ratio[!is.finite(dat$Clint.Ratio)] <- 10000
+
+dat$Fup.Ratio <- dat$Human.Fup.SPlus/dat$Human.Fup.httk
+dat$Fup.Ratio[is.nan(dat$Fup.Ratio)] <- 1
+
+# transform to more uniform scale:
+dat[,3] <- log10(dat[,3])
+
+library(randomForest)
+colnames(dat)[1] <- "Molecular_Weight"
+colnames(dat)[2] <- "Boiling_Point"
+colnames(dat)[3] <- "Henrys_Law_Constant"
+colnames(dat)[4] <- "LogKow"
+colnames(dat)[5] <- "LogKoa"
+colnames(dat)[6] <- "Melting_Point"
+colnames(dat)[7] <- "Vapor_Pressure"
+colnames(dat)[8] <- "Water_Solubility"
+#dat$ADMetDiff <-as.factor(dat$ADMetDiff)
+this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(10,10,10),ntree=5000)
+print(this.rf)
+varImpPlot(this.rf)
+plot(dat[,2],dat[,13])
+```
+
+
+  
+  
+
+
+                  
+# Not sure if we can reasonably show all the predictions vs. the observations.
+# Maybe one plot per model?
+# FigLev2a <- ggplot(data=level2tab) +
+#  geom_point(size=3,alpha=0.01,aes(x=Conc.pred.trunc,y=Conc.obs.trunc,shape=QSPR,color=QSPR))+
+#  scale_x_log10(label=scientific_10) +
+#  scale_y_log10(label=scientific_10)+
+#    geom_abline(intercept = 0, slope = 1,linetype="dashed", colour="Blue") +
+#  xlab(bquote('Predicted'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
+#  ylab(bquote('Observed'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
+#  theme_bw()+
+#  theme( text  = element_text(size=20))
+# print(FigLev2a)
+
+```{r make_pred_vs_obs_plots, eval = TRUE}
+FigLev2a <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-InVitro",]) +
+ geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
+ scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+ scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
+  # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+ xlab(bquote('HTTK-InVitro')) +
+ ylab(bquote(' ')) +
+ theme_bw()+
+ theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2a)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKInVitro",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+
+FigLev2b <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-ADmet",]) +
+  geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
+  # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  xlab(bquote('HTTK-ADMET')) +
+  ylab(bquote(' ')) +
+  theme_bw()+
+  theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2b)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKADmet",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+
+FigLev2c <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Pradeep",]) +
+  geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
+  # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  #  xlab(bquote('Predicted Conc HTTK-PradeepNEW')) +  ##Pradeep NEW ##
+  xlab(bquote('HTTK-Pradeep')) +
+  ylab(expression(paste("Obs. Conc. ",
+    italic("In Vivo"),
+    " (mg/L)"))) +
+  theme_bw()+
+  theme( text  = element_text(size=20),
+         axis.title.y = element_text(size=14),
+         axis.text.y = element_text(size=12))
+#print(FigLev2c)
+#ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeep",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+
+
+FigLev2d <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Dawson",]) +
+  geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
+  # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  xlab(bquote('HTTK-Dawson')) +
+  ylab(bquote(' ')) +
+  theme_bw()+
+  theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2d)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKDawson",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+
+FigLev2e <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-OPERA" ,]) +
+  geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
+  # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  xlab(bquote('HTTK-OPERA')) +
+  ylab(bquote(' ')) +
+  theme_bw()+
+  theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2e)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKOPERA",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+
+FigLev2f <- ggplot(data=level2tab[level2tab$QSPR=="FitsToData" ,]) +
+  geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
+  # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
+  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
+  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
+  xlab(bquote('FitsToData')) +
+  ylab(bquote(' ')) +
+  theme_bw()+
+  theme( text  = element_text(size=20),
+         axis.text.y = element_text(size=10))
+#print(FigLev2f)
+ggsave(paste("figs/FigLev2_Conc_scatter_FitsToData",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+
+grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, 
+  nrow = 3, bottom=expression(paste("Predicted Conc. (mg/L)")))
+```

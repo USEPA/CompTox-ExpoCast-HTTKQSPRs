@@ -1,0 +1,562 @@
+---
+title: "TK QSPR Bakeoff"
+author: "John Wambaugh and Nisha Sipes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QSPR Bakeoff}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+First we clear the memory to make sure there are no holdovers from previous R runs
+```{r clear_mermor, eval=TRUE}
+rm(list=ls()) 
+```
+
+To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
+```{r load_packages, eval = TRUE}
+library(readxl)
+library(ggplot2)
+library(httk)
+library(scales)
+library(gplots)
+library(RColorBrewer)
+library(DescTools)
+library(gridExtra)
+library(reshape2)
+```
+
+Load custom code 
+```{r load_code, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+source("clear_httk.R")
+source("tkstats.R")
+
+# Function for formating tick labels:
+scientific_10 <- function(x) {                                  
+  out <- gsub("1e", "10^", scientific_format()(x))              
+  out <- gsub("\\+","",out)                                     
+  out <- gsub("10\\^01","10",out)                               
+  out <- parse(text=gsub("10\\^00","1",out))                    
+}  
+```
+
+
+Set the time stamp:
+```{r time_stamp, eval = TRUE}
+# Time stamp:
+output.prefix <- "Jan2024"
+```
+
+
+
+Load the CvTdb in vivo data from Sayre et al. (2020):
+
+
+```{r load_cvt_data_old, eval = FALSE}
+series_res_set <- read.csv("cvt_query_for_john_27may2021.csv")
+colnames(series_res_set)[colnames(series_res_set)=="species"] <- "Species"
+colnames(series_res_set)[colnames(series_res_set)=="conc_medium_normalized"] <- "Media"
+colnames(series_res_set)[colnames(series_res_set)=="conc"] <- "Value"
+colnames(series_res_set)[colnames(series_res_set)=="time_hr"] <- "Time"
+colnames(series_res_set)[colnames(series_res_set)=="dose_level_normalized"] <- "Dose"
+colnames(series_res_set)[colnames(series_res_set)=="administration_route_normalized"] <- "Route"
+colnames(series_res_set)[colnames(series_res_set)=="dsstox_casrn"] <- "CAS"
+colnames(series_res_set)[colnames(series_res_set)=="dsstox_substance_id"] <- "DTXSID"
+colnames(series_res_set)[colnames(series_res_set)=="analyte_name_original"] <- "Compound"
+colnames(series_res_set)[colnames(series_res_set)=="fk_study_id"] <- "Source"
+```
+
+# Get chemical names, ids', and phys-chem properties:
+```{r load_dashboard_info}
+test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
+```
+
+```{r load_cvt_data, eval = TRUE}
+series_res_set <- read.csv("CvTdb/CvTdb_fullData_20230906.csv")
+series_res_set$Species <- series_res_set$subjects.species_harmonized
+series_res_set$Media <- series_res_set$series.conc_medium_normalized
+series_res_set$Time <- series_res_set$conc_time_values.time_h
+series_res_set$Value <- series_res_set$conc_time_values.conc
+series_res_set$Dose <- series_res_set$studies.dose_level_normalized
+series_res_set$Route <- series_res_set$studies.administration_route_normalized
+series_res_set$calc_loq <- series_res_set$series.loq_normalized
+series_res_set$DTXSID <- series_res_set$series.analyte_dtxsid
+for (this.chem in unique(series_res_set$DTXSID))
+{
+  this.compound <- test.chems.dashboard[test.chems.dashboard$DTXSID %in% this.chem,
+                                         "PREFERRED_NAME"]
+  series_res_set[series_res_set$DTXSID %in% this.chem, "Compound"] <-
+    this.compound
+}
+series_res_set$CAS <- series_res_set$series.test_substance_casrn
+series_res_set$Reference <- series_res_set$documents_extraction.pmid
+series_res_set[is.na(series_res_set$Reference), "Reference"] <-
+  "NTP"
+series_res_set$Source <- series_res_set$Reference
+```
+
+```{r organize_eval_chems, eval = TRUE}
+# A list of the chemicals in the evaluation:
+# There are 101 chemicals with CvT data for which the collaborators have been asked
+# to make predictions
+eval.cas <- unique(series_res_set$CAS)
+length(eval.cas)
+
+# We have both human and rat:
+series_res_set$Species <- tolower(series_res_set$Species)
+unique(series_res_set$Species)
+
+# Although CvTdb has expanded, keep focus on human and rat:
+series_res_set <- subset(series_res_set, tolower(Species) %in%
+                           c("rat", "human"))
+unique(series_res_set$Species)
+
+# We habe both blood and plasma:
+series_res_set$Media <- tolower(series_res_set$Media)
+unique(series_res_set$Media)
+
+# Significant figures:
+series_res_set$Time <- suppressWarnings(signif(
+  as.numeric(series_res_set$Time),2))
+series_res_set$Value <- suppressWarnings(signif(
+  as.numeric(series_res_set$Value),4))
+
+CvT.data <- series_res_set
+CvT.chems <- unique(CvT.data$DTXSID)
+
+CvT.data[,"Dose"] <- as.numeric(CvT.data[,"Dose"])
+
+CvT.data <- subset(CvT.data,Time>0)
+
+write.csv(CvT.data,row.names=FALSE,file="SupTable/SupTable-CvTData.txt")
+```
+
+# Calculate a limit of quantification (90% of lowest observation)
+```{r calc_loq, eval = TRUE}
+for (this.study in unique(CvT.data$Source))
+{
+  this.subset1 <- subset(CvT.data,Source==this.study)
+  for (this.chem in unique(this.subset1$DTXSID))
+  {
+    this.subset2 <- subset(this.subset1,
+                           DTXSID==this.chem)
+    for (this.media in unique(this.subset2$Media))
+    {
+      this.subset3 <- subset(this.subset2,Media==this.media & !is.na(Value))
+      this.subset3 <- subset(this.subset3,Value>0)
+      if (any(!is.na(this.subset3$calc_loq)))
+      {
+        this.loq <- min(this.subset3$calc_loq,na.rm=TRUE)
+      } else {
+        this.loq <- suppressWarnings(min(this.subset3$Value,na.rm=TRUE))
+        this.loq <- this.loq*0.9
+      }
+      CvT.data[
+        CvT.data$Source %in% this.study & 
+        CvT.data$DTXSID %in% this.chem & 
+        CvT.data$Media %in% this.media &
+        is.na(CvT.data$calc_loq),
+        "calc_loq"] <- this.loq
+    }
+  }
+}
+CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
+
+```
+
+
+#Load the curve fits from invivoPKfit (Chris Cook):
+```{r load_compartmental_model_parameters, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+fitsflat <- read.csv("PK.fit.table.flat.03012022.csv")
+fits1comp <- read.csv("PK.fit.table.1comp.03012022.csv")
+#fits1comp <- subset(fits1comp, is.finite(AIC) & AIC < 10^4)
+fits2comp <- read.csv("PK.fit.table.2comp.03012022.csv")
+#fits2comp <- subset(fits2comp, is.finite(AIC) & AIC < 10^4)
+# Units on Volumes:
+fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Vdist"] <-
+  fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Vdist"] /
+  1000
+fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"CLtot"] <-
+  fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"CLtot"] /
+  1000
+fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Css"] <-
+  fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Css"] *
+  1000
+fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Cpeak.oral.1mgkg"] <-
+  fits1comp[regexpr("geometric mean",fits1comp$param.value.type)!=-1,"Cpeak.oral.1mgkg"] *
+  1000
+fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"V1"] <-
+  fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"V1"] /
+  1000
+fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"Vss"] <-
+  fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"Vss"] /
+  1000
+fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"CLtot"] <-
+  fits2comp[regexpr("geometric mean",fits2comp$param.value.type)!=-1,"CLtot"] /
+  1000
+fits2comp$Css <- 1/fits2comp$CLtot
+
+# Negative k12 indicates bad fit:
+badfits <- fits2comp$k12
+badfits[is.na(badfits)]<-0
+badfits <- ifelse(badfits<0,TRUE,FALSE)
+fits2comp[badfits,"AIC"] <- Inf
+
+  length(unique(c(fitsflat$CAS,fits1comp$CAS,fits2comp$CAS)))
+```
+
+# Concatanate the curve fits into a single table (should be part of invivoPKfit eventually):
+```{r merge_curve_fits_old, eval = FALSE}
+fittable <- NULL
+for (this.dtxsid in unique(c(fits1comp$DTXSID,fits2comp$DTXSID,fitsflat$DTXSID)))
+{
+  if (this.dtxsid %in% fits1comp$DTXSID) 
+  { 
+    this.compound <- subset(fits1comp,DTXSID==this.dtxsid)$PREFERRED_NAME[1]
+    this.cas <- subset(fits1comp,DTXSID==this.dtxsid)$CASRN[1]
+  } else if (this.cas %in% fits2comp$CAS) {
+    this.compound <- subset(fits2comp,DTXSID==this.dtxsid)$PREFERRED_NAME[1]
+    this.cas <- subset(fits2comp,DTXSID==this.dtxsid)$CASRN[1]
+  } else {
+    this.compound <- subset(fitsflat,DTXSID==this.dtxsid)$PREFERRED_NAME[1]
+    this.cas <- subset(fitsflat,DTXSID==this.dtxsid)$CASRN[1]
+  }
+    
+  this.data.1comp <- subset(fits1comp,DTXSID==this.dtxsid)
+  this.data.2comp <- subset(fits2comp,DTXSID==this.dtxsid)
+  this.data.flat <- subset(fitsflat,DTXSID==this.dtxsid)
+  
+  for (this.species in unique(tolower(c(
+    this.data.1comp$Species,
+    this.data.2comp$Species,
+    this.data.flat$Species))))
+  {
+    Vdist.1comp <- NA
+    kelim.1comp <- NA
+    Vdist.2comp <- NA
+    kelim.2comp <- NA
+    
+    this.data.1comp.species <- subset(this.data.1comp,tolower(Species)==this.species)
+    this.data.2comp.species <- subset(this.data.2comp,tolower(Species)==this.species)
+    this.data.flat.species <- subset(this.data.flat,tolower(Species)==this.species)
+    
+    this.row <- data.frame(
+      DTXSID=this.dtxsid,
+      Compound=this.compound,
+      CAS=this.cas,
+      Species=this.species,
+      Reference=NA,
+      AIC.flat=NA,
+      AIC.1comp=NA,
+      AIC.2comp=NA,
+      AIC.best=NA,
+      Model=NA,
+      Vdist=NA,
+      kelim=NA,
+      kgutabs=NA,
+      Fgutabs=NA,
+      Vdist.1comp=NA,
+      kelim.1comp=NA,
+      kgutabs.1comp=NA,
+      Fgutabs.1comp=NA,
+      Vdist.2comp=NA,
+      V1.2comp=NA,
+      k12.2comp=NA,
+      k21.2comp=NA,
+      kelim.2comp=NA,
+      kgutabs.2comp=NA,
+      Fgutabs.2comp=NA,
+      Ralphatokelim.2comp=NA,
+      Fbetaofalpha.2comp=NA,
+      alpha.2comp=NA,
+      beta.2comp=NA)
+    
+    if (this.cas %in% fitsflat$CASRN)
+    {
+      this.data.flat.species <- subset(this.data.flat.species,
+        param.value.type=="Fitted geometric mean")
+
+    # If more than one source, require that the joint analysis worked:
+     if (dim(this.data.flat.species)[1]>1)
+      {
+        this.data.flat.species<- subset(this.data.flat.species, 
+                                         Data.Analyzed=="Joint Analysis")[1,]
+      }
+      if (dim(this.data.1comp.species)[1]>0) 
+      {
+        this.row$AIC.flat <- this.data.flat.species$AIC
+        this.row$Reference <- this.data.flat.species$Reference
+      }
+    }
+    
+    if (this.cas %in% fits1comp$CASRN)
+    {
+      this.data.1comp.species <- subset(this.data.1comp.species,
+        param.value.type=="Fitted geometric mean")
+
+    # If more than one source, require that the joint analysis worked:
+     if (dim(this.data.1comp.species)[1]>1)
+      {
+        this.data.1comp.species<- subset(this.data.1comp.species, 
+                                         Data.Analyzed=="Joint Analysis")[1,]
+      }
+      if (dim(this.data.1comp.species)[1]>0) 
+      {
+        this.row$AIC.1comp <- this.data.1comp.species$AIC
+        this.row$Vdist.1comp <- this.data.1comp.species$Vdist
+        this.row$kelim.1comp <- this.data.1comp.species$kelim
+        this.row$kgutabs.1comp <- this.data.1comp.species$kgutabs
+        this.row$Fgutabs.1comp <- this.data.1comp.species$Fgutabs
+        this.row$Reference <- this.data.1comp.species$Reference
+      }
+    }
+    
+    if (this.cas %in% fits2comp$CASRN)
+    {
+      this.data.2comp.species <- subset(this.data.2comp.species,
+        param.value.type=="Fitted geometric mean")
+
+    # If more than one source, require that the joint analysis worked:
+      if (dim(this.data.2comp.species)[1]>1)
+      {
+        this.data.2comp.species <- subset(this.data.2comp.species, 
+                            Data.Analyzed=="Joint Analysis")[1,]
+      }
+      if (dim(this.data.2comp.species)[1]>0) 
+      {
+        this.row$AIC.2comp <- this.data.2comp.species$AIC
+        this.row$Vdist.2comp <- this.data.2comp.species$Vss
+        this.row$kelim.2comp <- this.data.2comp.species$kelim
+        this.row$V1.2comp <- this.data.2comp.species$V1
+        this.row$k12.2comp <- this.data.2comp.species$k12
+        this.row$k21.2comp <- this.data.2comp.species$k21
+        this.row$kgutabs.2comp <- this.data.2comp.species$kgutabs
+        this.row$Fgutabs.2comp <- this.data.2comp.species$Fgutabs
+        this.row$Ralphatokelim.2comp <- this.data.2comp.species$Ralphatokelim
+        this.row$Fbetaofalpha.2comp <- this.data.2comp.species$Fbetaofalpha
+        this.row$alpha.2comp <- this.data.2comp.species$alpha
+        this.row$beta.2comp <- this.data.2comp.species$beta
+        this.row$Reference <- this.data.2comp.species$Reference
+      }
+    }
+
+    
+    
+    if (is.na(this.row$AIC.flat)) this.row$AIC.flat <- Inf
+    if (is.na(this.row$AIC.1comp)) this.row$AIC.1comp <- Inf
+    if (is.na(this.row$AIC.2comp)) this.row$AIC.2comp <- Inf
+    
+    AICs <- c(this.row$AIC.flat,this.row$AIC.1comp,this.row$AIC.2comp)
+    if (all(AICs==Inf))
+    {
+      this.row$Model <- "None"
+      this.row$AIC.best <- NA
+    } else if (this.row$AIC.2comp == min(AICs))
+    {
+      this.row$Model <- "2Comp"
+      this.row$AIC.best <- this.row$AIC.2comp
+    } else if (this.row$AIC.1comp == min(AICs))
+    {
+      this.row$Model <- "1Comp"
+      this.row$AIC.best <- this.row$AIC.1comp
+    } else {
+      this.row$Model <- "Flat"
+      this.row$AIC.best <- this.row$AIC.flat
+    }
+    
+    if (this.row$Model != "Flat")
+      if (this.row$Model == "1Comp")
+      {
+        this.row$Vdist <- this.row$Vdist.1comp
+        this.row$kelim <- this.row$kelim.1comp
+        this.row$kgutabs <- this.row$kgutabs.1comp
+        this.row$Fgutabs <- this.row$Fgutabs.1comp
+      } else 
+      {
+        this.row$Vdist <- this.row$Vdist.2comp
+        this.row$kelim <- this.row$kelim.2comp
+        this.row$kgutabs <- this.row$kgutabs.2comp
+        this.row$Fgutabs <- this.row$Fgutabs.2comp
+      }      
+    
+    fittable <- rbind(fittable,this.row)
+  }
+}
+fittable$halflife <- log(2)/fittable$kelim
+
+#Lets only keep chemicals where we can fit a PK model:
+fittable <- subset(fittable, !is.na(Model))
+
+```
+
+
+# Load empirical fits to Cvt data:
+```{r load_empirical_fits, eval = TRUE}
+fittable <- read.csv("CvTdb/CvTdb_fullCoefsAIC_2023.10.30.csv")
+fittable$DTXSID <- fittable$Chemical
+fittable$Model <- fittable$model
+fittable[fittable$Model=="model_1comp","Model"] <- "1Comp"
+fittable[fittable$Model=="model_2comp","Model"] <- "2Comp"
+CASinfo <- CvT.data[,c("DTXSID","CAS")]
+CASinfo <- subset(CASinfo,!duplicated(CASinfo))
+fittable <- merge(fittable,CASinfo,by="DTXSID")
+# Calculate halflife:
+fittable$halflife <- signif(log(2)/fittable$kelim,3)
+# Although CvTdb has expanded, keep focus on human and rat:
+fittable <- subset(fittable, tolower(Species) %in%
+                           c("rat", "human"))
+unique(fittable$Species)
+
+for (this.chem in unique(fittable$DTXSID))
+  for (this.species in unique(fittable$Species))
+  {
+    this.subset <- subset(CvT.data, 
+                          DTXSID %in% this.chem &
+                          Species %in% this.species)
+    these.refs <- paste(unique(sort(this.subset$Reference)),
+                        collapse=", ")
+    fittable[fittable$DTXSID %in% this.chem &
+                     fittable$Species %in% this.species,
+                   "Reference"] <- these.refs
+  }
+```
+# Load predictions made with fits
+```{r load_fit_preds, eval = TRUE}
+fit.preds <- as.data.frame(read_excel("CvTdb/Predictions_CvTwinningModel_20240109.xlsx"))
+
+fit.preds <- merge(fit.preds,
+      test.chems.dashboard[,c("DTXSID","CASRN","PREFERRED_NAME")],
+      by.x="Chemical",
+      by.y="DTXSID")
+colnames(fit.preds)[colnames(fit.preds)=="CASRN"] <- "CAS"
+```
+
+#How many chemicals have 1 or 2 compartment fits:
+```{r count_empirical, eval = TRUE}
+cat(paste(length(unique(fittable$Chemical))),
+                 "chemicals with empirical Cvt fits.\n")
+```
+
+
+# Set the signfifant digits to something reasonable:
+```{r subset_cvt_data, eval = TRUE}
+CvT.data$Value <- signif(CvT.data$Value,3)
+CvT.data$Time <- signif(CvT.data$Time,3)
+CvT.data$calc_loq <- signif(CvT.data$calc_loq,3)
+
+for (this.col in colnames(fittable)[c(6:15,18,20)])
+  fittable[,this.col] <- signif(fittable[,this.col], 3)
+```
+
+# Write out TK parameter estimates:
+```{r load_physchem, eval = TRUE}
+dim(fittable)[1]
+length(unique(fittable$DTXSID))
+
+write.csv(fittable,file="SupTable/SupTable-TKFits.txt",row.names=FALSE)
+```
+# Load phys-chem information:
+```{r load_physchem, eval = TRUE}
+CvT.chems <-read_excel("eval-chems3.xls")
+for (this.col in 6:18) CvT.chems[,this.col] <- suppressWarnings(signif(
+  as.numeric(unlist(CvT.chems[,this.col])),3))
+CvT.chems <- CvT.chems[,c(
+  "DTXSID",
+  "PREFERRED_NAME",
+  "CASRN",
+  "AVERAGE_MASS",                                                    
+  "BOILING_POINT_DEGC_OPERA_PRED",                                   
+  "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",
+  "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED",
+  "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED",
+  "MELTING_POINT_DEGC_OPERA_PRED",                                   
+  "VAPOR_PRESSURE_MMHG_OPERA_PRED",
+  "WATER_SOLUBILITY_MOL/L_OPERA_PRED"
+  )]
+
+```
+
+
+# Throw out the CvT data for chemicals that could not be described by empirical PK models
+```{r subset_cvt_data, eval = TRUE}
+# Don't want data where the flat model wins:
+fittable <- subset(fittable, !(Model%in% c("model_flat")))
+# Don't want data where couldn't estimate Vdist or V1:
+fittable <- subset(fittable, !is.na(Vdist) | !is.na(V1))
+
+print(length(unique(CvT.data$DTXSID)))
+CvT.data <- subset(CvT.data,DTXSID %in% fittable$DTXSID)
+print(length(unique(CvT.data$DTXSID)))
+
+print(length(unique(CvT.chems$DTXSID)))
+CvT.chems<- subset(CvT.chems,DTXSID %in% fittable$DTXSID)
+print(length(unique(CvT.chems$DTXSID)))
+```
+
+
+
+Create a default table of in vitro measured values:
+```{r default_table, eval = TRUE}
+
+reset_httk()
+httk.data <- subset(chem.physical_and_invitro.data,DTXSID%in%CvT.chems$DTXSID)
+httk.data <- httk.data[,c(
+  "Compound",
+  "DTXSID",
+  "CAS",
+  "Human.Clint",
+  "Human.Clint.pValue",
+  "Human.Funbound.plasma")]
+
+
+# Set insignificant trends to zero:
+httk.data[httk.data$Human.Clint.pvalue < 0.05,"Human.Clint"] <- 0
+colnames(httk.data)  
+
+# Use medians from distributions:
+httk.data$Human.Clint <- unlist(lapply(strsplit(httk.data$Human.Clint,","),function(x) as.numeric(x[1])))
+
+# Make sure everything is numeric:
+httk.data$Human.Funbound.plasma <- 
+  unlist(lapply(strsplit(httk.data$Human.Funbound.plasma,","),
+  function(x) as.numeric(x[1])))
+
+# Treat fup = 0 as non-measurment:
+httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma == 0] <- NA
+httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma==0.005] <- NA
+
+# Which chemicals would we normally use with HTTK PBTK:
+httk.both <- httk.data[,"CAS"][(apply(httk.data,1,function(x) 
+  !is.na(x["Human.Clint"]) & !is.na(x["Human.Funbound.plasma"])))]
+```
+
+Add HTTK measured data to CvT.chems table:
+```{r default_table, eval = TRUE}
+CvT.chems <- merge(CvT.chems,
+  httk.data[,c("DTXSID","Human.Clint","Human.Funbound.plasma")],
+  all.x=TRUE,
+  by="DTXSID")
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Clint"] <- "Human.Clint.httk"
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- "Human.Fup.httk"
+```
+
+```{r write_out_data, eval= TRUE}
+invitro <- httk.data
+save(invitro,file="data/httkinvitro.RData")
+save(CvT.chems,file="data/Cvt-chems.RData")
+save(CvT.data,file="data/Cvt-data.RData")
+save(fittable,file="data/fittable.RData")
+```

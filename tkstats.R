@@ -346,6 +346,7 @@ makeCvTpredsfromfits <- function(
               }
               Cmax.obs <- max(this.subset4means$Value,na.rm=T)
               Cmax.pred <- max(pred,na.rm=T)
+              if (Cmax.pred == 0) browser()
               if (length(obs.times)>1)
               {
                 AUC.obs <- AUC(this.subset4means$Time,this.subset4means$Value)
