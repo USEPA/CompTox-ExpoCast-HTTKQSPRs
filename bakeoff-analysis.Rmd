@@ -96,7 +96,9 @@ for (this.chem in unique(series_res_set$DTXSID))
 }
 series_res_set$CAS <- series_res_set$series.test_substance_casrn
 series_res_set$Reference <- series_res_set$documents_extraction.pmid
-series_res_set$Source <- series_res_set$documents_extraction.pmid
+series_res_set[is.na(series_res_set$Reference), "Reference"] <-
+  "NTP"
+series_res_set$Source <- series_res_set$Reference
 ```
 
 ```{r organize_eval_chems, eval = TRUE}
@@ -136,23 +138,31 @@ write.csv(CvT.data,row.names=FALSE,file="SupTable/SupTable-CvTData.txt")
 ```
 
 # Calculate a limit of quantification (90% of lowest observation)
-```{r calc_loq_old, eval = FALSE}
+```{r calc_loq, eval = TRUE}
 for (this.study in unique(CvT.data$Source))
 {
   this.subset1 <- subset(CvT.data,Source==this.study)
-  for (this.chem in unique(this.subset1$CAS))
+  for (this.chem in unique(this.subset1$DTXSID))
   {
-    this.subset2 <- subset(this.subset1,CAS==this.chem)
+    this.subset2 <- subset(this.subset1,
+                           DTXSID==this.chem)
     for (this.media in unique(this.subset2$Media))
     {
       this.subset3 <- subset(this.subset2,Media==this.media & !is.na(Value))
       this.subset3 <- subset(this.subset3,Value>0)
-      this.loq <- suppressWarnings(min(this.subset3$Value,na.rm=TRUE))
-      this.loq <- this.loq*0.9
+      if (any(!is.na(this.subset3$calc_loq)))
+      {
+        this.loq <- min(this.subset3$calc_loq,na.rm=TRUE)
+      } else {
+        this.loq <- suppressWarnings(min(this.subset3$Value,na.rm=TRUE))
+        this.loq <- this.loq*0.9
+      }
       CvT.data[
-        CvT.data$Source==this.study & 
-        CvT.data$CAS==this.chem & 
-        CvT.data$Media==this.media,"calc_loq"] <- this.loq
+        CvT.data$Source %in% this.study & 
+        CvT.data$DTXSID %in% this.chem & 
+        CvT.data$Media %in% this.media &
+        is.na(CvT.data$calc_loq),
+        "calc_loq"] <- this.loq
     }
   }
 }
