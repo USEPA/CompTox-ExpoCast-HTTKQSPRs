@@ -450,6 +450,7 @@ Check distribution of RPE for Clint:
 ```{r clint_rpe_hist, eval = TRUE}
 hist(subset(level1tab,QSPR=="OPERA")$Human.Clint.RPE,main="OPERA",xlab="Clint RPE")
 ```
+
 Check distribution of RPE for Fup:
 ```{r fup_rpe_hist, eval = TRUE}
 hist(subset(level1tab,QSPR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
@@ -469,8 +470,11 @@ FigLev1a <- ggplot(data=level1tab) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1a)
+ggsave(paste("figs/FigLev1a_Clint_RPE",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
-Make Level1 predictions vs. observed plot for Clint (faceted):
+
+## Make Level1 predictions vs. observed plot for Clint (faceted):
 ```{r clint_rpe_scatter, eval = TRUE}
 
 ## Tiff image for manuscript (facet to see the individual predictions over Clint value)
@@ -494,7 +498,8 @@ FigLev1a_facet <- ggplot(data=level1tab) +
          axis.text.x = element_text(size=14))
 
 print(FigLev1a_facet)
-ggsave(paste("figs/FigLev1a_Clint_obsVpred_facet",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
+ggsave(paste("figs/FigLev1a_Clint_obsVpred_facet",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
 
 Make Level1 RPE boix and whisker plot for Clint:
@@ -561,10 +566,12 @@ Human.fup.stats.table<-do.call("rbind",list(c(NA, "SPlus", "Dawson", "OPERA", "P
 # Human.Clint.stats.table<-Human.Clint.stats.table[2:3,]
 # rownames(Human.Clint.stats.table)<-Human.Clint.stats.table[,1]
 # Human.Clint.stats.table<-Human.Clint.stats.table[,2:5]
-
+write.csv(Human.Clint.stats.table, file="tables/SupTable-ClintStats.txt")
+write.csv(Human.fup.stats.table, file="tables/SupTable-FupStats.txt")
 ```
-```{r clint_rpe_boxwhisker_stats, eval = TRUE}
+
 #### add AAFE & RMSLE to the table
+```{r clint_rpe_boxwhisker_stats, eval = TRUE}
 FigLev1b.texty <- -2
 FigLev1b<-ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) + 
   geom_boxplot(lwd=.3,  #reduce the boxplot linewidth
@@ -594,8 +601,10 @@ FigLev1b<-ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) +
          legend.text=element_text(size=7),
          legend.title = element_text(size=8))
 print(FigLev1b) 
-ggsave(paste("figs/FigLev1b_Clint_boxplot_wtable",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev1b_Clint_boxplot_wtable",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
+
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 FigLev1c <- ggplot(data=level1tab) +
@@ -610,7 +619,10 @@ FigLev1c <- ggplot(data=level1tab) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1c)
+ggsave(paste("figs/FigLev1c-Fup-obsVpred",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
+
 ```{r fup_rpe_boxwhisker_faceted, eval = TRUE}
 
 ## faceted
@@ -634,10 +646,12 @@ FigLev1c <- ggplot(data=level1tab) +
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=14))
 print(FigLev1c)
-ggsave(paste("figs/FigLev1c_Fub_obsVpred_facet",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
+ggsave(paste("figs/FigLev1c-Fup-obsVpred-facet",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 #ggsave(paste("figs/FigLev1c_Fub_obsVpred_facet_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=1.7, dpi=300)
 
 ```
+
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 FigLev1d <- ggplot(data=level1tab, aes(x=QSPR, y=Human.Fup.RPE)) + 
   geom_boxplot(outlier.colour="red",    
@@ -649,12 +663,12 @@ FigLev1d <- ggplot(data=level1tab, aes(x=QSPR, y=Human.Fup.RPE)) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1d)  
-
-
+ggsave(paste("figs/FigLev1d-Fup-RPE",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
-```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 #### add AAFE & RMSLE to the table
+```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 texty <- 3
 FigLev1d<-ggplot(data=level1tab, aes(x=QSPR, y=Human.Fup.RPE)) + 
@@ -687,9 +701,11 @@ FigLev1d<-ggplot(data=level1tab, aes(x=QSPR, y=Human.Fup.RPE)) +
          legend.text=element_text(size=7),
          legend.title = element_text(size=8))
 print(FigLev1d) 
-ggsave(paste("figs/FigLev1d_fup_boxplot_wtable",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev1d_fup_boxplot_wtable",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 #ggsave(paste("figs/FigLev1d_fup_boxplot_wtable_PradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
 ```
+
 ```{r write_out_data, eval=TRUE}
 save(possible.training.chems, file="data/operatrainingchems.RData")
 save(CvT.chems,CvT.chems.scale,

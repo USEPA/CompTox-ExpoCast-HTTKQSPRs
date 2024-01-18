@@ -90,6 +90,7 @@ Predictors evaluated:
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-comaprtment fits to CvT data
 
+
 We load the TK stats (Level III) at this point because it makes sense to do
 the Level II and III calculations are the same time (rather than rewriting 
 the parameter values twice).
@@ -97,6 +98,7 @@ TK Stats (including Vd and thalf) calculated from CvTdb:
 
 ## There are ten chemicals where only opera could make predictions:
 ```{r separate_out_opera_only, eval=TRUE}
+length(unique(CvT.data$DTXSID))
 CvT.chems.opera <- subset(CvT.chems,DTXSID %in% c(
   "DTXSID0022985",
   "DTXSID1051432",

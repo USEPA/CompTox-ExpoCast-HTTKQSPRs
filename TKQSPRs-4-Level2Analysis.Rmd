@@ -1153,7 +1153,7 @@ FigLev2a <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-InVitro",]) +
  theme( text  = element_text(size=20),
          axis.text.y = element_text(size=10))
 #print(FigLev2a)
-ggsave(paste("figs/FigLev2_Conc_scatter_HTTKInVitro",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKInVitro",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 
 FigLev2b <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-ADmet",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
@@ -1170,7 +1170,7 @@ FigLev2b <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-ADmet",]) +
   theme( text  = element_text(size=20),
          axis.text.y = element_text(size=10))
 #print(FigLev2b)
-ggsave(paste("figs/FigLev2_Conc_scatter_HTTKADmet",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKADmet",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 
 FigLev2c <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Pradeep",]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
@@ -1192,7 +1192,7 @@ FigLev2c <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Pradeep",]) +
          axis.text.y = element_text(size=12))
 #print(FigLev2c)
 #ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeepNEW",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
-ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeep",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKPradeep",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 
 
 FigLev2d <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Dawson",]) +
@@ -1210,7 +1210,7 @@ FigLev2d <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-Dawson",]) +
   theme( text  = element_text(size=20),
          axis.text.y = element_text(size=10))
 #print(FigLev2d)
-ggsave(paste("figs/FigLev2_Conc_scatter_HTTKDawson",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKDawson",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 
 FigLev2e <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-OPERA" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
@@ -1227,7 +1227,7 @@ FigLev2e <- ggplot(data=level2tab[level2tab$QSPR=="HTTK-OPERA" ,]) +
   theme( text  = element_text(size=20),
          axis.text.y = element_text(size=10))
 #print(FigLev2e)
-ggsave(paste("figs/FigLev2_Conc_scatter_HTTKOPERA",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_HTTKOPERA",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 
 FigLev2f <- ggplot(data=level2tab[level2tab$QSPR=="FitsToData" ,]) +
   geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
@@ -1244,10 +1244,10 @@ FigLev2f <- ggplot(data=level2tab[level2tab$QSPR=="FitsToData" ,]) +
   theme( text  = element_text(size=20),
          axis.text.y = element_text(size=10))
 #print(FigLev2f)
-ggsave(paste("figs/FigLev2_Conc_scatter_FitsToData",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_FitsToData",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 
 grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, 
   nrow = 3, bottom=expression(paste("Predicted Conc. (mg/L)")))
-ggsave(paste("figs/FigLev2_Conc_scatter_all",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+ggsave(paste("figs/FigLev2_Conc_scatter_all",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 
 ```

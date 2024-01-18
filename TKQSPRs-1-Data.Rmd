@@ -135,6 +135,7 @@ series_res_set$Value <- suppressWarnings(signif(
 
 CvT.data <- series_res_set
 CvT.chems <- unique(CvT.data$DTXSID)
+length(CvT.chems)
 
 CvT.data[,"Dose"] <- as.numeric(CvT.data[,"Dose"])
 
@@ -173,7 +174,7 @@ for (this.study in unique(CvT.data$Source))
   }
 }
 CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
-
+length(unique(CvT.data$DTXSID))
 ```
 
 
@@ -407,6 +408,7 @@ fittable <- subset(fittable, !is.na(Model))
 ```{r load_empirical_fits, eval = TRUE}
 fittable <- read.csv("CvTdb/CvTdb_fullCoefsAIC_2023.10.30.csv")
 fittable$DTXSID <- fittable$Chemical
+length(unique(fittable$DTXSID))
 fittable$Model <- fittable$model
 fittable[fittable$Model=="model_1comp","Model"] <- "1Comp"
 fittable[fittable$Model=="model_2comp","Model"] <- "2Comp"
@@ -432,9 +434,10 @@ for (this.chem in unique(fittable$DTXSID))
                      fittable$Species %in% this.species,
                    "Reference"] <- these.refs
   }
+length(unique(fittable$DTXSID))
 ```
 # Load predictions made with fits
-```{r load_fit_preds, eval = TRUE}
+```{r load_fit_preds, eval = FALSE}
 fit.preds <- as.data.frame(read_excel("CvTdb/Predictions_CvTwinningModel_20240109.xlsx"))
 
 fit.preds <- merge(fit.preds,
@@ -492,10 +495,25 @@ CvT.chems <- CvT.chems[,c(
 
 # Throw out the CvT data for chemicals that could not be described by empirical PK models
 ```{r subset_cvt_data, eval = TRUE}
+length(unique(fittable$DTXSID))
 # Don't want data where the flat model wins:
-fittable <- subset(fittable, !(Model%in% c("model_flat")))
-# Don't want data where couldn't estimate Vdist or V1:
-fittable <- subset(fittable, !is.na(Vdist) | !is.na(V1))
+fittable.noflat <- subset(fittable, !(Model%in% c("model_flat")))
+print(paste("There were",
+            length(unique(fittable$DTXSID)) -
+                     length(unique(fittable.noflat$DTXSID)),
+            "chemicals where we did not get an empirical fit (flat model selected)."))
+fittable <- fittable.noflat
+
+length(unique(fittable$DTXSID))
+# Count chemicals where we don't have a usable empirical fit (No Vdist or V1):
+# essentially we only had oral data,
+fittable.usable <- subset(fittable, 
+                                 !is.na(Vdist) | !is.na(V1))
+print(paste("There were",
+            length(unique(fittable$DTXSID)) -
+                     length(unique(fittable.usable$DTXSID)),
+            "chemicals where we only had oral data (no empirical fit suitable for prediction)."))
+length(unique(fittable$DTXSID))
 
 print(length(unique(CvT.data$DTXSID)))
 CvT.data <- subset(CvT.data,DTXSID %in% fittable$DTXSID)
