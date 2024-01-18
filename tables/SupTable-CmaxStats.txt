@@ -1,0 +1,9 @@
+"","QSPR","R2","RMSLE","RPE"
+"1","HTTK-InVitro",0.456,0.93,-0.492
+"2","HTTK-ADmet",0.546,0.849,-0.477
+"3","HTTK-Dawson",0.459,0.928,-0.528
+"4","HTTK-Pradeep",0.492,0.899,-0.498
+"5","HTTK-OPERA",0.49,0.9,-0.483
+"6","FitsToData",0.157,1.07,-0.164
+"7","HTTK-YRandom",0.461,0.92,-0.418
+"8","HTTK-InVitro-Measured",0.589,0.871,-0.373

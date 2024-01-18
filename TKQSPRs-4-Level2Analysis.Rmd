@@ -673,7 +673,11 @@ FigLev2AUC_facet <- ggplot(data=level2tab.stats) +
          axis.text.x = element_text(size=10))
 
 print(FigLev2AUC_facet)
+ggsave(paste("figs/FigLev2_AUCScatter",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 print(AUC.stats.table)
+write.csv(AUC.stats.table, 
+          file="tables/SupTable-AUCStats.txt")
 ```
 
 ```{r make_level2_auc_plot, eval = FALSE}
@@ -692,6 +696,8 @@ FigLev2.auc <- ggplot(data=level2tab.stats, aes(x=QSPR, y=AUC.RPE)) +
   theme( text  = element_text(size=20))   +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev2.auc)  
+ggsave(paste("figs/FigLev2-AUC-RPE",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
 
 ```{r make_level2_cmax_plot, eval = FALSE}
@@ -710,7 +716,11 @@ FigLev2.cmax <- ggplot(data=level2tab.stats, aes(x=QSPR, y=Cmax.RPE)) +
   theme( text  = element_text(size=20))   +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 print(FigLev2.cmax)  
+ggsave(paste("figs/FigLev2_CmaxRPE",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
+
 ```
+
 ```{r make_level2_plot, eval = FALSE}
 FigLev2 <- ggplot(data=level2tab, aes(x=QSPR, y=RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
@@ -728,6 +738,8 @@ FigLev2 <- ggplot(data=level2tab, aes(x=QSPR, y=RPE)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5))+
   theme(axis.title.y = element_text(size=18))
 print(FigLev2)  
+ggsave(paste("figs/FigLev2_CvTRPE",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
 
 ```{r make_level2_cmax_plot, eval = TRUE}
@@ -753,8 +765,11 @@ FigLev2Cmax_facet <- ggplot(data=level2tab.stats) +
          axis.text.x = element_text(size=10))
 
 print(FigLev2Cmax_facet)
+ggsave(paste("figs/FigLev2_CmaxScatter",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 
 print(Cmax.stats.table)
+write.csv(Cmax.stats.table,file="tables/SupTable-CmaxStats.txt")
 ```
 
 
@@ -803,7 +818,7 @@ stats.table["RMSLE.bychem.early",this.qspr] <-
 stats.table["RMSLE.bychem.late",this.qspr] <-
   signif(median(subset(meassub,QSPR=="HTTK-InVitro")$RMSLE.late),3)
 
-write.csv(stats.table,file="main-stats-table.txt",row.names=TRUE)
+write.csv(stats.table,file="tables/Table-main-stats.txt",row.names=TRUE)
 
 ```
 
@@ -876,7 +891,10 @@ FigLev2RMSE <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE)) +
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
   axis.title.y=element_text(size=10))
 print(FigLev2RMSE) 
+ggsave(paste("figs/FigLev2_RMSEbyChem",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
+
 ```{r make_RMSE_bychem_early_plot, eval = TRUE}
 #### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2.5
@@ -945,7 +963,9 @@ FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
   legend.title = element_text(size=14),
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
   axis.title.y=element_text(size=10))
-print(FigLev2RMSE.early) 
+print(FigLev2RMSE.early)
+ggsave(paste("figs/FigLev2_RMSEbyChemEarly",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
 ```{r make_RMSE_bychem_late_plot, eval = TRUE}
 #### add AAFE & RMSLE for all points (not per chemical) to the table
@@ -1016,6 +1036,8 @@ FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
   axis.text.x = element_text(angle = 45, vjust = 0.5, size=14),
   axis.title.y=element_text(size=10))
 print(FigLev2RMSE.late) 
+ggsave(paste("figs/FigLev2_RMSEbyChemLAte",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
 ```
 
 
@@ -1084,120 +1106,24 @@ write.csv(signif(qsprbychem.table2,3),file="tables/SupTable-RMSLEbyChem.txt")
     cexRow=1.0,
     trace="none",
     col=mypalette)
-```
-## Load metabolism data (chemical-enzyme mapping):
-```{r load_chemcyps, eval = TRUE}
-pharm <- read.csv("jm0613471_si_002.txt",sep="\t")
-pharm <- subset(pharm,DTXSID!="-")
-pest <- read_excel("Abass2012.xlsx")
-pharm <- pharm[,c("Compound","PREFERRED_NAME","DTXSID","CASRN","ISOFORM","Author")]
-pest <- pest[,c("Pesticide","PREFERRED_NAME","DTXSID","CASRN","Enzyme","Reference")]
-colnames(pest) <- colnames(pharm)
-cyps <- rbind(pharm,pest)
-
-```
-
-```{r model_admet_difference, eval = TRUE}
-for (this.chem in unique(rownames(qsprbychem.table2)))
-{
-  DTXSID <- level2tab[level2tab$Compound==this.chem,"DTXSID"][1]
-  CvT.chems.nona[CvT.chems.nona$DTXSID == DTXSID, "ADMetDiff"] <-
-    qsprbychem.table2[this.chem,"ADmet"] - 
-    qsprbychem.table2[this.chem,"InVitro"]
-}
-thresh <- 0.2
-admetdiff <- subset(CvT.chems.nona,!is.na(ADMetDiff))
-  admetdiff[admetdiff$ADMetDiff > thresh, "ADMetDiffCat"]<-3
-  admetdiff[admetdiff$ADMetDiff < (-thresh), "ADMetDiffCat"]<-1
-  admetdiff[admetdiff$ADMetDiff > (-thresh) &
-    admetdiff$ADMetDiff < thresh, "ADMetDiffCat"]<-2
-
-# Add 1 vs. 2 comp:
-admetdiff <- merge(admetdiff,fittable[,c("CAS","Model")],by.x="CASRN",by.y="CAS")
-  
-# Add enzymes:
-for (this.chem in admetdiff$DTXSID)
-  if (this.chem %in% cyps$DTXSID)
-  {
-    this.subset <- subset(cyps,DTXSID==this.chem)
-    for (this.cyp in this.subset$ISOFORM)
-    {
-      admetdiff[admetdiff$DTXSID==this.chem,paste("CYP",this.cyp,sep="")] <- "1"
-    }
-  }
-for (this.col in c("CYP2C9",
-                     "CYP2C19",                                      
-                     "CYP3A4",
-                     "CYP2D6",                                       
-                     "CYP2B6",
-                     "CYP1A2",
-                     "CYP1A1")) 
-  admetdiff[is.na(admetdiff[,this.col]),this.col] <- 0
-
-dat <- admetdiff[,c("AVERAGE_MASS",                                 
- "BOILING_POINT_DEGC_OPERA_PRED",
- "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",            
- "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED",
- "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED",
- "MELTING_POINT_DEGC_OPERA_PRED",
- "VAPOR_PRESSURE_MMHG_OPERA_PRED",
- "WATER_SOLUBILITY_MOL/L_OPERA_PRED",
- "Human.Clint.httk",                             
- "Human.Fup.httk",
- "Human.Clint.SPlus",                            
- "Human.Fup.SPlus",
- "ADMetDiff",                                    
- "Model",                                        
- "CYP2C9",
- "CYP2C19",                                      
- "CYP3A4",
- "CYP2D6",                                       
- "CYP2B6",
- "CYP1A2",
- "CYP1A1")]
-
-# Turn into factor:
-for (this.col in c("Model",                                        
- "CYP2C9",
- "CYP2C19",                                      
- "CYP3A4",
- "CYP2D6",                                       
- "CYP2B6",
- "CYP1A2",
- "CYP1A1")) dat[,this.col] <- as.factor(dat[,this.col])
-  
-# Add contrast between ADmet and HTTK 
-dat$Clint.Ratio <- dat$Human.Clint.SPlus/dat$Human.Clint.httk
-dat$Clint.Ratio[is.nan(dat$Clint.Ratio)] <- 1
-dat$Clint.Ratio[!is.finite(dat$Clint.Ratio)] <- 10000
-
-dat$Fup.Ratio <- dat$Human.Fup.SPlus/dat$Human.Fup.httk
-dat$Fup.Ratio[is.nan(dat$Fup.Ratio)] <- 1
-
-# transform to more uniform scale:
-dat[,3] <- log10(dat[,3])
-
-colnames(dat)[1] <- "Molecular_Weight"
-colnames(dat)[2] <- "Boiling_Point"
-colnames(dat)[3] <- "Henrys_Law_Constant"
-colnames(dat)[4] <- "LogKow"
-colnames(dat)[5] <- "LogKoa"
-colnames(dat)[6] <- "Melting_Point"
-colnames(dat)[7] <- "Vapor_Pressure"
-colnames(dat)[8] <- "Water_Solubility"
-#dat$ADMetDiff <-as.factor(dat$ADMetDiff)
-this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(10,10,10),ntree=5000)
-print(this.rf)
-varImpPlot(this.rf)
-plot(dat[,2],dat[,13])
+tiff(paste("figs/Fig-RMSE-heatmap-",
+           output.prefix,
+           ".tiff",sep=""),
+, width=800*3, height=750*2)
+heatmap.2(t(qsprbychem.table2),
+#  lwid=c(0.4,1),
+#  lhei=c(0.4,1),
+#  margins=c(10,1),
+  scale="row",
+  cexRow=3,cexCol=2,
+  keysize=0.75,
+  margins=c(30,30),trace="none",srtCol=45,
+  col=mypalette,
+key.title="",
+key.par=list(cex=2))
+dev.off()  
 ```
 
-
-  
-  
-
-
-                  
 # Not sure if we can reasonably show all the predictions vs. the observations.
 # Maybe one plot per model?
 # FigLev2a <- ggplot(data=level2tab) +
@@ -1322,4 +1248,6 @@ ggsave(paste("figs/FigLev2_Conc_scatter_FitsToData",output.prefix,".tiff",sep=""
 
 grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, 
   nrow = 3, bottom=expression(paste("Predicted Conc. (mg/L)")))
+ggsave(paste("figs/FigLev2_Conc_scatter_all",output.prefix,".tiff",sep=""), width=4, height=3, dpi=300)
+
 ```
