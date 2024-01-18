@@ -140,7 +140,7 @@ CvT.data[,"Dose"] <- as.numeric(CvT.data[,"Dose"])
 
 CvT.data <- subset(CvT.data,Time>0)
 
-write.csv(CvT.data,row.names=FALSE,file="SupTable/SupTable-CvTData.txt")
+write.csv(CvT.data,row.names=FALSE,file="tables/SupTable-CvTData.txt")
 ```
 
 # Calculate a limit of quantification (90% of lowest observation)
@@ -466,7 +466,7 @@ for (this.col in colnames(fittable)[c(6:15,18,20)])
 dim(fittable)[1]
 length(unique(fittable$DTXSID))
 
-write.csv(fittable,file="SupTable/SupTable-TKFits.txt",row.names=FALSE)
+write.csv(fittable,file="tables/SupTable-TKFits.txt",row.names=FALSE)
 ```
 # Load phys-chem information:
 ```{r load_physchem, eval = TRUE}
@@ -559,4 +559,5 @@ save(invitro,file="data/httkinvitro.RData")
 save(CvT.chems,file="data/Cvt-chems.RData")
 save(CvT.data,file="data/Cvt-data.RData")
 save(fittable,file="data/fittable.RData")
+save(httk.both ,file="data/httk-goodchems.RData")
 ```

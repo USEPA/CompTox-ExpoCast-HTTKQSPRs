@@ -185,7 +185,7 @@ sup.table <- CvT.chems
 for (this.col in 1:dim(sup.table)[2])
   if (is.numeric(sup.table[1,this.col]))
     sup.table[,this.col] <- signif(sup.table[,this.col],3)
-write.csv(sup.table, row.names=FALSE,file="SupTable/SupTable-QSPRPredsandInVitroData.txt")
+write.csv(sup.table, row.names=FALSE,file="tables/SupTable-QSPRPredsandInVitroData.txt")
 ```
 
 Heatmap of the Data Set:
@@ -364,7 +364,7 @@ for (this.col in colnames(possible.training.chems))
     possible.training.chems[,this.col] <- 
   signif(possible.training.chems[,this.col],3)
 write.csv(possible.training.chems,row.names=FALSE,
-          file="SupTable/SupTable-PossibleTrainingChems.txt")
+          file="tables/SupTable-PossibleTrainingChems.txt")
 ```
 
 ```{r fold_error_differences, eval = TRUE}
@@ -407,7 +407,7 @@ for (this.qspr1 in unique(level1tab$QSPR))
 FE.table <- apply(FE.table,2,function(x) signif(x,3))
 print(ks.tests.clint)
 print(ks.tests.fup)
-write.csv(FE.table,file="Table-Level1FoldErrors.txt")
+write.csv(FE.table,file="tables/Table-Level1FoldErrors.txt")
 ```
 
 Calculate RPE:     
@@ -692,4 +692,6 @@ ggsave(paste("figs/FigLev1d_fup_boxplot_wtable",output.prefix,".tiff",sep=""), w
 ```
 ```{r write_out_data, eval=TRUE}
 save(possible.training.chems, file="data/operatrainingchems.RData")
+save(CvT.chems,CvT.chems.scale,
+     file="data/Cvt-chems-level1.RData")
 ```

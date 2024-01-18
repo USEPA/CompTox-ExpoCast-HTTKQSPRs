@@ -1,0 +1,498 @@
+---
+title: "TK QSPR Bakeoff"
+author: "John Wambaugh and Nisha Sipes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QSPR Bakeoff}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+First we clear the memory to make sure there are no holdovers from previous R runs
+```{r clear_mermor, eval=TRUE}
+rm(list=ls()) 
+```
+
+To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
+```{r load_packages, eval = TRUE}
+library(readxl)
+library(ggplot2)
+library(httk)
+library(scales)
+library(gplots)
+library(RColorBrewer)
+library(DescTools)
+library(gridExtra)
+library(reshape2)
+```
+
+Load custom code 
+```{r load_code, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+source("clear_httk.R")
+source("tkstats.R")
+
+# Function for formating tick labels:
+scientific_10 <- function(x) {                                  
+  out <- gsub("1e", "10^", scientific_format()(x))              
+  out <- gsub("\\+","",out)                                     
+  out <- gsub("10\\^01","10",out)                               
+  out <- parse(text=gsub("10\\^00","1",out))                    
+}  
+```
+
+
+Set the time stamp:
+```{r time_stamp, eval = TRUE}
+# Time stamp:
+output.prefix <- "Jan2024"
+```
+
+```{r load_data, eval= TRUE}
+load(file="data/httkinvitro.RData")
+load(file="data/Cvt-chems-level1.RData")
+load(file="data/operatrainingchems.RData")
+load(file="data/Cvt-data.RData")
+load(file="data/fittable.RData")
+```
+
+# Level II Predictions -- CvT data
+## Make Predictions
+
+At level II we are comparing predictions made using QSPR values with actual
+tissue concentration vs. time data. Most of the QSPR values are used with the
+HTTK PBTK model to make predictions. I hope to get ADmet predictor PBTK
+predictions too.
+
+Level I included the predictions made with the in vitro measured values, but this 
+is a subset of the total chemicals. Should probably run all statistics both
+for all chemicals and just the subset to make sure that the QSPRs aren't 
+affected by weird chemcials with no in vitro measured values. But I haven't 
+done this yet.
+
+Predictors evaluated:
+* HTTK PBTK with in vitro measured values
+* HTTK PBTK with ADmet
+* HTTK PBTK with Pradeep
+* HTTK PBTK with Dawson
+* HTTK PBTK with OPERA
+* HTTK PBTK with y-randomized in vitro measured values
+* Empirical one- and two-comaprtment fits to CvT data
+
+We load the TK stats (Level III) at this point because it makes sense to do
+the Level II and III calculations are the same time (rather than rewriting 
+the parameter values twice).
+TK Stats (including Vd and thalf) calculated from CvTdb:
+
+## There are ten chemicals where only opera could make predictions:
+```{r separate_out_opera_only, eval=TRUE}
+CvT.chems.opera <- subset(CvT.chems,DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992"))
+CvT.chems <- subset(CvT.chems,!(DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992")))
+CvT.data.opera <- subset(CvT.data,DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992"))
+CvT.data <- subset(CvT.data,!(DTXSID %in% c(
+  "DTXSID0022985",
+  "DTXSID1051432",
+  "DTXSID3032179",
+  "DTXSID30575892",
+  "DTXSID3061635",
+  "DTXSID5020285",
+  "DTXSID5024219",
+  "DTXSID50881104",
+  "DTXSID7030066",
+  "DTXSID80108992")))
+write.csv(CvT.chems.opera[,c(
+  "DTXSID",
+  "PREFERRED_NAME",                               
+  "CASRN")], row.names=FALSE,file="tables/SupTable-OPERAOnlyChems.txt")
+```
+
+There are chemicals where the in vivo data don't permit empirical fits, drop
+those from the level II/III evaluation:
+```{r separate_out_badfits, eval=TRUE}
+CvT.chems.nofits <- CvT.chems[
+  !(CvT.chems$CASRN%in%fittable$CAS) |
+  CvT.chems$CASRN %in%subset(fittable,Model=="Flat")$CAS |
+  CvT.chems$CASRN %in%subset(fittable,Model=="None")$CAS
+  , ]
+                                
+
+write.csv(CvT.chems.nofits[,c(
+  "DTXSID",
+  "PREFERRED_NAME",                               
+  "CASRN")], row.names=FALSE,file="tables/SupTable-NoEmpiricalFitChems.txt")
+
+CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CASRN))
+length(unique(CvT.data$CAS)) # Number of chemicals with good fits
+```
+## Get rid of chemical predictions that are possibly just training set lookups:
+```{r remove_training_chems, eval=TRUE}
+CvT.chems.notraining <- CvT.chems
+for (this.qspr in unique(possible.training.chems$QSPR))
+{
+  this.subset <- subset(possible.training.chems, QSPR==this.qspr)
+  for (this.id in this.subset$DTXSID)
+  {
+    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
+      paste("Human.Clint",this.qspr,sep=".")]<-NA
+    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
+      paste("Human.Fup",this.qspr,sep=".")]<-NA
+  }
+}
+dim(CvT.chems.notraining)
+```
+
+## Get rid of chemicals with only OPERA predictions, or bad empirical fits:
+```{r remove_problem_chems, eval=TRUE}
+CvT.chems.nobad <- subset(CvT.chems.notraining,
+                          !(DTXSID %in% CvT.chems.opera$DTXSID) &
+                          !(DTXSID %in% CvT.chems.nofits$DTXSID))
+dim(CvT.chems.nobad)
+dim(CvT.data)
+CvT.data <- subset(CvT.data,CAS%in%CvT.chems.nobad$CASRN)
+# Hours to days:
+CvT.data$Time <- CvT.data$Time/24
+dim(CvT.data)
+```
+
+```{r create_consensus_preds, eval=TRUE}
+clint.cols <- colnames(CvT.chems.nobad)[
+  regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
+CvT.chems.nobad$Human.Clint.Max<- apply(
+  CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE))
+CvT.chems.nobad$Human.Clint.Mean<- apply(
+  CvT.chems.nobad[,clint.cols],1,function(x) mean(x,na.rm=TRUE))
+logit <- function(x)
+{
+  return(sapply(x, function(x) log(x/(1-x))))
+}
+invlogit <- function(x)
+{
+  return(sapply(x, function(x) exp(x)/(exp(x)+1)))
+}
+
+
+fup.cols <- colnames(CvT.chems.nobad)[
+  regexpr("Fup",colnames(CvT.chems.nobad))!=-1]
+CvT.chems.nobad$Human.Fup.Mean <- apply(
+  CvT.chems.nobad[,fup.cols],1,function(x) invlogit(mean(sapply(x, function(y) logit(min(max(y,1e-8),(1-1e-8)))),na.rm=TRUE)))
+```
+
+
+## Make a version of the prediction matrix where we've smoothed out missing data:
+```{r remove_missing_predictions, eval = TRUE}
+CvT.chems.nona <- CvT.chems.nobad
+
+# Can't run PBTK for fup=0
+for (this.col in fup.cols)
+  CvT.chems.nona[is.na(CvT.chems.nona[,this.col]),this.col]<-0
+for (this.col in fup.cols)
+  CvT.chems.nona[CvT.chems.nona[,this.col]==0,this.col]<-NA
+
+
+for (this.chem in CvT.chems.nona$DTXSID)
+{
+  this.row <- which(CvT.chems.nona$DTXSID==this.chem)
+# Check Clints:
+  if (all(is.na(CvT.chems.nona[this.row,clint.cols])))
+  {
+    CvT.chems.nona <- subset(CvT.chems.nona,DTXSID!=this.chem)
+  } else if (any(is.na(CvT.chems.nona[this.row,clint.cols])))
+  {
+    for (this.col in clint.cols)
+      if (is.na(CvT.chems.nona[this.row,this.col])) 
+        CvT.chems.nona[this.row,this.col] <- 
+          CvT.chems.nona[this.row,"Human.Clint.Mean"] 
+  }
+# Check fups:
+  if (all(is.na(CvT.chems.nona[this.row,fup.cols])))
+  {
+    CvT.chems.nona <- subset(CvT.chems.nona,DTXSID!=this.chem)
+  } else if (any(is.na(CvT.chems.nona[this.row,fup.cols])) |
+      any(sapply(CvT.chems.nona[this.row,fup.cols],is.nan)))
+  {
+    for (this.col in fup.cols)
+      if (is.na(CvT.chems.nona[this.row,this.col]) |
+          is.nan(CvT.chems.nona[this.row,this.col])) 
+        CvT.chems.nona[this.row,this.col] <- 
+          CvT.chems.nona[this.row,"Human.Fup.Mean"]
+  }
+}
+```
+
+## Randomize the in vitro descriptors as a sort of prediction "floor"
+```{r cvt_yrandomize_desc, eval = TRUE}
+set.seed(123456)
+for (i in 1:10) # Ten sets of parameters
+{
+  yrandom.ids <- sample(1:dim(CvT.chems.nona)[1],dim(CvT.chems.nona)[1])
+  CvT.chems.nona[,paste("Human.Clint.YRandom",i,sep="")] <- 
+    CvT.chems.nona[yrandom.ids, "Human.Clint.httk"]
+  CvT.chems.nona[,paste("Human.Fup.YRandom",i,sep="")] <- 
+    CvT.chems.nona[yrandom.ids, "Human.Fup.httk"]
+}
+```
+
+Make predictions of CvT using in vitro measured data. Rather than use default
+HTTK (which also pulls in things like blood to plasma ratio) we'll wipe out 
+everything and then add just Clint and Fup each time:
+```{r cvt_compare_invitro, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.httk",
+    Clint="Human.Clint.httk"),
+  species="Human",
+  reference="InVitro",
+  overwrite=TRUE)
+print(paste("HTTK parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.invitro.list <- makeCvTpreds(CvT.data,"HTTK-InVitro")
+level2tab.invitro <- level2tab.invitro.list$cvt
+level2tab.invitro.stats <- level2tab.invitro.list$stats
+level3tab.invitro <- maketkstatpreds(CvT.data,fittable,"HTTK-InVitro")
+```
+
+```{r cvt_compare_admet, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.SPlus",
+    Clint="Human.Clint.SPlus"),
+  species="Human",
+  reference="SPlus",
+  overwrite=TRUE)
+print(paste("ADMet parameters for",length(get_cheminfo(model="pbtk")),
+            "chemicals for PBTK"))
+level2tab.admet.list <- makeCvTpreds(CvT.data,"HTTK-ADmet")
+level2tab.admet <- level2tab.admet.list$cvt
+level2tab.admet.stats <- level2tab.admet.list$stats
+level3tab.admet <- maketkstatpreds(CvT.data,fittable,"HTTK-ADmet")
+```
+
+```{r cvt_compare_dawson, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.Dawson",
+    Clint="Human.Clint.Dawson"),
+  species="Human",
+  reference="Dawson",
+  overwrite=TRUE)
+print(paste("Dawson (2021) parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.dawson.list <- makeCvTpreds(CvT.data,"HTTK-Dawson")
+level2tab.dawson <- level2tab.dawson.list$cvt
+level2tab.dawson.stats <- level2tab.dawson.list$stats
+level3tab.dawson <- maketkstatpreds(CvT.data,fittable,"HTTK-Dawson")
+```
+
+```{r cvt_compare_pradeep, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.Pradeep",
+    Clint="Human.Clint.Pradeep"),
+  species="Human",
+  reference="Pradeep",
+  overwrite=TRUE)
+print(paste("Pradeep (2020) parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.pradeep.list <- makeCvTpreds(CvT.data,"HTTK-Pradeep")
+level2tab.pradeep <- level2tab.pradeep.list$cvt
+level2tab.pradeep.stats <- level2tab.pradeep.list$stats
+level3tab.pradeep <- maketkstatpreds(CvT.data,fittable,"HTTK-Pradeep")
+
+```
+
+## Add OPERA predictions:
+```{r cvt_compare_opera, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.OPERA",
+    Clint="Human.Clint.OPERA"),
+  species="Human",
+  reference="OPERA",
+  overwrite=T)
+print(paste("OPERA parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.opera.list <- makeCvTpreds(CvT.data,"HTTK-OPERA")
+level2tab.opera <- level2tab.opera.list$cvt
+level2tab.opera.stats <- level2tab.opera.list$stats
+level3tab.opera <- maketkstatpreds(CvT.data,fittable,"HTTK-OPERA")
+```
+
+## Add consensus predictions:
+```{r cvt_compare_consensus, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.Mean",
+    Clint="Human.Clint.Max"),
+  species="Human",
+  reference="Consensus",
+  overwrite=T)
+print(paste("Consensus parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.consensus.list <- makeCvTpreds(CvT.data,"HTTK-Consensus")
+level2tab.consensus <- level2tab.consensus.list$cvt
+level2tab.consensus.stats <- level2tab.consensus.list$stats
+level3tab.consensus <- maketkstatpreds(CvT.data,fittable,"HTTK-Consensus")
+```
+
+## Add y-random predictions:
+```{r cvt_compare_yrandom, eval = TRUE}
+level2tab.yrandom <- NULL
+level2tab.yrandom.stats <- NULL
+level3tab.yrandom <- NULL
+for (i in 1:10)
+{
+  clear_httk()
+  chem.physical_and_invitro.data <- add_chemtable(
+    CvT.chems.nona,
+    current.table=chem.physical_and_invitro.data,
+    data.list=list(
+      Compound="PREFERRED_NAME",
+      DTXSID="DTXSID",
+      CAS="CASRN",
+      Funbound.plasma=paste("Human.Fup.YRandom",i,sep=""),
+      Clint=paste("Human.Clint.YRandom",i,sep="")),
+    species="Human",
+    reference="YRandom",
+    overwrite=T)
+  print(paste("Y-randomized parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+              "chemicals for PBTK #",i))
+  level2tab.yrandom.list <- makeCvTpreds(CvT.data,"HTTK-YRandom")
+  level2tab.yrandom <- rbind(level2tab.yrandom,level2tab.yrandom.list$cvt)
+  level2tab.yrandom.stats <- rbind(level2tab.yrandom.stats,level2tab.yrandom.list$stats)
+  level3tab.yrandom <- rbind(level3tab.yrandom,maketkstatpreds(CvT.data,fittable,"HTTK-YRandom"))
+}
+```
+
+The performance of actual 1 compartment model fits provides an upper limit
+of how good we can get (thanks Rusty)
+```{r cvt_compare_fits, eval = TRUE}
+level2tab.fits.list <- makeCvTpredsfromfits(
+  CvT.data,
+  fittable)
+level2tab.fits <-  level2tab.fits.list$cvt
+level2tab.fits.stats <- level2tab.fits.list$stats
+```
+
+## Collect the Concentration vs. time (level 2) predictions from each model:
+```{r cvt_onering, eval = TRUE}
+level2tab <- rbind(
+  level2tab.invitro,
+  level2tab.admet,
+  level2tab.dawson,
+  level2tab.pradeep,
+  level2tab.opera,
+  level2tab.fits,
+  level2tab.yrandom)#,
+#  level2tab.consensus)
+level2tab <- subset(level2tab,!duplicated(level2tab))
+
+level2tab.stats <- rbind(
+  level2tab.invitro.stats,
+  level2tab.admet.stats,
+  level2tab.dawson.stats,
+  level2tab.pradeep.stats,
+  level2tab.opera.stats,
+  level2tab.fits.stats,
+  level2tab.yrandom.stats)#,
+#  level2tab.consensus.stats)
+level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
+# Occasionally we can't calculate AUC, get rid of these data:
+level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
+```
+
+```{r write_out_data, eval=TRUE}
+save(level2tab, level2tab.stats, file="data/level2preds.RData")
+save(CvT.chems,
+     CvT.chems.scale,
+     CvT.chems.nona,
+     file="data/Cvt-chems-level2.RData")
+```

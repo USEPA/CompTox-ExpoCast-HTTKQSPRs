@@ -1,0 +1,7 @@
+"DTXSID","PREFERRED_NAME","CASRN"
+"DTXSID0022985","Ephedrine","299-42-3"
+"DTXSID1051432","Thiodiglycolic acid","123-93-3"
+"DTXSID30575892","Oxoacetic acid--water (1/1)","563-96-2"
+"DTXSID5024219","Nitrite","14797-65-0"
+"DTXSID50881104","Diltiazem","34933-06-7"
+"DTXSID80108992","Perfluorooctanesulfonate","45298-90-6"
