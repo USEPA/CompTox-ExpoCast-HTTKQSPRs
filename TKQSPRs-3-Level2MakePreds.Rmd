@@ -99,7 +99,7 @@ TK Stats (including Vd and thalf) calculated from CvTdb:
 ## There are ten chemicals where only opera could make predictions:
 ```{r separate_out_opera_only, eval=TRUE}
 length(unique(CvT.data$DTXSID))
-CvT.chems.opera <- subset(CvT.chems,DTXSID %in% c(
+CvT.chems.outsidedoa <- subset(CvT.chems,DTXSID %in% c(
   "DTXSID0022985",
   "DTXSID1051432",
   "DTXSID3032179",
@@ -121,7 +121,7 @@ CvT.chems <- subset(CvT.chems,!(DTXSID %in% c(
   "DTXSID50881104",
   "DTXSID7030066",
   "DTXSID80108992")))
-CvT.data.opera <- subset(CvT.data,DTXSID %in% c(
+CvT.data.outsidedoa <- subset(CvT.data,DTXSID %in% c(
   "DTXSID0022985",
   "DTXSID1051432",
   "DTXSID3032179",
@@ -143,7 +143,8 @@ CvT.data <- subset(CvT.data,!(DTXSID %in% c(
   "DTXSID50881104",
   "DTXSID7030066",
   "DTXSID80108992")))
-write.csv(CvT.chems.opera[,c(
+length(unique(CvT.data$DTXSID))
+write.csv(CvT.chems.outsidedoa[,c(
   "DTXSID",
   "PREFERRED_NAME",                               
   "CASRN")], row.names=FALSE,file="tables/SupTable-OPERAOnlyChems.txt")
@@ -187,7 +188,7 @@ dim(CvT.chems.notraining)
 ## Get rid of chemicals with only OPERA predictions, or bad empirical fits:
 ```{r remove_problem_chems, eval=TRUE}
 CvT.chems.nobad <- subset(CvT.chems.notraining,
-                          !(DTXSID %in% CvT.chems.opera$DTXSID) &
+                          !(DTXSID %in% CvT.chems.outsidedoa$DTXSID) &
                           !(DTXSID %in% CvT.chems.nofits$DTXSID))
 dim(CvT.chems.nobad)
 dim(CvT.data)
@@ -300,6 +301,29 @@ level2tab.invitro.list <- makeCvTpreds(CvT.data,"HTTK-InVitro")
 level2tab.invitro <- level2tab.invitro.list$cvt
 level2tab.invitro.stats <- level2tab.invitro.list$stats
 level3tab.invitro <- maketkstatpreds(CvT.data,fittable,"HTTK-InVitro")
+```
+```{r cvt_compare_invitro_outsidedoa, eval = TRUE}
+clear_httk()
+chem.physical_and_invitro.data <- add_chemtable(
+  CvT.chems.nona,
+  current.table=chem.physical_and_invitro.data,
+  data.list=list(
+    Compound="PREFERRED_NAME",
+    DTXSID="DTXSID",
+    CAS="CASRN",
+    Funbound.plasma="Human.Fup.httk",
+    Clint="Human.Clint.httk"),
+  species="Human",
+  reference="InVitro",
+  overwrite=TRUE)
+print(paste("HTTK parameters for",length(unique(c(
+  get_cheminfo(model="pbtk"),
+  get_cheminfo(model="gas_pbtk")))),
+            "chemicals for PBTK"))
+level2tab.invitro2.list <- makeCvTpreds(CvT.data.outsidedoa,"HTTK-InVitro-ODOA")
+level2tab.invitro2 <- level2tab.invitro.list$cvt
+level2tab.invitro2.stats <- level2tab.invitro.list$stats
+level3tab.invitro2 <- maketkstatpreds(CvT.data.outsidedoa,fittable,"HTTK-InVitro-ODOA")
 ```
 
 ```{r cvt_compare_admet, eval = TRUE}
@@ -468,6 +492,7 @@ level2tab.fits.stats <- level2tab.fits.list$stats
 ```{r cvt_onering, eval = TRUE}
 level2tab <- rbind(
   level2tab.invitro,
+  level2tab.invitro2,
   level2tab.admet,
   level2tab.dawson,
   level2tab.pradeep,
@@ -479,6 +504,7 @@ level2tab <- subset(level2tab,!duplicated(level2tab))
 
 level2tab.stats <- rbind(
   level2tab.invitro.stats,
+  level2tab.invitro2.stats,
   level2tab.admet.stats,
   level2tab.dawson.stats,
   level2tab.pradeep.stats,
