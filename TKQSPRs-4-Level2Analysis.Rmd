@@ -440,6 +440,24 @@ heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
   cexCol=1,
   trace="none",
   col=mypalette)
+#par(mar=c(12,4,4,2)+0.1,cex.main=3) 
+png(paste("figs/Fig-Chem-stats-heatmap-",
+           output.prefix,
+           ".tiff",sep=""),
+, width=800*3, height=750*3)
+heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
+  4:dim(CvT.chems.stats.heatmap)[2]]),
+#  lwid=c(0.4,1),
+#  lhei=c(0.4,1),
+#  margins=c(10,1),
+  labRow = FALSE, scale="row",
+  cexRow=3,cexCol=3,
+  keysize=0.75,
+  margins=c(30,8),trace="none",srtCol=45,
+  col=mypalette,
+key.title="",
+key.par=list(cex=2))
+dev.off()
 ```
 
 ```{r make_level2_plot_stats, eval = FALSE}
