@@ -1,102 +1,102 @@
-"DTXSID","model","method","Chemical","Species","Vdist","Fgutabs","Fgutabs_Vdist","Rblood2plasma","kelim","kgutabs","k12","k21","V1","Fgutabs_V1","Time.Units","Time_trans.Units","log_likelihood","npar","AIC","Model","CAS","halflife","Reference"
-"DTXSID0020365","model_2comp","L-BFGS-B","DTXSID0020365","rat",NA,NA,NA,1,1.08,NA,14.2,4.74,0.287,NA,"hours","hours",32.7,5,-55.5,"2Comp","59865-13-3",0.643,"29385628"
-"DTXSID0020442","model_2comp","L-BFGS-B","DTXSID0020442","rat",NA,0.221,NA,1,11.8,4.75,14,2.13,0.0271,NA,"hours","hours",-359,8,735,"2Comp","94-75-7",0.0587,"29385628, NTP"
-"DTXSID0020652","model_2comp","L-BFGS-B","DTXSID0020652","rat",NA,0.494,NA,1,12.6,1.53,0.0212,16.6,0.0931,NA,"hours","hours",-16,7,45.9,"2Comp","25812-30-0",0.055,"NTP"
-"DTXSID0020868","model_1comp","L-BFGS-B","DTXSID0020868","rat",NA,NA,0.657,1,1.16,21.8,NA,NA,NA,NA,"hours","hours",14.1,4,-20.3,"1Comp","75-09-2",0.599,"1673388"
-"DTXSID0021125","model_1comp","L-BFGS-B","DTXSID0021125","rat",0.0365,NA,NA,1,32.2,NA,NA,NA,NA,NA,"hours","hours",-58.1,3,122,"1Comp","77-09-8",0.0215,"NTP"
-"DTXSID0021383","model_2comp","L-BFGS-B","DTXSID0021383","rat",NA,NA,NA,1,13.7,6.38,13.8,0.258,NA,1.86,"hours","hours",59.3,7,-105,"2Comp","79-01-6",0.0504,"1673388, 2749729"
-"DTXSID0021961","model_1comp","L-BFGS-B","DTXSID0021961","rat",2.22,0.294,NA,3.62,4.5,4.02,NA,NA,NA,NA,"hours","hours",444,6,-875,"1Comp","119-61-9",0.154,"NTP"
-"DTXSID0022985","model_1comp","L-BFGS-B","DTXSID0022985","rat",6.77,0.281,NA,1,0.591,8.36,NA,NA,NA,NA,"hours","hours",262,5,-513,"1Comp","299-42-3",1.17,"NTP"
-"DTXSID1020198","model_1comp","L-BFGS-B","DTXSID1020198","rat",3.1,NA,NA,1,6.63,NA,NA,NA,NA,NA,"hours","hours",127,3,-248,"1Comp","75-27-4",0.104,"NTP"
-"DTXSID1021087","model_2comp","L-BFGS-B","DTXSID1021087","rat",NA,0.373,NA,1,1.3,0.111,13.6,9.86,1.03,NA,"hours","hours",409,7,-804,"2Comp","604-75-1",0.534,"NTP"
-"DTXSID1021116","model_2comp","L-BFGS-B","DTXSID1021116","rat",NA,0.126,NA,1,0.769,3.48,0.606,0.883,0.836,NA,"hours","hours",436,11,-850,"2Comp","62-44-2",0.901,"22940574, 23235327, 28253826, 29385628, 43370"
-"DTXSID1021116","model_2comp","L-BFGS-B","DTXSID1021116","human",NA,0,NA,1,1.99,0.0693,3.42,3.22,0.586,NA,"hours","hours",19,7,-24,"2Comp","62-44-2",0.349,"1233222"
-"DTXSID1022265","model_1comp","L-BFGS-B","DTXSID1022265","rat",9.55,0,NA,1,11.3,2.77,NA,NA,NA,NA,"hours","hours",91,5,-172,"1Comp","15972-60-8",0.0611,"29385628"
-"DTXSID1023815","model_1comp","L-BFGS-B","DTXSID1023815","rat",0.375,1,NA,1,3.48,1.28,NA,NA,NA,NA,"hours","hours",-4.75,6,21.5,"1Comp","631-64-1",0.199,"NTP"
-"DTXSID1026118","model_2comp","L-BFGS-B","DTXSID1026118","rat",NA,NA,NA,1,15.9,NA,15.3,6.59,0.138,NA,"hours","hours",165,5,-320,"2Comp","119-64-2",0.0437,"NTP"
-"DTXSID1034187","model_flat","L-BFGS-B","DTXSID1034187","rat",87.6,0.00169,NA,1,NA,NA,NA,NA,NA,NA,"hours","hours",-3.02e+08,4,6.05e+08,"model_flat","10540-29-1",NA,"NTP"
-"DTXSID1043881","model_2comp","L-BFGS-B","DTXSID1043881","rat",NA,0.638,NA,1,1.87,0.0144,6.38,5.42,2.83,NA,"hours","hours",104,7,-194,"2Comp","50-49-7",0.371,"29385628"
-"DTXSID1051432","model_2comp","L-BFGS-B","DTXSID1051432","rat",NA,NA,NA,1,6.98,NA,2.69,1.22,0.128,NA,"hours","hours",17.7,5,-25.3,"2Comp","123-93-3",0.0994,"NTP"
-"DTXSID2020139","model_2comp","L-BFGS-B","DTXSID2020139","rat",NA,0.5,NA,1,0.0192,45.5,0.5,0.1,10.3,NA,"hours","hours",-82400,11,165000,"2Comp","50-32-8",36,"20186696, 5494573, 9561966"
-"DTXSID2020420","model_1comp","L-BFGS-B","DTXSID2020420","rat",1.95,0,NA,1,6.57,9.47,NA,NA,NA,NA,"hours","hours",45.4,5,-80.7,"1Comp","23950-58-5",0.106,"29385628"
-"DTXSID2020428","model_1comp","L-BFGS-B","DTXSID2020428","rat",0.749,1,NA,1,3.2,0.468,NA,NA,NA,NA,"hours","hours",-76.3,5,163,"1Comp","79-43-6",0.216,"NTP"
-"DTXSID2020682","model_2comp","L-BFGS-B","DTXSID2020682","rat",NA,1,NA,1,0.00198,0.943,0.000172,1.57,6.32,NA,"hours","hours",185,8,-354,"2Comp","118-74-1",350,"NTP"
-"DTXSID2021315","model_flat","L-BFGS-B","DTXSID2021315","rat",NA,NA,0.01,1,NA,NA,NA,NA,NA,NA,"hours","hours",-111,2,227,"model_flat","1746-01-6",NA,"NTP"
-"DTXSID2021319","model_1comp","L-BFGS-B","DTXSID2021319","rat",NA,NA,0.717,1,1.08,0.139,NA,NA,NA,NA,"hours","hours",106,4,-203,"1Comp","127-18-4",0.64,"538758"
-"DTXSID2021731","model_1comp","L-BFGS-B","DTXSID2021731","rat",0.994,NA,NA,1,0.303,NA,NA,NA,NA,NA,"hours","hours",50.3,3,-94.6,"1Comp","67-56-1",2.29,"1440610"
-"DTXSID2021781","model_1comp","L-BFGS-B","DTXSID2021781","rat",1.13,NA,NA,1,10.7,NA,NA,NA,NA,NA,"hours","hours",-14.6,3,35.1,"1Comp","84-74-2",0.0646,"NTP"
-"DTXSID2032390","model_1comp","L-BFGS-B","DTXSID2032390","rat",2.65,0,NA,1,1.29,0.00481,NA,NA,NA,NA,"hours","hours",42.3,5,-74.5,"1Comp","60168-88-9",0.539,"29385628"
-"DTXSID2032552","model_1comp","L-BFGS-B","DTXSID2032552","rat",2.28,0,NA,1,15,1.4,NA,NA,NA,NA,"hours","hours",18.7,5,-27.5,"1Comp","142459-58-3",0.0463,"29385628"
-"DTXSID2039336","model_1comp","L-BFGS-B","DTXSID2039336","rat",13.9,0,NA,1,2.04,0.00481,NA,NA,NA,NA,"hours","hours",46.6,5,-83.2,"1Comp","28434-00-6",0.339,"29385628"
-"DTXSID2046624","model_2comp","L-BFGS-B","DTXSID2046624","rat",NA,0.157,NA,1,2.77,0.964,2.75,2.21,2.27,NA,"hours","hours",494,7,-974,"2Comp","75530-68-6",0.25,"29385628"
-"DTXSID3020095","model_2comp","L-BFGS-B","DTXSID3020095","rat",NA,0,NA,1,6.02,0.0144,7.1,2.65,0.421,NA,"hours","hours",129,7,-244,"2Comp","84-65-1",0.115,"NTP"
-"DTXSID3020833","model_2comp","L-BFGS-B","DTXSID3020833","human",NA,NA,NA,1,1.1,1.43,0.84,0.141,NA,0.768,"hours","hours",188,6,-364,"2Comp","1634-04-4",0.632,"11504147"
-"DTXSID3022405","model_2comp","L-BFGS-B","DTXSID3022405","rat",NA,0,NA,1,9.2,0.0217,4.78,4.01,0.444,NA,"hours","hours",431,7,-848,"2Comp","131-57-7",0.0754,"NTP"
-"DTXSID3026148","model_2comp","L-BFGS-B","DTXSID3026148","rat",NA,0.111,NA,1,8.89,3.59,7.16,3.73,1.1,NA,"hours","hours",745,7,-1480,"2Comp",NA,0.078,"NTP"
-"DTXSID3026148","model_2comp","L-BFGS-B","DTXSID3026148","rat",NA,0.111,NA,1,8.89,3.59,7.16,3.73,1.1,NA,"hours","hours",745,7,-1480,"2Comp","546-80-5",0.078,"NTP"
-"DTXSID3031860","model_2comp","L-BFGS-B","DTXSID3031860","rat",NA,0.838,NA,1,0.00134,11.6,0.159,11.6,0.251,NA,"hours","hours",-491,7,997,"2Comp","335-76-2",515,"NTP"
-"DTXSID3031862","model_1comp","L-BFGS-B","DTXSID3031862","rat",1.05,1,NA,1,0.236,11.9,NA,NA,NA,NA,"hours","hours",-198,5,405,"1Comp","307-24-4",2.93,"NTP"
-"DTXSID3032179","model_2comp","L-BFGS-B","DTXSID3032179","rat",NA,NA,NA,1,0.74,0.000358,0.802,0.0733,NA,0.116,"hours","hours",-16800,6,33600,"2Comp","57465-28-8",0.937,"NTP"
-"DTXSID3034872","model_1comp","L-BFGS-B","DTXSID3034872","rat",3.55,1,NA,1,0.637,1.19,NA,NA,NA,NA,"hours","hours",4.42,5,1.16,"1Comp","1698-60-8",1.09,"29385628"
-"DTXSID3037707","model_1comp","L-BFGS-B","DTXSID3037707","rat",0.239,0.787,NA,1,0.268,1.9,NA,NA,NA,NA,"hours","hours",-461,5,933,"1Comp","29420-49-3",2.59,"NTP"
-"DTXSID3037709","model_1comp","L-BFGS-B","DTXSID3037709","rat",0.283,1,NA,1,0.00522,14.7,NA,NA,NA,NA,"hours","hours",-617,5,1240,"1Comp","3871-99-6",133,"NTP"
-"DTXSID30575892","model_1comp","L-BFGS-B","DTXSID30575892","rat",1.54,NA,NA,1,4.21,NA,NA,NA,NA,NA,"hours","hours",-40.8,3,87.5,"1Comp","563-96-2",0.165,"NTP"
-"DTXSID3061635","model_1comp","L-BFGS-B","DTXSID3061635","rat",NA,NA,0.0759,1,1.38,1.37,NA,NA,NA,NA,"hours","hours",315,4,-622,"1Comp","1229-55-6",0.501,"27270205"
-"DTXSID4020290","model_2comp","L-BFGS-B","DTXSID4020290","rat",NA,0.391,NA,1,12.4,0.511,25.3,5.28,0.0171,NA,"hours","hours",-170,7,355,"2Comp","50892-23-4",0.056,"NTP"
-"DTXSID4020458","model_2comp","L-BFGS-B","DTXSID4020458","rat",NA,NA,NA,1,0.115,0.231,0.5,0.1,NA,0.177,"hours","hours",-68800,6,138000,"2Comp","2921-88-2",6.04,"29385628"
-"DTXSID4020533","model_2comp","L-BFGS-B","DTXSID4020533","rat",NA,NA,NA,1.28,0.114,NA,3.77,2.11,0.842,NA,"hours","hours",57.4,7,-101,"2Comp","123-91-1",6.07,"2158678, 731724"
-"DTXSID4021268","model_1comp","L-BFGS-B","DTXSID4021268","rat",3.37,0.0182,NA,1,2.25,2.78,NA,NA,NA,NA,"hours","hours",16.8,5,-23.5,"1Comp","122-34-9",0.308,"29385628"
-"DTXSID4022107","model_2comp","L-BFGS-B","DTXSID4022107","rat",NA,NA,NA,1,0.0405,NA,0.0961,0.129,0.784,NA,"hours","hours",55.6,5,-101,"2Comp","693-98-1",17.1,"NTP"
-"DTXSID4022527","model_2comp","L-BFGS-B","DTXSID4022527","rat",NA,NA,NA,1,0.68,2.31,1.58,0.526,NA,0.687,"hours","hours",102,7,-189,"2Comp","94-13-3",1.02,"24068675"
-"DTXSID4022577","model_2comp","L-BFGS-B","DTXSID4022577","rat",NA,0.414,NA,1,8.78,0.341,10.8,6.47,0.869,NA,"hours","hours",488,7,-962,"2Comp","28981-97-7",0.0789,"29385628"
-"DTXSID4023917","model_1comp","L-BFGS-B","DTXSID4023917","rat",1.16,NA,NA,1,3.3,NA,NA,NA,NA,NA,"hours","hours",136,3,-265,"1Comp","111-91-1",0.21,"NTP"
-"DTXSID4024642","model_1comp","L-BFGS-B","DTXSID4024642","rat",0.858,0.908,NA,1,3.34,0.908,NA,NA,NA,NA,"hours","hours",-113,5,236,"1Comp","5589-96-8",0.208,"NTP"
-"DTXSID4024729","model_2comp","L-BFGS-B","DTXSID4024729","rat",NA,NA,NA,1,0.0684,0.346,0.5,0.1,NA,0.126,"hours","hours",-5100,6,10200,"2Comp","10605-21-7",10.1,"29385628"
-"DTXSID4032376","model_1comp","L-BFGS-B","DTXSID4032376","rat",4.44,0,NA,1,6.55,2.76,NA,NA,NA,NA,"hours","hours",97.8,5,-186,"1Comp","87674-68-8",0.106,"29385628"
-"DTXSID4032405","model_1comp","L-BFGS-B","DTXSID4032405","rat",43.7,0.5,NA,1,0.0192,2.77,NA,NA,NA,NA,"hours","hours",-27600,5,55300,"1Comp","23422-53-9",36,"29385628"
-"DTXSID5020029","model_2comp","L-BFGS-B","DTXSID5020029","rat",NA,NA,NA,1,11.6,NA,5.56,4.76,0.297,NA,"hours","hours",74,5,-138,"2Comp","107-13-1",0.0596,"7570594"
-"DTXSID5020285","model_1comp","L-BFGS-B","DTXSID5020285","rat",NA,NA,0.319,1,2.84,16.2,NA,NA,NA,NA,"hours","hours",67.4,4,-127,"1Comp","127-00-4",0.244,"NTP"
-"DTXSID5020732","model_2comp","L-BFGS-B","DTXSID5020732","rat",NA,NA,NA,1,0.826,NA,0.756,0.463,0.2,NA,"hours","hours",71,5,-132,"2Comp","15687-27-1",0.84,"29385628"
-"DTXSID5023320","model_2comp","L-BFGS-B","DTXSID5023320","rat",NA,0.102,NA,1,7.93,0.611,13.6,4.66,0.528,NA,"hours","hours",277,7,-539,"2Comp","59467-70-8",0.0874,"29385628"
-"DTXSID5023794","model_2comp","L-BFGS-B","DTXSID5023794","rat",NA,0.206,NA,1,9.44,0.234,7.41,2,0.288,NA,"hours","hours",119,7,-223,"2Comp","434-07-1",0.0735,"NTP"
-"DTXSID5024219","model_1comp","L-BFGS-B","DTXSID5024219","rat",1.67,0.683,NA,1,1.58,4.62,NA,NA,NA,NA,"hours","hours",4.71,5,0.588,"1Comp","14797-65-0",0.439,"NTP"
-"DTXSID5025231","model_1comp","L-BFGS-B","DTXSID5025231","rat",0.621,0,NA,1,3.06,0.0866,NA,NA,NA,NA,"hours","hours",-101,5,213,"1Comp","518-82-1",0.227,"NTP"
-"DTXSID5025607","model_flat","L-BFGS-B","DTXSID5025607","rat",22.1,0.0757,NA,1,NA,NA,NA,NA,NA,NA,"hours","hours",-27200,4,54400,"model_flat","93-15-2",NA,"NTP"
-"DTXSID5030955","model_2comp","L-BFGS-B","DTXSID5030955","rat",NA,NA,NA,1,3.82,NA,4.03,1.77,0.926,NA,"hours","hours",108,5,-206,"2Comp","76-22-2",0.181,"NTP"
-"DTXSID5032442","model_1comp","L-BFGS-B","DTXSID5032442","rat",2.87,1,NA,1,0.0728,16.6,NA,NA,NA,NA,"hours","hours",8.69,5,-7.38,"1Comp","138261-41-3",9.52,"29385628"
-"DTXSID5032498","model_1comp","L-BFGS-B","DTXSID5032498","rat",1.8,NA,NA,1,5.82,NA,NA,NA,NA,NA,"hours","hours",-11.5,3,29,"1Comp","3380-34-5",0.119,"29385628"
-"DTXSID5032600","model_2comp","L-BFGS-B","DTXSID5032600","rat",NA,0.257,NA,1,0.517,2.06,1,1.04,0.101,NA,"hours","hours",-76.1,7,166,"2Comp","113136-77-9",1.34,"29385628"
-"DTXSID5034773","model_2comp","L-BFGS-B","DTXSID5034773","rat",NA,0.67,NA,1,0.722,0.112,16.6,5.33,0.553,NA,"hours","hours",97.1,7,-180,"2Comp","116714-46-6",0.961,"29385628"
-"DTXSID5037523","model_1comp","L-BFGS-B","DTXSID5037523","rat",2.43,0.77,NA,1,0.239,1.27,NA,NA,NA,NA,"hours","hours",-13.5,5,37.1,"1Comp","962-58-3",2.9,"29385628"
-"DTXSID50881104","model_2comp","L-BFGS-B","DTXSID50881104","rat",NA,0.101,NA,1,4.01,5.71,8.66,2.78,0.544,NA,"hours","hours",380,7,-747,"2Comp","34933-06-7",0.173,"29385628"
-"DTXSID6020438","model_1comp","L-BFGS-B","DTXSID6020438","rat",NA,NA,0.32,1,0.657,31.2,NA,NA,NA,NA,"hours","hours",27.4,4,-46.9,"1Comp","107-06-2",1.06,"1673388"
-"DTXSID6021117","model_2comp","L-BFGS-B","DTXSID6021117","rat",NA,NA,NA,1,0.501,NA,0.108,0.0866,1.11,NA,"hours","hours",125,5,-240,"2Comp","60-80-0",1.38,"29385628"
-"DTXSID6022923","model_2comp","L-BFGS-B","DTXSID6022923","rat",NA,0.456,NA,1,3.44,9.6,20.9,7.48,0.23,NA,"hours","hours",-18.3,7,50.6,"2Comp","15307-86-5",0.201,"29385628"
-"DTXSID6023733","model_2comp","L-BFGS-B","DTXSID6023733","rat",NA,0.811,NA,1,2.28,1.58,9.75,16.8,0.139,NA,"hours","hours",-102,7,217,"2Comp","99-66-1",0.304,"29385628"
-"DTXSID6023947","model_1comp","L-BFGS-B","DTXSID6023947","rat",1.5,NA,NA,1,8.36,NA,NA,NA,NA,NA,"hours","hours",16,3,-26,"1Comp","75-15-0",0.0829,"NTP"
-"DTXSID6034392","model_1comp","L-BFGS-B","DTXSID6034392","rat",1.95,0.0699,NA,1,2.72,1.39,NA,NA,NA,NA,"hours","hours",88.8,5,-168,"1Comp","188425-85-6",0.255,"29385628"
-"DTXSID6034849","model_1comp","L-BFGS-B","DTXSID6034849","rat",6.66,0.0103,NA,1,3.31,2.78,NA,NA,NA,NA,"hours","hours",71.4,5,-133,"1Comp","25606-41-1",0.209,"29385628"
-"DTXSID7020182","model_1comp","L-BFGS-B","DTXSID7020182","rat",1.39,NA,NA,1,3.59,NA,NA,NA,NA,NA,"hours","hours",-2.81,3,11.6,"1Comp","80-05-7",0.193,"29385628"
-"DTXSID7021106","model_1comp","L-BFGS-B","DTXSID7021106","rat",0.0912,0.755,NA,1,0.164,0.159,NA,NA,NA,NA,"hours","hours",-612,6,1240,"1Comp","87-86-5",4.22,"NTP"
-"DTXSID7022253","model_1comp","L-BFGS-B","DTXSID7022253","rat",6.61,4.55e-05,NA,1,8.76,0.00481,NA,NA,NA,NA,"hours","hours",115,5,-221,"1Comp","10453-86-8",0.0791,"29385628"
-"DTXSID7022413","model_2comp","L-BFGS-B","DTXSID7022413","rat",NA,0.0595,NA,1,3.05,8.31,3.09,0.231,1.38,NA,"hours","hours",918,7,-1820,"2Comp","97-54-1",0.227,"NTP"
-"DTXSID7023510","model_1comp","L-BFGS-B","DTXSID7023510","rat",NA,NA,4.09,1,1.05,0.244,NA,NA,NA,NA,"hours","hours",11.2,4,-14.4,"1Comp","125-33-7",0.663,"NTP"
-"DTXSID7029904","model_2comp","L-BFGS-B","DTXSID7029904","rat",NA,0,NA,1,6.52,0.00181,6.3,4.11,0.564,NA,"hours","hours",192,7,-369,"2Comp","678-39-7",0.106,"NTP"
-"DTXSID7046627","model_2comp","L-BFGS-B","DTXSID7046627","rat",NA,0.481,NA,1,5.7,0.604,13.3,1.7,0.277,NA,"hours","hours",267,7,-520,"2Comp","147536-97-8",0.122,"29385628"
-"DTXSID80108992","model_1comp","L-BFGS-B","DTXSID80108992","rat",0.328,1,NA,1,0.00107,5.4,NA,NA,NA,NA,"hours","hours",-355,5,719,"1Comp","45298-90-6",650,"NTP"
-"DTXSID8020541","model_1comp","L-BFGS-B","DTXSID8020541","rat",0.0292,0.159,NA,1,37.3,2.16,NA,NA,NA,NA,"hours","hours",-142,5,294,"1Comp","57-41-0",0.0186,"29385628"
-"DTXSID8020913","model_1comp","L-BFGS-B","DTXSID8020913","rat",0.636,NA,NA,1,7.46,NA,NA,NA,NA,NA,"hours","hours",-76,3,158,"1Comp","91-20-3",0.0929,"NTP"
-"DTXSID8021359","model_2comp","L-BFGS-B","DTXSID8021359","rat",NA,0.951,NA,1,0.228,3.53,0.737,1.57,0.135,NA,"hours","hours",66.4,7,-119,"2Comp","64-77-7",3.04,"29385628"
-"DTXSID8022292","model_1comp","L-BFGS-B","DTXSID8022292","rat",50,0.5,NA,1,0.114,0.693,NA,NA,NA,NA,"hours","hours",-14800,5,29600,"1Comp","52645-53-1",6.08,"29385628"
-"DTXSID8023393","model_1comp","L-BFGS-B","DTXSID8023393","rat",0.0252,0.0137,NA,1,74.1,7.81,NA,NA,NA,NA,"hours","hours",-695,5,1400,"1Comp","99614-02-5",0.00935,"29385628"
-"DTXSID8024151","model_1comp","L-BFGS-B","DTXSID8024151","rat",4.43,0,NA,1,6.09,0.00481,NA,NA,NA,NA,"hours","hours",30.7,5,-51.5,"1Comp","35554-44-0",0.114,"29385628"
-"DTXSID8024521","model_2comp","L-BFGS-B","DTXSID8024521","human",NA,NA,NA,1,0.932,1.17,1.07,0.135,NA,0.33,"hours","hours",333,6,-653,"2Comp","994-05-8",0.744,"11504147"
-"DTXSID8025337","model_1comp","L-BFGS-B","DTXSID8025337","rat",0.725,1,NA,1,0.0499,2,NA,NA,NA,NA,"hours","hours",-57.8,5,126,"1Comp","75-12-7",13.9,"NTP"
-"DTXSID8031865","model_1comp","L-BFGS-B","DTXSID8031865","rat",1.04,0.774,NA,1,0.00605,18.3,NA,NA,NA,NA,"hours","hours",-1170,7,2350,"1Comp","335-67-1",114,"29385628, NTP"
-"DTXSID8032673","model_2comp","L-BFGS-B","DTXSID8032673","rat",NA,1,NA,1,4.64,0.611,5.74,1.84,0.0851,NA,"hours","hours",-65.2,7,144,"2Comp","123343-16-8",0.149,"29385628"
-"DTXSID8034586","model_1comp","L-BFGS-B","DTXSID8034586","rat",2.82,0.523,NA,1,2.93,0.301,NA,NA,NA,NA,"hours","hours",165,5,-320,"1Comp","153233-91-1",0.237,"29385628"
-"DTXSID9020247","model_1comp","L-BFGS-B","DTXSID9020247","rat",44.1,0.5,NA,1,1.28,2.77,NA,NA,NA,NA,"hours","hours",-2570,5,5160,"1Comp","63-25-2",0.542,"29385628"
-"DTXSID9021924","model_2comp","L-BFGS-B","DTXSID9021924","rat",NA,1,NA,1,0.176,13.2,0.262,0.615,1.56,NA,"hours","hours",-129,8,274,"2Comp","110-86-1",3.95,"NTP"
-"DTXSID9025617","model_2comp","L-BFGS-B","DTXSID9025617","rat",NA,NA,NA,1,0.857,NA,5.45,9.08,0.757,NA,"hours","hours",78.4,5,-147,"2Comp","822-36-6",0.809,"NTP"
-"DTXSID9030258","model_2comp","L-BFGS-B","DTXSID9030258","rat",NA,0.831,NA,1,0.98,8.51,0.0289,41.6,1.19,NA,"hours","hours",-154,7,322,"2Comp","96-47-9",0.707,"NTP"
-"DTXSID9032329","model_1comp","L-BFGS-B","DTXSID9032329","rat",0.825,0,NA,1,7.08,2.77,NA,NA,NA,NA,"hours","hours",-24.6,5,59.2,"1Comp","741-58-2",0.0979,"29385628"
+"DTXSID","PREFERRED_NAME","CASRN","Reference","model","method","Species","Vdist","Fgutabs","Fgutabs_Vdist","Rblood2plasma","kelim","kgutabs","k12","k21","V1","Fgutabs_V1","Time.Units","Time_trans.Units","log_likelihood","npar","AIC","Model","CAS","halflife"
+"DTXSID0020365","Cyclosporin A","59865-13-3","29385628","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,25.9,NA,342,114,0.287,NA,"days","hours",32.7,5,-55.5,"2Comp","59865-13-3",0.643
+"DTXSID0020442","2,4-Dichlorophenoxyacetic acid","94-75-7","29385628, NTP","model_2comp","L-BFGS-B","rat",NA,0.221,NA,1,283,114,336,51.1,0.0271,NA,"days","hours",-359,8,735,"2Comp","94-75-7",0.0587
+"DTXSID0020652","Gemfibrozil","25812-30-0","NTP","model_2comp","L-BFGS-B","rat",NA,0.494,NA,1,303,36.7,0.51,399,0.0931,NA,"days","hours",-16,7,45.9,"2Comp","25812-30-0",0.055
+"DTXSID0020868","Dichloromethane","75-09-2","1673388","model_1comp","L-BFGS-B","rat",NA,NA,0.657,1,27.8,524,NA,NA,NA,NA,"days","hours",14.1,4,-20.3,"1Comp","75-09-2",0.599
+"DTXSID0021125","Phenolphthalein","77-09-8","NTP","model_1comp","L-BFGS-B","rat",0.0365,NA,NA,1,773,NA,NA,NA,NA,NA,"days","hours",-58.1,3,122,"1Comp","77-09-8",0.0215
+"DTXSID0021383","Trichloroethylene","79-01-6","1673388, 2749729","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,330,153,332,6.2,NA,1.86,"days","hours",59.3,7,-105,"2Comp","79-01-6",0.0504
+"DTXSID0021961","Benzophenone","119-61-9","NTP","model_1comp","L-BFGS-B","rat",2.22,0.294,NA,3.62,108,96.4,NA,NA,NA,NA,"days","hours",444,6,-875,"1Comp","119-61-9",0.154
+"DTXSID0022985","Ephedrine","299-42-3","NTP","model_1comp","L-BFGS-B","rat",6.77,0.281,NA,1,14.2,201,NA,NA,NA,NA,"days","hours",262,5,-513,"1Comp","299-42-3",1.17
+"DTXSID1020198","Bromodichloromethane","75-27-4","NTP","model_1comp","L-BFGS-B","rat",3.1,NA,NA,1,159,NA,NA,NA,NA,NA,"days","hours",127,3,-248,"1Comp","75-27-4",0.104
+"DTXSID1021087","Oxazepam","604-75-1","NTP","model_2comp","L-BFGS-B","rat",NA,0.373,NA,1,31.1,2.67,326,237,1.03,NA,"days","hours",409,7,-804,"2Comp","604-75-1",0.534
+"DTXSID1021116","Phenacetin","62-44-2","22940574, 23235327, 28253826, 29385628, 43370","model_2comp","L-BFGS-B","rat",NA,0.126,NA,1,18.5,83.6,14.5,21.2,0.836,NA,"days","hours",436,11,-850,"2Comp","62-44-2",0.901
+"DTXSID1021116","Phenacetin","62-44-2","1233222","model_2comp","L-BFGS-B","human",NA,0,NA,1,47.6,1.66,82.1,77.3,0.586,NA,"days","hours",19,7,-24,"2Comp","62-44-2",0.349
+"DTXSID1022265","Alachlor","15972-60-8","29385628","model_1comp","L-BFGS-B","rat",9.55,0,NA,1,272,66.5,NA,NA,NA,NA,"days","hours",91,5,-172,"1Comp","15972-60-8",0.0611
+"DTXSID1023815","Dibromoacetic acid","631-64-1","NTP","model_1comp","L-BFGS-B","rat",0.375,1,NA,1,83.4,30.8,NA,NA,NA,NA,"days","hours",-4.75,6,21.5,"1Comp","631-64-1",0.199
+"DTXSID1026118","Tetralin","119-64-2","NTP","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,381,NA,368,158,0.138,NA,"days","hours",165,5,-320,"2Comp","119-64-2",0.0437
+"DTXSID1034187","Tamoxifen","10540-29-1","NTP","model_flat","L-BFGS-B","rat",87.6,0.00169,NA,1,NA,NA,NA,NA,NA,NA,"days","hours",-3.02e+08,4,6.05e+08,"model_flat","10540-29-1",NA
+"DTXSID1043881","Imipramine","50-49-7","29385628","model_2comp","L-BFGS-B","rat",NA,0.638,NA,1,44.9,0.347,153,130,2.83,NA,"days","hours",104,7,-194,"2Comp","50-49-7",0.371
+"DTXSID1051432","Thiodiglycolic acid","123-93-3","NTP","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,167,NA,64.7,29.3,0.128,NA,"days","hours",17.7,5,-25.3,"2Comp","123-93-3",0.0994
+"DTXSID2020139","Benzo[a]pyrene","50-32-8","20186696, 5494573, 9561966","model_2comp","L-BFGS-B","rat",NA,0.5,NA,1,0.462,1090,12,2.4,10.3,NA,"days","hours",-82400,11,165000,"2Comp","50-32-8",36
+"DTXSID2020420","Propyzamide","23950-58-5","29385628","model_1comp","L-BFGS-B","rat",1.95,0,NA,1,158,227,NA,NA,NA,NA,"days","hours",45.4,5,-80.7,"1Comp","23950-58-5",0.106
+"DTXSID2020428","Dichloroacetic acid","79-43-6","NTP","model_1comp","L-BFGS-B","rat",0.749,1,NA,1,76.9,11.2,NA,NA,NA,NA,"days","hours",-76.3,5,163,"1Comp","79-43-6",0.216
+"DTXSID2020682","Hexachlorobenzene","118-74-1","NTP","model_2comp","L-BFGS-B","rat",NA,1,NA,1,0.0475,22.6,0.00413,37.8,6.32,NA,"days","hours",185,8,-354,"2Comp","118-74-1",350
+"DTXSID2021315","2,3,7,8-Tetrachlorodibenzo-p-dioxin","1746-01-6","NTP","model_flat","L-BFGS-B","rat",NA,NA,0.01,1,NA,NA,NA,NA,NA,NA,"days","hours",-111,2,227,"model_flat","1746-01-6",NA
+"DTXSID2021319","Tetrachloroethylene","127-18-4","538758","model_1comp","L-BFGS-B","rat",NA,NA,0.717,1,26,3.33,NA,NA,NA,NA,"days","hours",106,4,-203,"1Comp","127-18-4",0.64
+"DTXSID2021731","Methanol","67-56-1","1440610","model_1comp","L-BFGS-B","rat",0.994,NA,NA,1,7.26,NA,NA,NA,NA,NA,"days","hours",50.3,3,-94.6,"1Comp","67-56-1",2.29
+"DTXSID2021781","Dibutyl 1,2-benzenedicarboxylate","84-74-2","NTP","model_1comp","L-BFGS-B","rat",1.13,NA,NA,1,257,NA,NA,NA,NA,NA,"days","hours",-14.6,3,35.1,"1Comp","84-74-2",0.0646
+"DTXSID2032390","Fenarimol","60168-88-9","29385628","model_1comp","L-BFGS-B","rat",2.65,0,NA,1,30.9,0.116,NA,NA,NA,NA,"days","hours",42.3,5,-74.5,"1Comp","60168-88-9",0.539
+"DTXSID2032552","Flufenacet","142459-58-3","29385628","model_1comp","L-BFGS-B","rat",2.28,0,NA,1,359,33.5,NA,NA,NA,NA,"days","hours",18.7,5,-27.5,"1Comp","142459-58-3",0.0463
+"DTXSID2039336","S-Bioallethrin","28434-00-6","29385628","model_1comp","L-BFGS-B","rat",13.9,0,NA,1,49,0.116,NA,NA,NA,NA,"days","hours",46.6,5,-83.2,"1Comp","28434-00-6",0.339
+"DTXSID2046624","Nilvadipine","75530-68-6","29385628","model_2comp","L-BFGS-B","rat",NA,0.157,NA,1,66.5,23.1,65.9,53,2.27,NA,"days","hours",494,7,-974,"2Comp","75530-68-6",0.25
+"DTXSID3020095","Anthraquinone","84-65-1","NTP","model_2comp","L-BFGS-B","rat",NA,0,NA,1,145,0.347,170,63.7,0.421,NA,"days","hours",129,7,-244,"2Comp","84-65-1",0.115
+"DTXSID3020833","Methyl tert-butyl ether","1634-04-4","11504147","model_2comp","L-BFGS-B","human",NA,NA,NA,1,26.3,34.2,20.2,3.39,NA,0.768,"days","hours",188,6,-364,"2Comp","1634-04-4",0.632
+"DTXSID3022405","2-Hydroxy-4-methoxybenzophenone","131-57-7","NTP","model_2comp","L-BFGS-B","rat",NA,0,NA,1,221,0.52,115,96.3,0.444,NA,"days","hours",431,7,-848,"2Comp","131-57-7",0.0754
+"DTXSID3026148","alpha-Thujone","546-80-5","NTP","model_2comp","L-BFGS-B","rat",NA,0.111,NA,1,213,86.2,172,89.5,1.1,NA,"days","hours",745,7,-1480,"2Comp",NA,0.078
+"DTXSID3026148","alpha-Thujone","546-80-5","NTP","model_2comp","L-BFGS-B","rat",NA,0.111,NA,1,213,86.2,172,89.5,1.1,NA,"days","hours",745,7,-1480,"2Comp","546-80-5",0.078
+"DTXSID3031860","Perfluorodecanoic acid","335-76-2","NTP","model_2comp","L-BFGS-B","rat",NA,0.838,NA,1,0.0323,279,3.83,279,0.251,NA,"days","hours",-491,7,997,"2Comp","335-76-2",515
+"DTXSID3031862","Perfluorohexanoic acid","307-24-4","NTP","model_1comp","L-BFGS-B","rat",1.05,1,NA,1,5.68,286,NA,NA,NA,NA,"days","hours",-198,5,405,"1Comp","307-24-4",2.93
+"DTXSID3032179","3,3',4,4',5-Pentachlorobiphenyl","57465-28-8","NTP","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,17.8,0.00858,19.2,1.76,NA,0.116,"days","hours",-16800,6,33600,"2Comp","57465-28-8",0.937
+"DTXSID3034872","Chloridazon","1698-60-8","29385628","model_1comp","L-BFGS-B","rat",3.55,1,NA,1,15.3,28.6,NA,NA,NA,NA,"days","hours",4.42,5,1.16,"1Comp","1698-60-8",1.09
+"DTXSID3037707","Potassium perfluorobutanesulfonate","29420-49-3","NTP","model_1comp","L-BFGS-B","rat",0.239,0.787,NA,1,6.43,45.5,NA,NA,NA,NA,"days","hours",-461,5,933,"1Comp","29420-49-3",2.59
+"DTXSID3037709","Potassium perfluorohexanesulfonate","3871-99-6","NTP","model_1comp","L-BFGS-B","rat",0.283,1,NA,1,0.125,353,NA,NA,NA,NA,"days","hours",-617,5,1240,"1Comp","3871-99-6",133
+"DTXSID30575892","Oxoacetic acid--water (1/1)","563-96-2","NTP","model_1comp","L-BFGS-B","rat",1.54,NA,NA,1,101,NA,NA,NA,NA,NA,"days","hours",-40.8,3,87.5,"1Comp","563-96-2",0.165
+"DTXSID3061635","C.I. Solvent Red 1","1229-55-6","27270205","model_1comp","L-BFGS-B","rat",NA,NA,0.0759,1,33.2,32.9,NA,NA,NA,NA,"days","hours",315,4,-622,"1Comp","1229-55-6",0.501
+"DTXSID4020290","[4-Chloro-6-(2,3-xylidino)-2-pyrimidinylthio]acetic acid","50892-23-4","NTP","model_2comp","L-BFGS-B","rat",NA,0.391,NA,1,297,12.3,608,127,0.0171,NA,"days","hours",-170,7,355,"2Comp","50892-23-4",0.056
+"DTXSID4020458","Chlorpyrifos","2921-88-2","29385628","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,2.75,5.54,12,2.4,NA,0.177,"days","hours",-68800,6,138000,"2Comp","2921-88-2",6.04
+"DTXSID4020533","1,4-Dioxane","123-91-1","2158678, 731724","model_2comp","L-BFGS-B","rat",NA,NA,NA,1.28,2.74,NA,90.6,50.7,0.842,NA,"days","hours",57.4,7,-101,"2Comp","123-91-1",6.07
+"DTXSID4021268","Simazine","122-34-9","29385628","model_1comp","L-BFGS-B","rat",3.37,0.0182,NA,1,53.9,66.8,NA,NA,NA,NA,"days","hours",16.8,5,-23.5,"1Comp","122-34-9",0.308
+"DTXSID4022107","2-Methylimidazole","693-98-1","NTP","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,0.973,NA,2.31,3.09,0.784,NA,"days","hours",55.6,5,-101,"2Comp","693-98-1",17.1
+"DTXSID4022527","Propylparaben","94-13-3","24068675","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,16.3,55.5,37.9,12.6,NA,0.687,"days","hours",102,7,-189,"2Comp","94-13-3",1.02
+"DTXSID4022577","Alprazolam","28981-97-7","29385628","model_2comp","L-BFGS-B","rat",NA,0.414,NA,1,211,8.17,259,155,0.869,NA,"days","hours",488,7,-962,"2Comp","28981-97-7",0.0789
+"DTXSID4023917","Bis(2-chloroethoxy)methane","111-91-1","NTP","model_1comp","L-BFGS-B","rat",1.16,NA,NA,1,79.1,NA,NA,NA,NA,NA,"days","hours",136,3,-265,"1Comp","111-91-1",0.21
+"DTXSID4024642","Bromochloroacetic acid","5589-96-8","NTP","model_1comp","L-BFGS-B","rat",0.858,0.908,NA,1,80.1,21.8,NA,NA,NA,NA,"days","hours",-113,5,236,"1Comp","5589-96-8",0.208
+"DTXSID4024729","Carbendazim","10605-21-7","29385628","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,1.64,8.32,12,2.4,NA,0.126,"days","hours",-5100,6,10200,"2Comp","10605-21-7",10.1
+"DTXSID4032376","Dimethenamid","87674-68-8","29385628","model_1comp","L-BFGS-B","rat",4.44,0,NA,1,157,66.3,NA,NA,NA,NA,"days","hours",97.8,5,-186,"1Comp","87674-68-8",0.106
+"DTXSID4032405","Formetanate hydrochloride","23422-53-9","29385628","model_1comp","L-BFGS-B","rat",43.7,0.5,NA,1,0.462,66.5,NA,NA,NA,NA,"days","hours",-27600,5,55300,"1Comp","23422-53-9",36
+"DTXSID5020029","Acrylonitrile","107-13-1","7570594","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,279,NA,134,114,0.297,NA,"days","hours",74,5,-138,"2Comp","107-13-1",0.0596
+"DTXSID5020285","1-Chloro-2-propanol","127-00-4","NTP","model_1comp","L-BFGS-B","rat",NA,NA,0.319,1,68.1,390,NA,NA,NA,NA,"days","hours",67.4,4,-127,"1Comp","127-00-4",0.244
+"DTXSID5020732","Ibuprofen","15687-27-1","29385628","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,19.8,NA,18.1,11.1,0.2,NA,"days","hours",71,5,-132,"2Comp","15687-27-1",0.84
+"DTXSID5023320","Midazolam","59467-70-8","29385628","model_2comp","L-BFGS-B","rat",NA,0.102,NA,1,190,14.7,327,112,0.528,NA,"days","hours",277,7,-539,"2Comp","59467-70-8",0.0874
+"DTXSID5023794","Oxymetholone","434-07-1","NTP","model_2comp","L-BFGS-B","rat",NA,0.206,NA,1,226,5.6,178,47.9,0.288,NA,"days","hours",119,7,-223,"2Comp","434-07-1",0.0735
+"DTXSID5024219","Nitrite ion","14797-65-0","NTP","model_1comp","L-BFGS-B","rat",1.67,0.683,NA,1,37.9,111,NA,NA,NA,NA,"days","hours",4.71,5,0.588,"1Comp","14797-65-0",0.439
+"DTXSID5025231","Emodin","518-82-1","NTP","model_1comp","L-BFGS-B","rat",0.621,0,NA,1,73.4,2.08,NA,NA,NA,NA,"days","hours",-101,5,213,"1Comp","518-82-1",0.227
+"DTXSID5025607","Methyleugenol","93-15-2","NTP","model_flat","L-BFGS-B","rat",22.1,0.0757,NA,1,NA,NA,NA,NA,NA,NA,"days","hours",-27200,4,54400,"model_flat","93-15-2",NA
+"DTXSID5030955","Camphor","76-22-2","NTP","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,91.8,NA,96.7,42.5,0.926,NA,"days","hours",108,5,-206,"2Comp","76-22-2",0.181
+"DTXSID5032442","Imidacloprid","138261-41-3","29385628","model_1comp","L-BFGS-B","rat",2.87,1,NA,1,1.75,399,NA,NA,NA,NA,"days","hours",8.69,5,-7.38,"1Comp","138261-41-3",9.52
+"DTXSID5032498","Triclosan","3380-34-5","29385628","model_1comp","L-BFGS-B","rat",1.8,NA,NA,1,140,NA,NA,NA,NA,NA,"days","hours",-11.5,3,29,"1Comp","3380-34-5",0.119
+"DTXSID5032600","Cyclanilide","113136-77-9","29385628","model_2comp","L-BFGS-B","rat",NA,0.257,NA,1,12.4,49.4,24.1,24.9,0.101,NA,"days","hours",-76.1,7,166,"2Comp","113136-77-9",1.34
+"DTXSID5034773","Novaluron","116714-46-6","29385628","model_2comp","L-BFGS-B","rat",NA,0.67,NA,1,17.3,2.7,399,128,0.553,NA,"days","hours",97.1,7,-180,"2Comp","116714-46-6",0.961
+"DTXSID5037523","Diazoxon","962-58-3","29385628","model_1comp","L-BFGS-B","rat",2.43,0.77,NA,1,5.73,30.4,NA,NA,NA,NA,"days","hours",-13.5,5,37.1,"1Comp","962-58-3",2.9
+"DTXSID50881104","Diltiazem","34933-06-7","29385628","model_2comp","L-BFGS-B","rat",NA,0.101,NA,1,96.2,137,208,66.8,0.544,NA,"days","hours",380,7,-747,"2Comp","34933-06-7",0.173
+"DTXSID6020438","1,2-Dichloroethane","107-06-2","1673388","model_1comp","L-BFGS-B","rat",NA,NA,0.32,1,15.8,748,NA,NA,NA,NA,"days","hours",27.4,4,-46.9,"1Comp","107-06-2",1.06
+"DTXSID6021117","Phenazone","60-80-0","29385628","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,12,NA,2.6,2.08,1.11,NA,"days","hours",125,5,-240,"2Comp","60-80-0",1.38
+"DTXSID6022923","Diclofenac","15307-86-5","29385628","model_2comp","L-BFGS-B","rat",NA,0.456,NA,1,82.6,230,501,180,0.23,NA,"days","hours",-18.3,7,50.6,"2Comp","15307-86-5",0.201
+"DTXSID6023733","Valproic acid","99-66-1","29385628","model_2comp","L-BFGS-B","rat",NA,0.811,NA,1,54.8,37.9,234,403,0.139,NA,"days","hours",-102,7,217,"2Comp","99-66-1",0.304
+"DTXSID6023947","Carbon disulfide","75-15-0","NTP","model_1comp","L-BFGS-B","rat",1.5,NA,NA,1,201,NA,NA,NA,NA,NA,"days","hours",16,3,-26,"1Comp","75-15-0",0.0829
+"DTXSID6034392","Boscalid","188425-85-6","29385628","model_1comp","L-BFGS-B","rat",1.95,0.0699,NA,1,65.3,33.2,NA,NA,NA,NA,"days","hours",88.8,5,-168,"1Comp","188425-85-6",0.255
+"DTXSID6034849","Propamocarb hydrochloride","25606-41-1","29385628","model_1comp","L-BFGS-B","rat",6.66,0.0103,NA,1,79.5,66.8,NA,NA,NA,NA,"days","hours",71.4,5,-133,"1Comp","25606-41-1",0.209
+"DTXSID7020182","Bisphenol A","80-05-7","29385628","model_1comp","L-BFGS-B","rat",1.39,NA,NA,1,86.2,NA,NA,NA,NA,NA,"days","hours",-2.81,3,11.6,"1Comp","80-05-7",0.193
+"DTXSID7021106","Pentachlorophenol","87-86-5","NTP","model_1comp","L-BFGS-B","rat",0.0912,0.755,NA,1,3.94,3.82,NA,NA,NA,NA,"days","hours",-612,6,1240,"1Comp","87-86-5",4.22
+"DTXSID7022253","Resmethrin","10453-86-8","29385628","model_1comp","L-BFGS-B","rat",6.61,4.55e-05,NA,1,210,0.116,NA,NA,NA,NA,"days","hours",115,5,-221,"1Comp","10453-86-8",0.0791
+"DTXSID7022413","Isoeugenol","97-54-1","NTP","model_2comp","L-BFGS-B","rat",NA,0.0595,NA,1,73.3,199,74.1,5.56,1.38,NA,"days","hours",918,7,-1820,"2Comp","97-54-1",0.227
+"DTXSID7023510","Primidone","125-33-7","NTP","model_1comp","L-BFGS-B","rat",NA,NA,4.09,1,25.1,5.86,NA,NA,NA,NA,"days","hours",11.2,4,-14.4,"1Comp","125-33-7",0.663
+"DTXSID7029904","2-(Perfluorooctyl)ethanol","678-39-7","NTP","model_2comp","L-BFGS-B","rat",NA,0,NA,1,156,0.0433,151,98.5,0.564,NA,"days","hours",192,7,-369,"2Comp","678-39-7",0.106
+"DTXSID7046627","Bosentan","147536-97-8","29385628","model_2comp","L-BFGS-B","rat",NA,0.481,NA,1,137,14.5,319,40.7,0.277,NA,"days","hours",267,7,-520,"2Comp","147536-97-8",0.122
+"DTXSID80108992","Perfluorooctanesulfonate","45298-90-6","NTP","model_1comp","L-BFGS-B","rat",0.328,1,NA,1,0.0256,130,NA,NA,NA,NA,"days","hours",-355,5,719,"1Comp","45298-90-6",650
+"DTXSID8020541","5,5-Diphenylhydantoin","57-41-0","29385628","model_1comp","L-BFGS-B","rat",0.0292,0.159,NA,1,896,51.9,NA,NA,NA,NA,"days","hours",-142,5,294,"1Comp","57-41-0",0.0186
+"DTXSID8020913","Naphthalene","91-20-3","NTP","model_1comp","L-BFGS-B","rat",0.636,NA,NA,1,179,NA,NA,NA,NA,NA,"days","hours",-76,3,158,"1Comp","91-20-3",0.0929
+"DTXSID8021359","Tolbutamide","64-77-7","29385628","model_2comp","L-BFGS-B","rat",NA,0.951,NA,1,5.48,84.6,17.7,37.7,0.135,NA,"days","hours",66.4,7,-119,"2Comp","64-77-7",3.04
+"DTXSID8022292","Permethrin","52645-53-1","29385628","model_1comp","L-BFGS-B","rat",50,0.5,NA,1,2.73,16.6,NA,NA,NA,NA,"days","hours",-14800,5,29600,"1Comp","52645-53-1",6.08
+"DTXSID8023393","Ondansetron","99614-02-5","29385628","model_1comp","L-BFGS-B","rat",0.0252,0.0137,NA,1,1780,188,NA,NA,NA,NA,"days","hours",-695,5,1400,"1Comp","99614-02-5",0.00935
+"DTXSID8024151","Imazalil","35554-44-0","29385628","model_1comp","L-BFGS-B","rat",4.43,0,NA,1,146,0.116,NA,NA,NA,NA,"days","hours",30.7,5,-51.5,"1Comp","35554-44-0",0.114
+"DTXSID8024521","tert-Amyl methyl ether","994-05-8","11504147","model_2comp","L-BFGS-B","human",NA,NA,NA,1,22.4,28.1,25.6,3.24,NA,0.33,"days","hours",333,6,-653,"2Comp","994-05-8",0.744
+"DTXSID8025337","Formamide","75-12-7","NTP","model_1comp","L-BFGS-B","rat",0.725,1,NA,1,1.2,47.9,NA,NA,NA,NA,"days","hours",-57.8,5,126,"1Comp","75-12-7",13.9
+"DTXSID8031865","Perfluorooctanoic acid","335-67-1","29385628, NTP","model_1comp","L-BFGS-B","rat",1.04,0.774,NA,1,0.145,438,NA,NA,NA,NA,"days","hours",-1170,7,2350,"1Comp","335-67-1",114
+"DTXSID8032673","Pyrithiobac sodium","123343-16-8","29385628","model_2comp","L-BFGS-B","rat",NA,1,NA,1,111,14.7,138,44.2,0.0851,NA,"days","hours",-65.2,7,144,"2Comp","123343-16-8",0.149
+"DTXSID8034586","Etoxazole","153233-91-1","29385628","model_1comp","L-BFGS-B","rat",2.82,0.523,NA,1,70.2,7.21,NA,NA,NA,NA,"days","hours",165,5,-320,"1Comp","153233-91-1",0.237
+"DTXSID9020247","1-Naphthalenol, 1-(N-methylcarbamate)","63-25-2","29385628","model_1comp","L-BFGS-B","rat",44.1,0.5,NA,1,30.7,66.5,NA,NA,NA,NA,"days","hours",-2570,5,5160,"1Comp","63-25-2",0.542
+"DTXSID9021924","Pyridine","110-86-1","NTP","model_2comp","L-BFGS-B","rat",NA,1,NA,1,4.22,318,6.29,14.8,1.56,NA,"days","hours",-129,8,274,"2Comp","110-86-1",3.95
+"DTXSID9025617","4-Methylimidazole","822-36-6","NTP","model_2comp","L-BFGS-B","rat",NA,NA,NA,1,20.6,NA,131,218,0.757,NA,"days","hours",78.4,5,-147,"2Comp","822-36-6",0.809
+"DTXSID9030258","2-Methyltetrahydrofuran","96-47-9","NTP","model_2comp","L-BFGS-B","rat",NA,0.831,NA,1,23.5,204,0.693,998,1.19,NA,"days","hours",-154,7,322,"2Comp","96-47-9",0.707
+"DTXSID9032329","Bensulide","741-58-2","29385628","model_1comp","L-BFGS-B","rat",0.825,0,NA,1,170,66.5,NA,NA,NA,NA,"days","hours",-24.6,5,59.2,"1Comp","741-58-2",0.0979

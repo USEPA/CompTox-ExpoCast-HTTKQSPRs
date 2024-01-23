@@ -1,12 +1,13 @@
-                           # This function does the level II concentration comparisons:
-makeCvTpreds <- function(CvT.data,label)
+# This function does the level II concentration comparisons:
+makeCvTpreds <- function(CvT.data,label,model.args)
 {
-  nonvol.chems <- get_cheminfo(model="pbtk")
-  vol.chems <- get_cheminfo(model="gas_pbtk")
+  nonvol.chems <- suppressWarnings(get_cheminfo(model="pbtk"))
+  vol.chems <- suppressWarnings(get_cheminfo(model="gas_pbtk"))
   
   cvt.table <- NULL
   stats.table <- NULL
   for (this.cas in unique(CvT.data$CAS))
+  if (this.cas %in% c(nonvol.chems, vol.chems))
   {
     this.model <- NULL
     if (this.cas %in% nonvol.chems) this.model <- "solve_pbtk"
@@ -31,16 +32,39 @@ makeCvTpreds <- function(CvT.data,label)
             this.subset4 <- subset(this.subset3,Dose==this.dose)
             obs.times <- signif(sort(unique(this.subset4$Time)),4)
 
-            pred <- suppressWarnings(eval(call(this.model,
-              chem.cas=this.cas,
-              times=sort(unique(c(seq(0,2,0.05),obs.times))),
-              species=this.species,
-              iv.dose=(this.route=="iv"),
-              dose=this.dose,
-              default.to.human=TRUE,
-              suppress.messages=TRUE,
-              input.units='mg/kg',
-              exp.conc=0)))
+            if (this.model=="solve_pbtk")
+            {
+              params <- suppressWarnings(do.call("parameterize_pbtk",
+                                                 args=c(list(
+                                                   chem.cas=this.cas),
+                                                   model.args)))
+            } else if (this.model=="solve_gas_pbtk")
+            {
+              params <- suppressWarnings(do.call("parameterize_gas_pbtk",
+                                                 args=c(list(
+                                                   chem.cas=this.cas),
+                                                   model.args)))
+            }
+            if ("Caco2.options" %in% names(model.args))
+            {
+              if ("keepit100" %in% names(model.args[["Caco2.options"]]))
+              {
+                if (model.args[["Caco2.options"]][["keepit100"]])
+                  params$Fgutabs <- 1
+              }
+            }
+            pred <- suppressWarnings(do.call(this.model,
+              args=c(
+                list(parameters=params,
+                     times=sort(unique(c(seq(0,2,0.05),obs.times))),
+                     species=this.species,
+                     iv.dose=(this.route=="iv"),
+                     dose=this.dose,
+                     default.to.human=TRUE,
+                     suppress.messages=TRUE,
+                     input.units='mg/kg',
+                     exp.conc=0),
+                model.args)))
 
             pred <- subset(pred,pred[,"time"]>0.0001)
             # Convert from uM to ug/mL:
@@ -336,7 +360,11 @@ makeCvTpredsfromfits <- function(
                   stringsAsFactors=FALSE)
                 new.row <- merge(new.row,
                                  this.subset5[,c(
-                                   "CAS","Media","Value","Source","calc_loq")], by="CAS")
+                                   "CAS",
+                                   "Media",
+                                   "Value",
+                                   "Source",
+                                   "calc_loq")], by="CAS")
                 colnames(new.row)[colnames(new.row)=="Value"] <- "Conc.obs"
                 cvt.table <- rbind(cvt.table,new.row)
                 this.subset4means <- rbind(this.subset4means,
@@ -506,7 +534,7 @@ maketkstatpreds <- function(
   cvtfits,
   label)
 {
-  chems.good.1comp <- get_cheminfo(model="1compartment") 
+  chems.good.1comp <- suppressWarnings(get_cheminfo(model="1compartment"))
   out.table <- NULL
   for (this.cas in unique(CvT.data$CAS))
     if (this.cas %in% cvtfits$CAS)

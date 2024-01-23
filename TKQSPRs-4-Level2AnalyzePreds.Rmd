@@ -1,0 +1,399 @@
+---
+title: "TK QSPR Bakeoff"
+author: "John Wambaugh and Nisha Sipes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QSPR Bakeoff}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+First we clear the memory to make sure there are no holdovers from previous R runs
+```{r clear_mermor, eval=TRUE}
+rm(list=ls()) 
+```
+
+To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
+```{r load_packages, eval = TRUE}
+library(knitr)
+```
+
+Set the time stamp:
+```{r time_stamp, eval = TRUE}
+# Time stamp:
+output.prefix <- "Jan2024"
+```
+
+```{r load_data, eval= TRUE}
+load("data/level2-tables.RData")
+load("data/Cvt-chems-level1.RData")
+load("data/cvT-chems-nona.RData")
+load("data/httk-goodchems.RData")
+```
+
+# Level II Predictions -- CvT data
+## Analyze Predictions
+
+At level II we are comparing predictions made using QSPR values with actual
+tissue concentration vs. time data. Most of the QSPR values are used with the
+HTTK PBTK model to make predictions. I hope to get ADmet predictor PBTK
+predictions too.
+
+Level I included the predictions made with the in vitro measured values, but this 
+is a subset of the total chemicals. Should probably run all statistics both
+for all chemicals and just the subset to make sure that the QSPRs aren't 
+affected by weird chemcials with no in vitro measured values. But I haven't 
+done this yet.
+
+Predictors evaluated:
+* HTTK PBTK with in vitro measured values
+* HTTK PBTK with ADmet
+* HTTK PBTK with Pradeep
+* HTTK PBTK with Dawson
+* HTTK PBTK with OPERA
+* HTTK PBTK with y-randomized in vitro measured values
+* Empirical one- and two-comaprtment fits to CvT data
+
+## Collect the Concentration vs. time (level 2) predictions from each model:
+```{r cvt_onering, eval = TRUE}
+level2tab <- rbind(
+  level2tab.invitro,
+  level2tab.invitro.caco2exp,
+  level2tab.invitro.caco2qspr,
+  level2tab.admet,
+  level2tab.dawson,
+  level2tab.pradeep,
+  level2tab.opera,
+  level2tab.fits,
+  level2tab.yrandom)#,
+#  level2tab.consensus)
+level2tab <- subset(level2tab,!duplicated(level2tab))
+
+level2tab.stats <- rbind(
+  level2tab.invitro.stats,
+    level2tab.invitro.caco2exp.stats,
+  level2tab.invitro.caco2qspr.stats,
+  level2tab.admet.stats,
+  level2tab.dawson.stats,
+  level2tab.pradeep.stats,
+  level2tab.opera.stats,
+  level2tab.fits.stats,
+  level2tab.yrandom.stats)#,
+#  level2tab.consensus.stats)
+level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
+# Occasionally we can't calculate AUC, get rid of these data:
+level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
+```
+
+```{r write_out_data, eval=TRUE}
+save(level2tab, level2tab.stats, file="data/level2preds.RData")
+save(CvT.chems,
+     CvT.chems.scale,
+     CvT.chems.nona,
+     file="data/Cvt-chems-level2.RData")
+```
+
+## Assign average to missing predictions:
+```{r smooth_missing, eval = FALSE}
+  QSPRs <- unique(level2tab$QSPR)
+  for (this.chem in unique(level2tab$CAS))
+  {
+    this.subset1 <- subset(level2tab,CAS==this.chem)
+    for (this.species in unique(this.subset1$Species))
+    {
+      this.subset2 <- subset(this.subset1,Species==this.species)
+      for (this.route in unique(this.subset2$Route))
+      {
+        this.subset3 <- subset(this.subset2,Route==this.route)
+        for (this.dose in unique(this.subset3$Dose))
+        {
+          this.subset4 <- subset(this.subset3,Dose==this.dose)
+          for (this.time in unique(this.subset4$Time))
+          {
+            this.subset5 <- subset(this.subset4,Time==this.time)
+            for (this.obs in unique(this.subset5$Conc.obs))
+            {
+              this.subset6 <- subset(this.subset5,Conc.obs==this.obs)
+              # Omit the fits and y-randomization from the mean:
+              mean.pred <- mean(subset(this.subset6,
+                !(QSPR %in% c(
+                  "FitsToData","YRandom","Consensus")))$Conc.pred,na.rm=TRUE)
+              for (this.QSPR in QSPRs)
+              {
+                if (!(this.QSPR %in% this.subset6$QSPR))
+                {
+                  this.row <- this.subset6[1,]
+                  this.row$QSPR <- this.QSPR
+                  this.row$Conc.pred <- mean.pred
+                  level2tab <- rbind(level2tab,this.row)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }      
+```
+  
+```{r calc_level2_rpe, eval = TRUE}
+  RPE.THRESH <- 20
+  # Can't work with NA's:
+  level2tab <- subset(level2tab,!is.na(Conc.pred))
+ 
+  # Calculate RPE:
+  level2tab$Conc.obs <- as.numeric(level2tab$Conc.obs)
+  level2tab$Conc.pred <- as.numeric(level2tab$Conc.pred) 
+  # Let's treat all "low" values as the same, where we define low with loq:
+  level2tab$Conc.obs[level2tab$Conc.obs<level2tab$calc_loq] <- 
+    level2tab[level2tab$Conc.obs<level2tab$calc_loq,"calc_loq"]
+
+  level2tab$Conc.pred[level2tab$Conc.pred<level2tab$calc_loq] <- 
+    level2tab[level2tab$Conc.pred<level2tab$calc_loq,"calc_loq"]
+  
+  level2tab$RPE <- (level2tab$Conc.pred-level2tab$Conc.obs)/level2tab$Conc.obs
+  level2tab[level2tab$RPE>RPE.THRESH,"RPE"] <- RPE.THRESH
+  hist(level2tab$RPE)
+
+level2tab.stats$AUC.RPE <- (level2tab.stats$AUC.pred-level2tab.stats$AUC.obs)/level2tab.stats$AUC.obs
+level2tab.stats[level2tab.stats$AUC.RPE>RPE.THRESH,"AUC.RPE"] <- RPE.THRESH
+hist(level2tab.stats$AUC.RPE)
+
+level2tab.stats$Cmax.RPE <- (level2tab.stats$Cmax.pred-level2tab.stats$Cmax.obs)/level2tab.stats$Cmax.obs
+level2tab.stats[level2tab.stats$Cmax.RPE>RPE.THRESH,"Cmax.RPE"] <- RPE.THRESH
+hist(level2tab.stats$Cmax.RPE)
+     
+#level2tab$RPE.trunc[level2tab$RPE.trunc < -100] <- -100
+#level2tab$RPE.trunc[level2tab$RPE.trunc > 100] <- 100
+ 
+#Turn -Inf and Inf into NA .... we don't need this because no $Conc.obs are 0, but it's good practice to write here
+level2tab$RPE[level2tab$RPE=="Inf"]<-NA
+level2tab$RPE[level2tab$RPE=="-Inf"]<-NA
+#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
+
+### but we don't need this because no $Conc.obs are 0, but it's good practice to write here
+level2tab$RPE[level2tab$RPE=="NaN"]<-0
+ 
+
+source.table <- NULL
+for (this.source in unique(level2tab$Source))
+{
+  this.subset <- subset(level2tab,Source==this.source)
+  this.row <- this.subset[1,c(1:3,11)]
+  this.row$RPE <- mean(this.subset$RPE)
+  source.table <- rbind(source.table,this.row)
+}
+for (this.chem in unique(source.table$Compound))
+{
+  this.subset <- subset(source.table,Compound==this.chem)
+  source.table[source.table$Compound==this.chem,"RPE.sd"] <- sd(this.subset$RPE)
+}
+source.table <- source.table[order(source.table$RPE.sd),]
+write.csv(source.table,file="tables/Table-modelerrorsbysource.txt",row.names=F)
+```
+
+## calculate some statistics
+```{r calc_level2_AbsFE_RMSE, eval = TRUE}
+#Absolute fold error (AbsFE) : abs(log10(pred/obs))
+level2tab$AbsFE<-abs(log10(level2tab$Conc.pred/level2tab$Conc.obs))
+
+#Turn -Inf and Inf into NA
+level2tab$AbsFE[level2tab$AbsFE=="Inf"]<-4   ######## lots because lots of $Conc.pred is zero
+hist(level2tab$AbsFE)  # 4 seems large but does not to mess up the distribution
+
+#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
+level2tab$AbsFE[level2tab$AbsFE=="NaN"]<-0  #none
+```
+
+
+```{r divide_cvt_bytime, eval = TRUE}
+level2tab.early <- NULL
+level2tab.late <- NULL
+for (this.study in unique(level2tab$Source))
+{
+  this.subset1 <- subset(level2tab,Source==this.study)
+  for (this.chem in unique(this.subset1$CAS))
+  {
+    this.subset2 <- subset(this.subset1,CAS==this.chem)
+    mid.time <- mean(unique(this.subset2$Time))
+    level2tab.early <- rbind(level2tab.early,
+      subset(this.subset2,Time < mid.time))
+    level2tab.late <- rbind(level2tab.late,
+      subset(this.subset2,Time >= mid.time))
+  }
+}
+```
+
+```{r calc_setspecific_cvt_stats, eval = TRUE}
+AAFE <- list()
+AAFE.early <- list()
+AAFE.late <- list()
+RMSLE <- list()
+RMSLE.early <- list()
+RMSLE.late <- list()
+MRPE <- list()
+MRPE.early <- list()
+MRPE.late <- list()
+
+for (this.qspr in unique(level2tab$QSPR))
+{
+#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
+  AAFE[[this.qspr]] <- 10^(mean(level2tab$AbsFE[
+    level2tab$QSPR==this.qspr],na.rm=TRUE))
+  AAFE.early[[this.qspr]] <- 10^(mean(level2tab.early$AbsFE[
+    level2tab.early$QSPR==this.qspr],na.rm=TRUE))
+  AAFE.late[[this.qspr]] <- 10^(mean(level2tab.late$AbsFE[
+    level2tab.late$QSPR==this.qspr],na.rm=TRUE))
+#RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
+  RMSLE[[this.qspr]] <- sqrt(mean((log10(level2tab$Conc.pred[
+    level2tab$QSPR==this.qspr] /
+    level2tab$Conc.obs[level2tab$QSPR==this.qspr]))^2,na.rm=TRUE))
+  RMSLE.early[[this.qspr]] <-sqrt(mean((log10(level2tab.early$Conc.pred[
+    level2tab.early$QSPR==this.qspr]/
+    level2tab.early$Conc.obs[level2tab.early$QSPR==this.qspr]))^2,na.rm=TRUE))
+  RMSLE.late[[this.qspr]] <-sqrt(mean((log10(level2tab.late$Conc.pred[
+    level2tab.late$QSPR==this.qspr]/
+    level2tab.late$Conc.obs[level2tab.late$QSPR==this.qspr]))^2,na.rm=TRUE))
+  MRPE[[this.qspr]] <- median(subset(level2tab,QSPR==this.qspr)$RPE)
+  MRPE.early[[this.qspr]] <- median(subset(level2tab.early,QSPR==this.qspr)$RPE)
+  MRPE.late[[this.qspr]] <- median(subset(level2tab.late,QSPR==this.qspr)$RPE)
+}
+#Subset to just the measured in vitro chemicals:
+meassub <- subset(level2tab, CAS %in% httk.both)
+meassub.early <- subset(level2tab.early, CAS %in% httk.both)
+meassub.late <- subset(level2tab.late, CAS %in% httk.both)
+#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
+  AAFE[["HTPBTK-InVitro-Measured"]] <- 10^(mean(meassub$AbsFE[
+    meassub$QSPR=="HTPBTK-InVitro"],na.rm=TRUE))
+  AAFE.early[["HTPBTK-InVitro-Measured"]] <- 10^(mean(meassub.early$AbsFE[
+    meassub.early$QSPR=="HTPBTK-InVitro"],na.rm=TRUE))
+  AAFE.late[["HTPBTK-InVitro-Measured"]] <- 10^(mean(meassub.late$AbsFE[
+    meassub.late$QSPR=="HTPBTK-InVitro"],na.rm=TRUE))
+#RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
+  RMSLE[["HTPBTK-InVitro-Measured"]] <- sqrt(mean((log10(meassub$Conc.pred[
+    meassub$QSPR=="HTPBTK-InVitro"] /
+    meassub$Conc.obs[meassub$QSPR=="HTPBTK-InVitro"]))^2,na.rm=TRUE))
+  RMSLE.early[["HTPBTK-InVitro-Measured"]] <-
+    sqrt(mean((log10(meassub.early$Conc.pred[
+    meassub.early$QSPR=="HTPBTK-InVitro"] /
+    meassub.early$Conc.obs[meassub.early$QSPR=="HTPBTK-InVitro"]))^2,na.rm=TRUE))
+  RMSLE.late[["HTPBTK-InVitro-Measured"]] <-
+    sqrt(mean((log10(meassub.late$Conc.pred[
+    meassub.late$QSPR=="HTPBTK-InVitro"] /
+    meassub.late$Conc.obs[meassub.late$QSPR=="HTPBTK-InVitro"]))^2,na.rm=TRUE))
+  MRPE[["HTPBTK-InVitro-Measured"]] <- 
+    median(subset(meassub,QSPR=="HTPBTK-InVitro")$RPE)
+  MRPE.early[["HTPBTK-InVitro-Measured"]] <- 
+    median(subset(meassub.early,QSPR=="HTPBTK-InVitro")$RPE)
+  MRPE.late[["HTPBTK-InVitro-Measured"]] <- 
+    median(subset(meassub.late,QSPR=="HTPBTK-InVitro")$RPE)
+
+
+stats.table <- data.frame()
+for (this.qspr in names(RMSLE))
+{
+  stats.table["AAFE",this.qspr] <- round(AAFE[[this.qspr]],2)
+  stats.table["RMSLE",this.qspr] <- round(RMSLE[[this.qspr]],2)
+  stats.table["MRPE",this.qspr] <- round(MRPE[[this.qspr]],2)
+  stats.table["RMSLE.early",this.qspr] <- round(RMSLE.early[[this.qspr]],2)
+  stats.table["RMSLE.late",this.qspr] <- round(RMSLE.late[[this.qspr]],2)
+  stats.table["AAFE.early",this.qspr] <- round(AAFE.early[[this.qspr]],2)
+  stats.table["AAFE.late",this.qspr] <- round(AAFE.late[[this.qspr]],2)
+  stats.table["MRPE.early",this.qspr] <- round(MRPE.early[[this.qspr]],2)
+  stats.table["MRPE.late",this.qspr] <- round(MRPE.late[[this.qspr]],2)
+}
+write.csv(stats.table,file="tables/Table-Cvt-stats.txt",row.names=FALSE)
+kable(stats.table)
+```
+
+```{r calc_auc_stats, eval = TRUE}
+AUC.stats.table <- NULL
+for (this.qspr in unique(level2tab.stats$QSPR))
+{
+  this.subset <- subset(level2tab.stats,QSPR==this.qspr)
+  this.fit <- lm(data=subset(this.subset, AUC.pred>0),
+                 log10(AUC.obs)~log10(AUC.pred))
+  this.row <- data.frame(
+    QSPR=this.qspr,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+    RPE=signif(median(this.subset$AUC.RPE),3),
+    RPE.low=signif(median(subset(this.subset,AUC.obs<10)$AUC.RPE),3),
+    RPE.high=signif(median(subset(this.subset,AUC.obs>=10)$AUC.RPE),3)
+    )
+  AUC.stats.table <- rbind(AUC.stats.table,this.row)
+}
+# Add HTTK without in silico predictions:
+this.qspr <- "HTPBTK-InVitro"
+this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
+this.fit <- lm(data=subset(this.subset, AUC.pred>0),
+               log10(AUC.obs)~log10(AUC.pred))
+this.row <- data.frame(
+  QSPR=paste(this.qspr,"Measured",sep="-"),
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+  RPE=signif(median(this.subset$AUC.RPE),3),
+  RPE.low=signif(median(subset(this.subset,AUC.obs<10)$AUC.RPE),3),
+  RPE.high=signif(median(subset(this.subset,AUC.obs>=10)$AUC.RPE),3)
+  )
+AUC.stats.table <- rbind(AUC.stats.table,this.row)
+write.csv(AUC.stats.table,file="tables/Table-AUC-stats.txt",row.names=FALSE)
+kable(AUC.stats.table)
+```
+
+```{r calc_cmax_stats, eval = TRUE}
+Cmax.stats.table <- NULL
+for (this.qspr in unique(level2tab.stats$QSPR))
+{
+  QSPR=this.subset <- subset(level2tab.stats,QSPR==this.qspr)
+  this.fit <- lm(data=subset(this.subset,Cmax.pred>0),
+                 log10(Cmax.obs)~log10(Cmax.pred))
+  this.row <- data.frame(
+    QSPR=this.qspr,
+    R2=signif(summary(this.fit)$adj.r.squared,3),
+    RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+    RPE=signif(median(this.subset$Cmax.RPE),3)
+    )
+  Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
+}
+this.qspr <- "HTPBTK-InVitro"
+this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
+this.fit <- lm(data=subset(this.subset, Cmax.pred>0),
+               log10(Cmax.obs)~log10(Cmax.pred))
+this.row <- data.frame(
+  QSPR=paste(this.qspr,"Measured",sep="-"),
+  R2=signif(summary(this.fit)$adj.r.squared,3),
+  RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
+  RPE=signif(median(this.subset$Cmax.RPE),3)
+  )
+Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
+write.csv(Cmax.stats.table,file="tables/Table-Cmax-stats.txt",row.names=FALSE)
+kable(Cmax.stats.table)
+```
+
+```{r write_level2_results}
+save(AAFE,
+     AAFE.early,
+     AAFE.late,
+     RMSLE,
+     RMSLE.early,
+     RMSLE.late,
+     MRPE,
+     MRPE.early,
+     MRPE.late,
+     stats.table,
+     AUC.stats.table,
+     Cmax.stats.table,
+     file="data/level2stats.RData")
+```
