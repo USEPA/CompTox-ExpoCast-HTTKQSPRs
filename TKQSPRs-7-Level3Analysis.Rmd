@@ -28,28 +28,19 @@ To use the code in this vignette, you'll first need to load a few packages (if y
 ```{r load_packages, eval = TRUE}
 library(readxl)
 library(ggplot2)
-library(httk)
 library(scales)
-library(gplots)
-library(RColorBrewer)
-library(DescTools)
-library(gridExtra)
-library(reshape2)
+```
+
+```{r load_data, eval= TRUE}
+load("data/level3-tables.RData")
+load("data/level2stats.RData")
+load("data/httk-goodchems.RData")
 ```
 
 Load custom code 
 ```{r load_code, eval = TRUE}
 setwd("C:/Users/jwambaug/git/tkqsars/")
-source("clear_httk.R")
 source("tkstats.R")
-
-# Function for formating tick labels:
-scientific_10 <- function(x) {                                  
-  out <- gsub("1e", "10^", scientific_format()(x))              
-  out <- gsub("\\+","",out)                                     
-  out <- gsub("10\\^01","10",out)                               
-  out <- parse(text=gsub("10\\^00","1",out))                    
-}  
 ```
 
 
@@ -182,10 +173,10 @@ for (this.qspr in unique(level3tab$QSPR))
     )
   halflife.stats.table <- rbind(halflife.stats.table,this.row)
 }
-this.subset <- subset(level3tab,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.subset <- subset(level3tab,QSPR=="HTPBTK-InVitro" & CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(thalf.obs)~log10(thalf.pred))
 this.row <- data.frame(
-  QSPR=paste("HTTK-InVitro","Measured",sep="-"),
+  QSPR=paste("HTPBTK-InVitro","Measured",sep="-"),
   R2=signif(summary(this.fit)$adj.r.squared,3),
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
@@ -209,10 +200,10 @@ if (!(this.qspr %in% c("IFS-QSPR","QSPRINS")))
     vd.stats.table <- rbind(vd.stats.table,this.row)
   }
 }
-this.subset <- subset(level3tab, QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.subset <- subset(level3tab, QSPR=="HTPBTK-InVitro" & CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(Vd.obs)~log10(Vd.pred))
 this.row <- data.frame(
-  QSPR=paste("HTTK-InVitro","Measured",sep="-"),
+  QSPR=paste("HTPBTK-InVitro","Measured",sep="-"),
   R2=signif(summary(this.fit)$adj.r.squared,3),
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
@@ -235,10 +226,10 @@ for (this.qspr in unique(level3tab$QSPR))
     cl.stats.table <- rbind(cl.stats.table,this.row)
   }
 }
-this.subset <- subset(level3tab,QSPR=="HTTK-InVitro" & CAS %in% httk.both)
+this.subset <- subset(level3tab,QSPR=="HTPBTK-InVitro" & CAS %in% httk.both)
 this.fit <- lm(data=this.subset,log10(Cl.obs)~log10(Cl.pred))
 this.row <- data.frame(
-  QSPR=paste("HTTK-InVitro","Measured",sep="-"),
+  QSPR=paste("HTPBTK-InVitro","Measured",sep="-"),
   R2=signif(summary(this.fit)$adj.r.squared,3),
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
@@ -385,7 +376,7 @@ for (this.col in 1:dim(lev3suptable)[2])
   if (is.numeric(lev3suptable[1,this.col]))
     lev3suptable[,this.col] <- signif(lev3suptable[,this.col],3)
   
-write.csv(lev3suptable,row.names=FALSE,file="SupTable/SupTable-Level3.txt")
+write.csv(lev3suptable,row.names=FALSE,file="tables/SupTable-Level3.txt")
 
 ```
 

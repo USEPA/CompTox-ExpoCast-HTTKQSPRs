@@ -129,7 +129,8 @@ CvT.data <- series_res_set
 CvT.chems <- unique(CvT.data$DTXSID)
 length(CvT.chems)
 
-CvT.data[,"Dose"] <- as.numeric(CvT.data[,"Dose"])
+CvT.data[,"Dose"] <- signif(as.numeric(CvT.data[,"Dose"]), 3)
+CvT.data[,"Time"] <- signif(as.numeric(CvT.data[,"Time"]), 3)
 
 CvT.data <- subset(CvT.data,Time>0)
 

@@ -50,7 +50,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
               if ("keepit100" %in% names(model.args[["Caco2.options"]]))
               {
                 if (model.args[["Caco2.options"]][["keepit100"]])
-                  params$Fgutabs <- 1
+                  params$Fabsgut <- 1
               }
             }
             pred <- suppressWarnings(do.call(this.model,
@@ -579,3 +579,45 @@ maketkstatpreds <- function(
   out.table$QSPR <- label
   return(out.table)
 }
+
+## Absolute Average Fold Error (AAFE) :  
+# 10^((1/n)*sum(abs(FE)))
+# use this. It's good to see fold error
+calc_AAFE <- function(level2.table)
+{
+  return(10^(mean(level2.table$AbsFE,
+                  na.rm=TRUE)))
+}
+
+## Root mean squared log10 Error (RMSLE): 
+# sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)
+# use this
+calc_RMSLE <- function(level2.table)
+{
+  return(sqrt(mean((log10(level2.table$Conc.pred /
+                            level2.table$Conc.obs))^2,
+                   na.rm=TRUE)))
+}
+
+## Median relative predictive error (MPRE)
+calc_MRPE <- function(level2.table)
+{
+  return(median(level2.table$RPE,
+                na.rm=TRUE))
+}
+
+## Relative predictive error (MPRE)
+# (pred - obs) / obs
+calc_RPE <- function(obs, pred)
+{
+  return((pred - obs) / obs)
+}
+
+
+# Function for formatting tick labels:
+scientific_10 <- function(x) {                                  
+  out <- gsub("1e", "10^", scientific_format()(x))              
+  out <- gsub("\\+","",out)                                     
+  out <- gsub("10\\^01","10",out)                               
+  out <- parse(text=gsub("10\\^00","1",out))                    
+}  

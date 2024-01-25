@@ -35,6 +35,12 @@ Set the time stamp:
 output.prefix <- "Jan2024"
 ```
 
+Load custom code 
+```{r load_code, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+source("tkstats.R")
+```
+
 ```{r load_data, eval= TRUE}
 load("data/level2-tables.RData")
 load("data/Cvt-chems-level1.RData")
@@ -96,6 +102,25 @@ level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
 level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
 ```
 
+## Set a minimal value for predictions and observations using limit of quantification (LOQ)
+We treat all "low" values as the same, where we define low with loq:
+```{r use_loq_as_minimum, eval = TRUE}
+level2tab$Conc.obs <- as.numeric(level2tab$Conc.obs)
+level2tab$Conc.pred <- as.numeric(level2tab$Conc.pred) 
+  
+for (this.col in c("Conc.pred","Conc.obs"))
+{
+  level2tab[level2tab[,this.col] < level2tab$calc_loq, this.col] <- 
+    level2tab[level2tab[,this.col] < level2tab$calc_loq, "calc_loq"]
+}
+min.loq <- min(level2tab[,"calc_loq"],na.rm=TRUE)
+for (this.col in c("Cmax.obs","Cmax.pred","AUC.obs","AUC.pred"))
+{
+  level2tab.stats[level2tab.stats[,this.col] < min.loq,
+                  this.col] <- min.loq
+}
+```
+
 ```{r write_out_data, eval=TRUE}
 save(level2tab, level2tab.stats, file="data/level2preds.RData")
 save(CvT.chems,
@@ -146,22 +171,14 @@ save(CvT.chems,
     }
   }      
 ```
-  
+
+# Calculate relative prediction error (RPE):  
+RPE = (pred - obs)/ obs
 ```{r calc_level2_rpe, eval = TRUE}
-  RPE.THRESH <- 20
+  RPE.THRESH <- Inf
   # Can't work with NA's:
   level2tab <- subset(level2tab,!is.na(Conc.pred))
- 
-  # Calculate RPE:
-  level2tab$Conc.obs <- as.numeric(level2tab$Conc.obs)
-  level2tab$Conc.pred <- as.numeric(level2tab$Conc.pred) 
-  # Let's treat all "low" values as the same, where we define low with loq:
-  level2tab$Conc.obs[level2tab$Conc.obs<level2tab$calc_loq] <- 
-    level2tab[level2tab$Conc.obs<level2tab$calc_loq,"calc_loq"]
 
-  level2tab$Conc.pred[level2tab$Conc.pred<level2tab$calc_loq] <- 
-    level2tab[level2tab$Conc.pred<level2tab$calc_loq,"calc_loq"]
-  
   level2tab$RPE <- (level2tab$Conc.pred-level2tab$Conc.obs)/level2tab$Conc.obs
   level2tab[level2tab$RPE>RPE.THRESH,"RPE"] <- RPE.THRESH
   hist(level2tab$RPE)
@@ -184,8 +201,9 @@ level2tab$RPE[level2tab$RPE=="-Inf"]<-NA
 
 ### but we don't need this because no $Conc.obs are 0, but it's good practice to write here
 level2tab$RPE[level2tab$RPE=="NaN"]<-0
- 
+``` 
 
+```{r create_model_errors_by_datasource_table, eval=TRUE}
 source.table <- NULL
 for (this.source in unique(level2tab$Source))
 {
@@ -201,6 +219,7 @@ for (this.chem in unique(source.table$Compound))
 }
 source.table <- source.table[order(source.table$RPE.sd),]
 write.csv(source.table,file="tables/Table-modelerrorsbysource.txt",row.names=F)
+kable(source.table)
 ```
 
 ## calculate some statistics
@@ -248,58 +267,57 @@ MRPE.late <- list()
 
 for (this.qspr in unique(level2tab$QSPR))
 {
-#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-  AAFE[[this.qspr]] <- 10^(mean(level2tab$AbsFE[
-    level2tab$QSPR==this.qspr],na.rm=TRUE))
-  AAFE.early[[this.qspr]] <- 10^(mean(level2tab.early$AbsFE[
-    level2tab.early$QSPR==this.qspr],na.rm=TRUE))
-  AAFE.late[[this.qspr]] <- 10^(mean(level2tab.late$AbsFE[
-    level2tab.late$QSPR==this.qspr],na.rm=TRUE))
-#RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
-  RMSLE[[this.qspr]] <- sqrt(mean((log10(level2tab$Conc.pred[
-    level2tab$QSPR==this.qspr] /
-    level2tab$Conc.obs[level2tab$QSPR==this.qspr]))^2,na.rm=TRUE))
-  RMSLE.early[[this.qspr]] <-sqrt(mean((log10(level2tab.early$Conc.pred[
-    level2tab.early$QSPR==this.qspr]/
-    level2tab.early$Conc.obs[level2tab.early$QSPR==this.qspr]))^2,na.rm=TRUE))
-  RMSLE.late[[this.qspr]] <-sqrt(mean((log10(level2tab.late$Conc.pred[
-    level2tab.late$QSPR==this.qspr]/
-    level2tab.late$Conc.obs[level2tab.late$QSPR==this.qspr]))^2,na.rm=TRUE))
-  MRPE[[this.qspr]] <- median(subset(level2tab,QSPR==this.qspr)$RPE)
-  MRPE.early[[this.qspr]] <- median(subset(level2tab.early,QSPR==this.qspr)$RPE)
-  MRPE.late[[this.qspr]] <- median(subset(level2tab.late,QSPR==this.qspr)$RPE)
+  AAFE[[this.qspr]] <- calc_AAFE(subset(level2tab,
+                                        QSPR==this.qspr))
+  AAFE.early[[this.qspr]] <- calc_AAFE(subset(level2tab.early,
+                                        QSPR==this.qspr))
+  AAFE.late[[this.qspr]] <- calc_AAFE(subset(level2tab.late,
+                                        QSPR==this.qspr))
+  RMSLE[[this.qspr]] <- calc_RMSLE(subset(level2tab,
+                                        QSPR==this.qspr))
+  RMSLE.early[[this.qspr]] <- calc_RMSLE(subset(level2tab.early,
+                                        QSPR==this.qspr))
+  RMSLE.late[[this.qspr]] <- calc_RMSLE(subset(level2tab.late,
+                                        QSPR==this.qspr))
+  MRPE[[this.qspr]] <- calc_MRPE(subset(level2tab,
+                                        QSPR==this.qspr))
+  MRPE.early[[this.qspr]] <- calc_MRPE(subset(level2tab.early,
+                                              QSPR==this.qspr))
+  MRPE.late[[this.qspr]] <- calc_MRPE(subset(level2tab.late,
+                                             QSPR==this.qspr))
 }
-#Subset to just the measured in vitro chemicals:
+```
+
+## Calculate stats on just the chemicals with in vitro HTTK data
+```{r calc_setspecific_cvt_stats, eval = FALSE}
 meassub <- subset(level2tab, CAS %in% httk.both)
 meassub.early <- subset(level2tab.early, CAS %in% httk.both)
 meassub.late <- subset(level2tab.late, CAS %in% httk.both)
-#Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-  AAFE[["HTPBTK-InVitro-Measured"]] <- 10^(mean(meassub$AbsFE[
-    meassub$QSPR=="HTPBTK-InVitro"],na.rm=TRUE))
-  AAFE.early[["HTPBTK-InVitro-Measured"]] <- 10^(mean(meassub.early$AbsFE[
-    meassub.early$QSPR=="HTPBTK-InVitro"],na.rm=TRUE))
-  AAFE.late[["HTPBTK-InVitro-Measured"]] <- 10^(mean(meassub.late$AbsFE[
-    meassub.late$QSPR=="HTPBTK-InVitro"],na.rm=TRUE))
-#RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)  ### use this
-  RMSLE[["HTPBTK-InVitro-Measured"]] <- sqrt(mean((log10(meassub$Conc.pred[
-    meassub$QSPR=="HTPBTK-InVitro"] /
-    meassub$Conc.obs[meassub$QSPR=="HTPBTK-InVitro"]))^2,na.rm=TRUE))
-  RMSLE.early[["HTPBTK-InVitro-Measured"]] <-
-    sqrt(mean((log10(meassub.early$Conc.pred[
-    meassub.early$QSPR=="HTPBTK-InVitro"] /
-    meassub.early$Conc.obs[meassub.early$QSPR=="HTPBTK-InVitro"]))^2,na.rm=TRUE))
-  RMSLE.late[["HTPBTK-InVitro-Measured"]] <-
-    sqrt(mean((log10(meassub.late$Conc.pred[
-    meassub.late$QSPR=="HTPBTK-InVitro"] /
-    meassub.late$Conc.obs[meassub.late$QSPR=="HTPBTK-InVitro"]))^2,na.rm=TRUE))
-  MRPE[["HTPBTK-InVitro-Measured"]] <- 
-    median(subset(meassub,QSPR=="HTPBTK-InVitro")$RPE)
-  MRPE.early[["HTPBTK-InVitro-Measured"]] <- 
-    median(subset(meassub.early,QSPR=="HTPBTK-InVitro")$RPE)
-  MRPE.late[["HTPBTK-InVitro-Measured"]] <- 
-    median(subset(meassub.late,QSPR=="HTPBTK-InVitro")$RPE)
 
+for (this.qspr in unique(meassub$QSPR))
+{
+  AAFE[[this.qspr]] <- calc_AAFE(subset(meassub,
+                                        QSPR==this.qspr))
+  AAFE.early[[this.qspr]] <- calc_AAFE(subset(meassub.early,
+                                        QSPR==this.qspr))
+  AAFE.late[[this.qspr]] <- calc_AAFE(subset(meassub.late,
+                                        QSPR==this.qspr))
+  RMSLE[[this.qspr]] <- calc_RMSLE(subset(meassub,
+                                        QSPR==this.qspr))
+  RMSLE.early[[this.qspr]] <- calc_RMSLE(subset(meassub.early,
+                                        QSPR==this.qspr))
+  RMSLE.late[[this.qspr]] <- calc_RMSLE(subset(meassub.late,
+                                        QSPR==this.qspr))
+  MRPE[[this.qspr]] <- calc_MRPE(subset(meassub,
+                                        QSPR==this.qspr))
+  MRPE.early[[this.qspr]] <- calc_MRPE(subset(meassub.early,
+                                              QSPR==this.qspr))
+  MRPE.late[[this.qspr]] <- calc_MRPE(subset(meassub.late,
+                                             QSPR==this.qspr))
+}
+```
 
+```{r create_statistics_summary_table, eval=TRUE}
 stats.table <- data.frame()
 for (this.qspr in names(RMSLE))
 {
@@ -383,7 +401,8 @@ kable(Cmax.stats.table)
 ```
 
 ```{r write_level2_results}
-save(AAFE,
+save(level2tab.stats,
+     AAFE,
      AAFE.early,
      AAFE.late,
      RMSLE,
@@ -396,4 +415,8 @@ save(AAFE,
      AUC.stats.table,
      Cmax.stats.table,
      file="data/level2stats.RData")
+save(level2tab,
+     level2tab.early,
+     level2tab.late,
+     file="data/level2predswithstats.RData")
 ```

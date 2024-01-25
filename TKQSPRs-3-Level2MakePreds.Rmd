@@ -350,7 +350,8 @@ print(paste("HTTK parameters for",length(unique(c(
 level2tab.invitro.caco2qspr.list <- makeCvTpreds(CvT.data,
                                        "HTPBTK-InVitro-Caco2QSPR",
                                        list(Caco2.options=list(
-                                         keepit100=FALSE)
+                                         keepit100=FALSE,
+                                         overwrite.invivo = TRUE)
                                        ))                                      
 level2tab.invitro.caco2qspr <- level2tab.invitro.caco2qspr.list$cvt
 level2tab.invitro.caco2qspr.stats <- level2tab.invitro.caco2qspr.list$stats
@@ -587,5 +588,15 @@ save(
   level2tab.fits.stats,
   level2tab.yrandom.stats,
      file="data/level2-tables.RData")
+save(
+  level3tab.invitro,
+  level3tab.invitro.caco2exp,
+  level3tab.invitro.caco2qspr,
+  level3tab.admet,
+  level3tab.dawson,
+  level3tab.pradeep,
+  level3tab.opera,
+  level3tab.yrandom,
+     file="data/level3-tables.RData")
 save(CvT.chems.nona, file="data/cvT-chems-nona.RData")
 ```
