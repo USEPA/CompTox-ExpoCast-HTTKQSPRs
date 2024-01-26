@@ -223,8 +223,32 @@ fittable[fittable$Model=="model_2comp","Model"] <- "2Comp"
 CASinfo <- CvT.data[,c("DTXSID","CAS")]
 CASinfo <- subset(CASinfo,!duplicated(CASinfo))
 fittable <- merge(fittable,CASinfo,by="DTXSID")
-# Calculate halflife:
-fittable$halflife <- signif(log(2)/fittable$kelim,3)
+
+# Calculate halflife for one compartment:
+fittable[is.na(fittable$V1),"halflife"] <- signif(log(2)/
+  fittable[is.na(fittable$V1),"kelim"],3)
+
+# Calculate halflife for two compartment:
+fittable[!is.na(fittable$V1),"alphaplusbeta"] <- 
+  fittable[!is.na(fittable$V1),"kelim"] +
+  fittable[!is.na(fittable$V1),"k12"] + 
+  fittable[!is.na(fittable$V1),"k21"]
+fittable[!is.na(fittable$V1),"alphatimesbeta"] <- 
+  fittable[!is.na(fittable$V1),"kelim"] * 
+  fittable[!is.na(fittable$V1),"k21"]
+fittable$beta <- 
+  (fittable$alphaplusbeta - sqrt(fittable$alphaplusbeta^2 -
+                                   4*fittable$alphatimesbeta)) / 2 
+fittable[!is.na(fittable$V1),"halflife"] <- signif(log(2)/
+  fittable[!is.na(fittable$V1),"beta"],3)
+
+# Calculate Vdist for two-compartment model:
+fittable[!is.na(fittable$V1),"Vdist"] <-
+  fittable[!is.na(fittable$V1),"Vdist"] * (1 + 
+  fittable[!is.na(fittable$V1),"k12"] /
+  fittable[!is.na(fittable$V1),"k21"])
+  
+
 # Although CvTdb has expanded, keep focus on human and rat:
 fittable <- subset(fittable, tolower(Species) %in%
                            c("rat", "human"))

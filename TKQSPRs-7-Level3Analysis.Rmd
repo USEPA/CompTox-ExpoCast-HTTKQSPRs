@@ -29,6 +29,7 @@ To use the code in this vignette, you'll first need to load a few packages (if y
 library(readxl)
 library(ggplot2)
 library(scales)
+library(knitr)
 ```
 
 ```{r load_data, eval= TRUE}
@@ -158,9 +159,11 @@ level3tab$Cl.obs <- level3tab$Vd.obs * log(2) / level3tab$thalf.obs
 level3tab$Cl.pred <- level3tab$Vd.pred * log(2) / level3tab$thalf.pred
 level3tab$Cl.RPE <- (level3tab$Cl.pred - level3tab$Cl.obs)/level3tab$Cl.obs
 
-print(Cmax.stats.table)
-print(AUC.stats.table)
+kable(Cmax.stats.table)
+kable(AUC.stats.table)
+```
 
+```{r halflife_stats, eval = TRUE}
 halflife.stats.table <- NULL
 for (this.qspr in unique(level3tab$QSPR))
 {
@@ -181,9 +184,11 @@ this.row <- data.frame(
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
 halflife.stats.table <- rbind(halflife.stats.table,this.row)
-print(halflife.stats.table)
+kable(halflife.stats.table)
 write.csv(halflife.stats.table,file="halflife-stats.txt",row.names=FALSE)
+```
 
+```{r vdist_stats, eval=TRUE}
 vd.stats.table <- NULL
 for (this.qspr in unique(level3tab$QSPR))
 if (!(this.qspr %in% c("IFS-QSPR","QSPRINS")))
@@ -208,9 +213,11 @@ this.row <- data.frame(
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
 vd.stats.table <- rbind(vd.stats.table,this.row)
-print(vd.stats.table)
+kable(vd.stats.table)
 write.csv(vd.stats.table,file="VD-stats.txt",row.names=FALSE)
+```
 
+```{r total_clearnace_stats, eval=TRUE}
 cl.stats.table <- NULL
 for (this.qspr in unique(level3tab$QSPR))
 {
@@ -234,7 +241,7 @@ this.row <- data.frame(
   RMSE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3)
   )
 cl.stats.table <- rbind(cl.stats.table,this.row)
-print(cl.stats.table)
+kable(cl.stats.table)
 write.csv(cl.stats.table,file="Cl-stats.txt",row.names=FALSE)
 ```
 

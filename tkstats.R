@@ -555,11 +555,13 @@ maketkstatpreds <- function(
           default.to.human=TRUE,
           suppress.messages=TRUE))
         thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"]))
-        thalf.pred <- log(2)/suppressWarnings(calc_elimination_rate(
+        cl.pred <- 1/suppressWarnings(calc_total_clearance(
           chem.cas=this.cas,
           species=this.species,
           default.to.human=TRUE,
           suppress.messages=TRUE))
+        ke.pred <- cl.pred/vd.pred 
+        thalf.pred <- signif(log(2)/ke.pred,3)
         new.tab <- data.frame(
           Compound=this.compound,
           DTXSID=this.dtxsid,
@@ -570,8 +572,8 @@ maketkstatpreds <- function(
           thalf.obs=thalf.obs,
           thalf.pred = thalf.pred,
           stringsAsFactors=F)
-        new.tab <- merge(new.tab,this.subset2[,
-          c("CAS","Reference")],by="CAS")
+  #      new.tab <- merge(new.tab,this.subset2[,
+  #        c("CAS","Reference")],by="CAS")
         out.table <- rbind(out.table,new.tab)
       }
     }
