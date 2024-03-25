@@ -1,2 +1,0 @@
-"QSAR_READY_SMILES"
-"OC(=O)COC1=C(Cl)C=C(Cl)C=C1"
