@@ -10,8 +10,10 @@ makeCvTpreds <- function(CvT.data,label,model.args)
   if (this.cas %in% c(nonvol.chems, vol.chems))
   {
     this.model <- NULL
-    if (this.cas %in% nonvol.chems) this.model <- "solve_pbtk"
-    else if (this.cas %in% vol.chems) this.model <- "solve_gas_pbtk"
+    #if (this.cas %in% nonvol.chems) this.model <- "solve_pbtk"
+    #else if (this.cas %in% vol.chems) this.model <- "solve_gas_pbtk"
+    # Just use gas_pbtk for everything:
+    this.model <- "solve_gas_pbtk"
     
     if (!is.null(this.model))
     {

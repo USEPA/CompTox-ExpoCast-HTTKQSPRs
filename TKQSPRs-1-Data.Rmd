@@ -48,34 +48,14 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "Jan2024"
+output.prefix <- "Mar2024"
 ```
 
 
 
-Load the CvTdb in vivo data from Sayre et al. (2020):
-
-
-```{r load_cvt_data_old, eval = FALSE}
-series_res_set <- read.csv("cvt_query_for_john_27may2021.csv")
-colnames(series_res_set)[colnames(series_res_set)=="species"] <- "Species"
-colnames(series_res_set)[colnames(series_res_set)=="conc_medium_normalized"] <- "Media"
-colnames(series_res_set)[colnames(series_res_set)=="conc"] <- "Value"
-colnames(series_res_set)[colnames(series_res_set)=="time_hr"] <- "Time"
-colnames(series_res_set)[colnames(series_res_set)=="dose_level_normalized"] <- "Dose"
-colnames(series_res_set)[colnames(series_res_set)=="administration_route_normalized"] <- "Route"
-colnames(series_res_set)[colnames(series_res_set)=="dsstox_casrn"] <- "CAS"
-colnames(series_res_set)[colnames(series_res_set)=="dsstox_substance_id"] <- "DTXSID"
-colnames(series_res_set)[colnames(series_res_set)=="analyte_name_original"] <- "Compound"
-colnames(series_res_set)[colnames(series_res_set)=="fk_study_id"] <- "Source"
-```
-
-# Get chemical names, ids', and phys-chem properties:
-```{r load_dashboard_info}
-test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
-```
-
+# Load in vivo concentration vs. time data
 ```{r load_cvt_data, eval = TRUE}
+test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
 series_res_set <- read.csv("CvTdb/CvTdb_fullData_20230906.csv")
 series_res_set$Species <- series_res_set$subjects.species_harmonized
 series_res_set$Media <- series_res_set$series.conc_medium_normalized
@@ -172,7 +152,7 @@ length(unique(CvT.data$DTXSID))
 
 
 #Load the curve fits from invivoPKfit (Chris Cook):
-```{r load_compartmental_model_parameters, eval = TRUE}
+```{r load_compartmental_model_parameters, eval = FALSE}
 setwd("C:/Users/jwambaug/git/tkqsars/")
 fitsflat <- read.csv("PK.fit.table.flat.03012022.csv")
 fits1comp <- read.csv("PK.fit.table.1comp.03012022.csv")
@@ -315,7 +295,7 @@ write.csv(fittable,file="tables/SupTable-TKFits.txt",row.names=FALSE)
 ```
 # Load phys-chem information:
 ```{r load_physchem, eval = TRUE}
-CvT.chems <-read_excel("eval-chems3.xls")
+CvT.chems <-read_excel("CvTdb/eval-chems3.xls")
 for (this.col in 6:18) CvT.chems[,this.col] <- suppressWarnings(signif(
   as.numeric(unlist(CvT.chems[,this.col])),3))
 CvT.chems <- CvT.chems[,c(

@@ -37,6 +37,7 @@ library(gridExtra)
 library(reshape2)
 library(randomForest)
 library(knitr)
+library(egg)
 ```
 
 Load custom code 
@@ -49,7 +50,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "Jan2024"
+output.prefix <- "Mar2024"
 ```
 
 ```{r load_data, eval= TRUE}
@@ -645,7 +646,7 @@ for (this.qspr in unique(qsprbychem.table$QSPR))
   qsprs.rmsle.bychem[this.qspr] <-
   median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE) 
 
-qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
+qsprs.order <- names(sort(qsprs.rmsle.bychem))
 qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
                                    levels = qsprs.order)
          
@@ -711,16 +712,6 @@ xshift <- 0.2
 these.stats <- c("RMSLE.bychem.early","AAFE.early")
 stat.labels <- c("RMSLE","AAFE")
 
-#### Set order from left to right:
-qsprs.rmsle.bychem <- NULL
-for (this.qspr in unique(qsprbychem.table$QSPR)) 
-  qsprs.rmsle.bychem[this.qspr] <-
-  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.early) 
-
-qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
-qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
-                                   levels = qsprs.order)
- 
 #### Make Plot
 FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
    ggtitle("Early Time Points")+
@@ -783,16 +774,6 @@ xshift <- 0.2
 these.stats <- c("RMSLE.bychem.late","AAFE.late")
 stat.labels <- c("RMSLE","AAFE")
 
-#### Set order from left to right:
-qsprs.rmsle.bychem <- NULL
-for (this.qspr in unique(qsprbychem.table$QSPR)) 
-  qsprs.rmsle.bychem[this.qspr] <-
-  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.late) 
-
-qsprs.order <- names(qsprs.rmsle.bychem)[order(qsprs.rmsle.bychem)] 
-qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
-                                   levels = qsprs.order)
- 
 #### Make Plot
 FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
    ggtitle("Late Time Points")+
@@ -849,6 +830,34 @@ ggsave(paste("figs/FigLev2_RMSEbyChemLAte",output.prefix,".tiff",sep=""),
        width=6, height=4, dpi=300)
 ```
 
+```{r RMSE_combined_plot}
+tiff(file=paste("figs/FigLev2_RMSEbyChem_all",output.prefix,".tiff",sep=""), 
+     width=1200*0.5, height=1600*0.5)
+egg::ggarrange(FigLev2RMSE + 
+               theme(axis.text.x = element_blank(),
+                     axis.ticks.x = element_blank(),
+                     axis.title.x = element_blank(),
+                     axis.title.y = element_blank()), 
+          FigLev2RMSE.early + 
+               theme(axis.text.x = element_blank(),
+                     axis.ticks.x = element_blank(),
+                     axis.title.x = element_blank()), 
+          FigLev2RMSE.late +
+              theme(axis.title.y = element_blank()),
+          nrow = 3)
+dev.off()
+# remove axis labels from plots
+egg::ggarrange(FigLev2RMSE+ 
+               theme(axis.text.x = element_blank(),
+                     axis.ticks.x = element_blank(),
+                     axis.title.x = element_blank() ), 
+          FigLev2RMSE.early + 
+               theme(axis.text.x = element_blank(),
+                     axis.ticks.x = element_blank(),
+                     axis.title.x = element_blank() ), 
+          FigLev2RMSE.late,
+          nrow = 3)
+```
 
 ```{r analyze_admet1,eval=FALSE}
 admet.better <-NULL
@@ -1060,12 +1069,17 @@ FigLev2f <- ggplot(data=level2tab[level2tab$QSPR=="FitsToData" ,]) +
 #print(FigLev2f)
 ggsave(paste("figs/FigLev2_Conc_scatter_FitsToData",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 
+tiff(file=paste("figs/FigLev2_Conc_scatter_all",output.prefix,".tiff",sep=""), 
+     width=1200, height=800)
 grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, 
   nrow = 3, bottom=expression(paste("Predicted Conc. (mg/L)")))
-ggsave(paste("figs/FigLev2_Conc_scatter_all",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
+dev.off()
+grid.arrange(FigLev2a, FigLev2b, FigLev2c, FigLev2d, FigLev2e, FigLev2f, 
+  nrow = 3, bottom=expression(paste("Predicted Conc. (mg/L)")))
 
 
-Are the Dawson chemicals where RMSLE early < httk early truly different from RMSLE late < httk late?```
+#Are the Dawson chemicals where RMSLE early < httk early truly different from RMSLE late < httk late?
+```
 ```{r text_observations}
 dawson.chems <- subset(qsprbychem.table, QSPR =="HTPBTK-Dawson")$RMSLE < 
   subset(qsprbychem.table, QSPR == "HTPBTK-InVitro")$RMSLE

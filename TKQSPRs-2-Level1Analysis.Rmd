@@ -48,7 +48,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "Jan2024"
+output.prefix <- "Mar2024"
 ```
 
 ```{r load_data, eval= TRUE}
@@ -126,7 +126,7 @@ colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <-
 
 OPERA Predictor:
 ```{r add_opera, eval = TRUE}
-opera <- read.csv("testchems-smi_OPERA2.7Pred.csv",stringsAsFactors=F)
+opera <- read.csv("CvTdb/testchems-smi_OPERA2.7Pred.csv",stringsAsFactors=F)
 colnames(opera)[colnames(opera)=="MoleculeID"] <- "DTXSID"
 opera <- subset(opera,DTXSID%in%CvT.chems$DTXSID)
 # Domain of applicability:
@@ -143,7 +143,7 @@ colnames(CvT.chems)[colnames(CvT.chems)=="FUB_pred"] <- "Human.Fup.OPERA"
 
 IVBP Predictor:
 ```{r add_ivbp, eval = TRUE}
-ivbp <- as.data.frame(read_excel("BakeOff_IVBP_Suite.xlsx",sheet=2))
+ivbp <- as.data.frame(read_excel("qsprs/BakeOff_IVBP_Suite.xlsx",sheet=2))
 ivbp <- subset(ivbp,DTXSID%in%CvT.chems$DTXSID)
 # Domain of applicability:
 ivbp[tolower(ivbp[,"AD"])=="out ad","IVBP Final Pred Log Clint_mL/h/10^6 hep"] <- NA

@@ -1,0 +1,535 @@
+Compound	ISOFORM	Author	Journal	Volume	Page	Year	FOUND_BY	DTXSID	PREFERRED_NAME	CASRN
+11_oxo_delta8_tetrahydrocannabinol	2C9	Watanabe eta al.	Drug Meta. Pharmacokin.	17	516	2002	NO_MATCH	-	-	-
+1_2_4_triichlorobenzene	3A4	Bogaards et al.	Toxicol. Appl. Pharmacol.	132	44	1995	NO_MATCH	-	-	-
+1_4_cineole	3A4	Miyazawa et al.	Xenobiotica	31	713	2001	NO_MATCH	-	-	-
+1_8_cineole	3A4	Miyazawa et al.	Xenobiotica	31	713	2001	NO_MATCH	-	-	-
+1_PP	2D6	Raghavan et al.	Drug Metab. Disp.	33	203	2005	NO_MATCH	-	-	-
+1_nitropyrene	3A4	Chae et al.	Cancer Res.	59	1473	1999	NO_MATCH	-	-	-
+2_methoxyamphetamine	2D6	Bach et al.	Xenobiotica	29	719	1999	NO_MATCH	-	-	-
+2n_propylquinoline	2C9	Belliard et al.	Xenobiotica	33	341	2003	NO_MATCH	-	-	-
+3_hpph	3A4	Komatsu et al.	Drug Metab. Disp.	28	1361	2000	NO_MATCH	-	-	-
+3_methoxyamphetamine	2D6	Bach et al.	Xenobiotica	29	719	1999	NO_MATCH	-	-	-
+4_hpph	3A4	Komatsu et al.	Drug Metab. Disp.	28	1361	2000	NO_MATCH	-	-	-
+4_hydroxytamoxifen	3A4	Dehal and Kupfer	Drug Metab. Disp.	27	681	1999	NO_MATCH	-	-	-
+4_methoxyamphetamine	2D6	Back et al.	Xenobiotica	29	719	1999	NO_MATCH	-	-	-
+4_nitropyrene	3A4	Chae et al.	Cancer Res.	59	1473	1999	NO_MATCH	-	-	-
+58C80	2C9	Weaver et al.	Biochem. Pharmacol.	46	1183	1993	NO_MATCH	-	-	-
+5_MDMT	2D6	Yu et al.	Pharmacogenetics	13	307	2003	NO_MATCH	-	-	-
+5_hydroxytryptamine	2C9	Fradette et al.	Br. J. Pharmacol.	141	407	2004	NO_MATCH	-	-	-
+5_methoxytryptamine	2D6	Yu et al.	Pharmacogenetics	13	173	2003	NO_MATCH	-	-	-
+9_anthraldehyde	3A4	Watanabe et al.	Drug Metab. Pharmacokin.	17	516	2002	NO_MATCH	-	-	-
+9_cis_retinoic_acid	3A4	Marill et al.	Biochem. Pharmacol.	63	933	2002	NO_MATCH	-	-	-
+BFBFC	3A4	Renwick et al.	Xenobiotica	31	187	2001	NO_MATCH	-	-	-
+BFC	2C9	Renwick et al.	Xenobiotica	30	955	2000	NO_MATCH	-	-	-
+BFC	3A4	Renwick et al.	Xenobiotica	30	955	2000	NO_MATCH	-	-	-
+CMV423	2C9	Bounique et al.	Br. J. Clin. Pharm.	52	53	2001	NO_MATCH	-	-	-
+CMV423	3A4	Bournique et al.	Br. J. Clin. Pharm.	52	53	2001	NO_MATCH	-	-	-
+DDB	2C9	Baek et al.	Drug Metab. Disp.	29	381	2001	NO_MATCH	-	-	-
+DDB	3A4	Baek et al.	Drug Metab. Disp.	29	381	2001	NO_MATCH	-	-	-
+DETC_Me	3A4	Madan et al.	Drug Metab. Disp.	23	1153	1995	NO_MATCH	-	-	-
+FK_506	3A4	Vincent et al.	Arch. Biochem. Biophys.	294	454	1992	NO_MATCH	-	-	-
+H_259_31	2C9	Abelo et al.	Drug Metab. Disp.	28	58	2000	NO_MATCH	-	-	-
+H_259_31	3A4	Abelo et al.	Drug Metab. Disp.	28	58	2000	NO_MATCH	-	-	-
+L_775606	3A4	Prueksaritanont et al.	Xenobiotica	30	47	2000	NO_MATCH	-	-	-
+M17055	2C9	Nakajima et al.	Drug Metab. Pharmacokin.	17	60	2002	NO_MATCH	-	-	-
+M17055	3A4	Nakajima et al.	Drug Metab. Pharmacokin.	17	60	2002	NO_MATCH	-	-	-
+MAMC	2D6	Onderwater et al.	Chem. Res. Toxicol.	12	555	1999	NO_MATCH	-	-	-
+MDE	2D6	Kreth et al.	Biochem. Pharm.	59	1563	2000	Integrated Source Name	DTXSID70860971	"3,4-Methylenedioxyethamphetamine"	82801-81-8
+MDE	3A4	Kreth et al.	Biochem. Pharm.	59	1563	2000	Integrated Source Name	DTXSID70860971	"3,4-Methylenedioxyethamphetamine"	82801-81-8
+MEOPP	2D6	Staack et al.	Xenobiotica	34	179	2004	NO_MATCH	-	-	-
+MK_0767	3A4	Liu et al.	Drug Metab. Disp.	32	1023	2004	NO_MATCH	-	-	-
+MMDL	2D6	Bottiger et al.	Br. J. Clin. Pharm.	42	707	1996	NO_MATCH	-	-	-
+MOPPP	2D6	Springer et al.	Xenobiotica	33	989	2003	NO_MATCH	-	-	-
+MPPP	2D6	Springer et al.	Drug Metab. Disp.	31	979	2003	NO_MATCH	-	-	-
+MPTP	2D6	Modi et al.	Biochemistry	36	4461	1997	Expert Validated Synonym	DTXSID8040933	"1-Methyl-4-phenyl-1,2,3,6-tetrahydropyridine"	28289-54-5
+NNK	3A4	Staretz et al.	Drug Metab. Disp.	25	154	1997	Expert Validated Synonym	DTXSID3020881	4-(N-Methyl-N-nitrosamino)-1-(3-pyridyl)-1-butanone	64091-91-4
+NN_diethylformamide	3A4	Amato et al.	Toxicology Lett.	124	11	2001	NO_MATCH	-	-	-
+NN_dimethyl_M_toluamide	2D6	Usmani et al.	Drug Metab. Disp.	30	289	2002	NO_MATCH	-	-	-
+NN_dimethyl_M_toluamide	3A4	Usmani et al.	Drug Metab. Disp.	30	289	2002	NO_MATCH	-	-	-
+N_ac_DFEC	3A4	Altuntas et al.	Chem. Res. Tox.	17	435	2004	NO_MATCH	-	-	-
+N_ac_FFVC	3A4	Altuntas et al.	Chem. Res. Tox.	17	435	2004	NO_MATCH	-	-	-
+N_ac_PCBC	3A4	Werner et al.	Chem. Res. Toxicol.	8	917	1995	NO_MATCH	-	-	-
+N_nitrosodiamylamine	2C9	Bellec et al.	Mutation Res.	377	199	1997	NO_MATCH	-	-	-
+N_nitrosodiamylamine	2D6	Bellec et al.	Mutation Res.	377	199	1997	NO_MATCH	-	-	-
+N_nitrosodiamylamine	3A4	Bellec et al.	Mutation Res.	377	199	1997	NO_MATCH	-	-	-
+N_nitrosonornicotine	3A4	Patten et al.	Carcinogenesis	18	1623	1997	NO_MATCH	-	-	-
+PAH	3A4	Shou et al.	Arch. Biochem. Biophys.	328	201	1996	Expert Validated Synonym	DTXSID3044043	Polycyclic aromatic hydrocarbons	130498-29-2
+PMMA	2D6	Staak et al.	Drug Metab. Disp.	32	379	2004	Synonym	DTXSID30874251	para-Methoxy-N-methylamphetamine	22331-70-0
+S_MTPPA	2C9	Taguchi et al.	Xenobiotica	29	899	1999	NO_MATCH	-	-	-
+V11294	3A4	Subrahmanyam et al.	Xenobiotica	32	521	2002	NO_MATCH	-	-	-
+abt_378	3A4	Kumar et al.	Drug Metab. Disp.	27	902	1999	NO_MATCH	-	-	-
+abt_438	2C9	Machinist et al.	Drug Metab. Disp.	26	970	1998	NO_MATCH	-	-	-
+abt_438	3A4	Machinist et al.	Drug Metab. Disp.	26	970	1998	NO_MATCH	-	-	-
+aceclofenac	2C9	Bort et al.	Drug Metab. Disp.	24	834	1996	Approved Name	DTXSID7045522	Aceclofenac	89796-99-6
+acenocoumarol	2C9	Thijssen et al.	Drug Metab. Disp.	28	1284	2000	Approved Name	DTXSID2022541	Acenocoumarol	152-72-7
+acetochlor	3A4	Coleman et al.	Env. Health Perspec.	108	1151	2000	Approved Name	DTXSID8023848	Acetochlor	34256-82-1
+adinazolam	3A4	Venkatakrishnan et al.	J. Pharm. Pharmacol.	50	265	1998	Approved Name	DTXSID40190611	Adinazolam	37115-32-5
+aflatoxin_b1	3A4	Xue et al.	Chem. Res. Toxicol.	14	483	2001	NO_MATCH	-	-	-
+alachlor	3A4	Coleman et al.	Chem. Biol. Inter.	122	27	1999	Approved Name	DTXSID1022265	Alachlor	15972-60-8
+albendazole	3A4	Rawden et al.	Br. J. Clin. Pharm.	49	313	2000	Approved Name	DTXSID0022563	Albendazole	54965-21-8
+alfentanil	3A4	Labroo et al.	Drug Metab. Disp.	23	490	1995	Approved Name	DTXSID9022570	Alfentanil	71195-58-9
+alfentanil	3A4	Guitton et al.	Biochem. Pharm.	53	1613	1997	Approved Name	DTXSID9022570	Alfentanil	71195-58-9
+all_trans_retinol	3A4	Chen et al.	Drug Metab. Disp.	28	315	2005	NO_MATCH	-	-	-
+almotriptan	2D6	Salva et al.	Drug Metab. Disp.	31	404	2003	Approved Name	DTXSID5044289	Almotriptan	154323-57-6
+almotriptan	3A4	Salva et al.	Drug Metab. Disp.	31	404	2003	Approved Name	DTXSID5044289	Almotriptan	154323-57-6
+alpha_dihydroergocryptine	3A4	Althaus et al.	Xenobiotica	30	1033	2000	NO_MATCH	-	-	-
+alpha_thujone	3A4	Hold et al.	Chem. Res. Toxicol.	14	589	2001	NO_MATCH	-	-	-
+alprazolam	3A4	Hiroto et al.	Biopharm. Drug Disp.	22	53	2001	Approved Name	DTXSID4022577	Alprazolam	28981-97-7
+ambroxol	3A4	Ishiguro et al.	Xenobiotica	30	71	2000	Approved Name	DTXSID8022583	Ambroxol	18683-91-5
+ametryne	3A4	Lang et al.	Chem. Res. Tox.	10	1037	1997	Synonym from Valid Source	DTXSID1023869	Ametryn	834-12-8
+amiodarone	3A4	Fabre et al.	Drug Metab. Disp.	21	978	1993	Approved Name	DTXSID7022592	Amiodarone	1951-25-3
+amitriptyline	2C9	Miners et al.	Br. J. Clin. Pharmacol.	45	525	1998	Approved Name	DTXSID7022594	Amitriptyline	50-48-6
+amitriptyline	3A4	Ghahramani et al.	Br. J. Clin. Phamacol.	43	137	1997	Approved Name	DTXSID7022594	Amitriptyline	50-48-6
+amodiaquine	3A4	Turpeinen et al.	Eur. J. Pharm. Sci.	24	123	2005	Approved Name	DTXSID2022597	Amodiaquine	86-42-0
+androstenedione	3A4	Waxman et al.	Arch. Biochem. Biophys.	290	160	1991	Expert Validated Synonym	DTXSID8024523	"4-Androstene-3,17-dione"	63-05-8
+antipyrine	2C9	Engel et al.	Clin. Pharm. Ther.	59	613	1996	Synonym	DTXSID6021117	Phenazone	60-80-0
+antipyrine	3A4	Engel et al.	Clin. Pharm. Ther.	59	613	1996	Synonym	DTXSID6021117	Phenazone	60-80-0
+aprepitant	3A4	Sanchez et al.	Drug Metab. Disp.	32	1287	2004	Approved Name	DTXSID3049047	Aprepitant	170729-80-3
+arachidonic_acid	2C9	Lundblad et al.	Biochem. Biophys. Res. Comm.	327	1052	2005	NO_MATCH	-	-	-
+arachidonic_acid	2C9	Rifkind et al.	Arch. Biochem. Biophys.	320	380	1995	NO_MATCH	-	-	-
+aretelinic_acid	3A4	Grace et al.	Xenobiotica	29	703	1999	NO_MATCH	-	-	-
+astemizole	2D6	Matsumoto and Yamazoe	Br. J. Clin. Pharm.	51	113	2001	Approved Name	DTXSID9020110	Astemizole	68844-77-9
+astemizole	3A4	Matsumoto and Yamazoe	Br. J. Clin. Pharm.	51	133	2001	Approved Name	DTXSID9020110	Astemizole	68844-77-9
+atomoxetine	2D6	Ring et al.	Drug Metab. Disp.	30	319	2002	Approved Name	DTXSID9044297	Atomoxetine	83015-26-3
+atomoxetine	3A4						Approved Name	DTXSID9044297	Atomoxetine	83015-26-3
+atorvastatin	3A4	Jacobsen et al.	Drug Metab. Disp.	28	1369	2000	Approved Name	DTXSID8029868	Atorvastatin	134523-00-5
+atrazine	3A4	Lang et al.	Chem. Res. Toxicol.	10	1037	1997	Approved Name	DTXSID9020112	Atrazine	1912-24-9
+azelastine	2D6	Nakajima et al.	Drug Metab. Disp.	27	1381	1999	Approved Name	DTXSID6022638	Azelastine	58581-89-8
+azelastine	3A4	Imai et al.	Drug Metab. Disp.	27	942	1999	Approved Name	DTXSID6022638	Azelastine	58581-89-8
+barnipine	3A4	Teramura et al.	Xenobiotica	27	885	1997	NO_MATCH	-	-	-
+benzo_c_phenanthrene	3A4	Baum et al.	Chem. Res. Toxicol.	14	686	2001	NO_MATCH	-	-	-
+beta_arteether	3A4	Grace et al.	Drug Metab. Disp.	26	313	1998	NO_MATCH	-	-	-
+beta_thujone	3A4	Hold et al.	Chem. Res. Toxicol.	14	589	2001	NO_MATCH	-	-	-
+biochainin_A	2C9	Tollesen et al.	J. Agric. Food Chem.	50	4783	2002	NO_MATCH	-	-	-
+biochainin_A	2D6	Tollesen et al.	J. Agric. Food Chem.	50	4783	2002	NO_MATCH	-	-	-
+bisoprolol	2D6	Horikiri et al.	Life Sciences	63	1097	1998	Approved Name	DTXSID6022682	Bisoprolol	66722-44-9
+bisoprolol	3A4	Horikiri et al.	Life Sciences	63	1097	1998	Approved Name	DTXSID6022682	Bisoprolol	66722-44-9
+bortezemib	2C9	Pekol et al.	Drug Metab. Disp.	33	771	2005	NO_MATCH	-	-	-
+bortezemib	2D6	Pekol et al.	Drug Metab. Disp.	33	771	2005	NO_MATCH	-	-	-
+bortezemib	3A4	Pekol et al.	Drug Metab. Disp.	33	771	2005	NO_MATCH	-	-	-
+bosentan	2C9	van Giersbergen et al.	Clinical Pharm. Ther.	71	253	2002	Approved Name	DTXSID7046627	Bosentan	147536-97-8
+bosentan	3A4	van Giersbergen et al.	J. Clin. Pharmacol.	43	15	2003	Approved Name	DTXSID7046627	Bosentan	147536-97-8
+brofaromine	2D6	Fiefel et al.	Eur. J. Clin. Pharmacol.	45	265	1993	Approved Name	DTXSID10213008	Brofaromine	63638-91-5
+bromocriptine	3A4	Althaus et al.	Xenobiotica	30	1033	2000	Approved Name	DTXSID1022687	Bromocriptine	25614-03-3
+brotizolam	3A4	Senda et al.	Xenobiotica	27	913	1997	Approved Name	DTXSID0022692	Brotizolam	57801-81-7
+budesonide	3A4	Jonsson et al.	Drug Metab. Disp.	23	137	1995	Approved Name	DTXSID8020202	Budesonide	51333-22-3
+bufuralol	2D6	Narimatsu et al.	J. Pharm. Exp. Ther.	303	172	2002	Approved Name	DTXSID30866414	Bufuralol	54340-62-4
+bufuralol	3A4	Narimatsu et al.	J. Pharm. Exp. Ther.	303	172	2002	Approved Name	DTXSID30866414	Bufuralol	54340-62-4
+bunitrolol	2D6	Narimatsu et al.	Chirality	11	1	1999	Approved Name	DTXSID2022701	Bunitrolol	34915-68-9
+bupivacaine	3A4	Gantenbein et al.	Drug Metab. Disp.	28	383	2000	Approved Name	DTXSID2022703	Bupivacaine	38396-39-3
+buprenorphine	3A4	Kobayashi et al.	Drug Metab. Disp.	26	818	1998	Approved Name	DTXSID2022705	Buprenorphine	52485-79-7
+bupropion	3A4	Faucette et al.	Drug Metab. Disp.	29	1123	2001	Approved Name	DTXSID7022706	Bupropion	34911-55-2
+butadiene_monoxide	2C9	Krause and Elfarra	Arch. Biochem. Biophys.	337	176	1997	NO_MATCH	-	-	-
+capsaicin	2C9	Reilly et al.	Chem. Res. Toxicol.	16	336	2003	Approved Name	DTXSID9020241	Capsaicin	404-86-4
+capsaicin	2D6	Reilly et al.	Chem. Res. Toxicol.	16	336	2003	Approved Name	DTXSID9020241	Capsaicin	404-86-4
+capsaicin	3A4	Reilly et al.	Chem. Res. Toxicol.	16	336	2003	Approved Name	DTXSID9020241	Capsaicin	404-86-4
+carbamazepine	3A4	Kerr et al.	Biochem. Pharmacol.	47	1969	1994	Approved Name	DTXSID4022731	Carbamazepine	298-46-4
+carbaryl	3A4	Tang et al	Chem. Biol. Inter.	141	229	2002	Approved Name	DTXSID9020247	Carbaryl	63-25-2
+carbofuran	3A4	Usmani et al.	Chem. Biol. Inter.	150	221	2004	Approved Name	DTXSID9020249	Carbofuran	1563-66-2
+carvedilol	2C9	Oldham and Clarke	Drug Metab. Disp.	25	970	1997	Approved Name	DTXSID8022747	Carvedilol	72956-09-3
+carvedilol	2D6	Oldham and Clarke	Drug Metab. Disp.	25	970	1997	Approved Name	DTXSID8022747	Carvedilol	72956-09-3
+carvedilol	3A4	Oldhadm and Clarke	Drug Metab. Disp.	25	970	1997	Approved Name	DTXSID8022747	Carvedilol	72956-09-3
+celecoxib	2C9	Tang et al.	J. Pharm. Exp. Ther.	293	453	2000	Approved Name	DTXSID0022777	Celecoxib	169590-42-5
+cerivastatin	3A4	Boberg et al.	Drug Metab. Disp.	25	321	1977	Approved Name	DTXSID9022786	Cerivastatin	145599-86-6
+chloroquine	3A4	Projean et al.	Drug Metab. Disp.	31	748	2003	Approved Name	DTXSID2040446	Chloroquine	54-05-7
+chlorpromazine	2D6	Yoshii et al.	Life Sciences	67	175	2000	Approved Name	DTXSID0022808	Chlorpromazine	50-53-3
+chlorpropamide	2C9	Shon et al.	Br. J. Clin. Pharm.	59	552	2005	Approved Name	DTXSID9020322	Chlorpropamide	94-20-2
+chlorpyrifos	2D6	Sams et al.	Toxicology Letters	116	217	2000	Approved Name	DTXSID4020458	Chlorpyrifos	2921-88-2
+chlorpyrifos	3A4	Tang et al.	Drug Metab. Disp.	29	1201	2001	Approved Name	DTXSID4020458	Chlorpyrifos	2921-88-2
+chlorzoxazone	3A4	Gorski et al.	Xenobiotica	27	243	1997	Approved Name	DTXSID9022813	Chlorzoxazone	95-25-0
+cibenzoline	2D6	Niwa et al.	Drug Metab. Disp.	28	1128	2000	Integrated Source Name	DTXSID9022819	Cifenline	53267-01-9
+cilastazol	3A4	Suri et al.	Clin. Pharmacokin.	37 sup2	61	1999	NO_MATCH	-	-	-
+cisapride	3A4	Desta et al.	Drug Metab. Disp.	28	789	2000	Approved Name	DTXSID3022825	Cisapride	81098-60-4
+citalopram	2D6	von Moltke et al.	Drug Metab. Disp.	29	1102	2001	Approved Name	DTXSID8022826	Citalopram	59729-33-8
+citalopram	3A4	von Moltke et al.	Drug Metab. Disp.	29	1102	2001	Approved Name	DTXSID8022826	Citalopram	59729-33-8
+clarithromycin	3A4	Rodrigues et al.	Drug Metab. Disp.	25	623	1997	Approved Name	DTXSID3022829	Clarithromycin	81103-11-9
+clindamycin	3A4	Wynalda et al.	Drug Metab. Disp.	31	878	2003	Approved Name	DTXSID2022836	Clindamycin	18323-44-9
+clobazam	3A4	Giraud et al.	Drug Metab. Disp.	32	1279	2004	Approved Name	DTXSID2046759	Clobazam	22316-47-8
+clomipramine	2D6	Nielsen et al.	J. Pharm. Exp. Ther.	277	1659	1996	Approved Name	DTXSID6022844	Clomipramine	303-49-1
+clomipramine	3A4	Nielsen et al.	J. Pharm. Exp. Ther.	277	1659	1996	Approved Name	DTXSID6022844	Clomipramine	303-49-1
+clozapine	2C9	Olesen and Linnet	J. Clin. Pharm.	41	823	2001	Approved Name	DTXSID5022855	Clozapine	5786-21-0
+clozapine	2D6	Olesen and Linnet	J. Clin. Pharm.	41	823	2001	Approved Name	DTXSID5022855	Clozapine	5786-21-0
+clozapine	3A4	Linnet and Olesen	Drug Metab. Disp.	25	1379	1997	Approved Name	DTXSID5022855	Clozapine	5786-21-0
+cocaine	3A4	LeDuc et al.	Pharmacology	46	293	1993	Approved Name	DTXSID2038443	Cocaine	50-36-2
+codeine	2D6	Venhorst et al.	J. Med. Chem.	46	74	2003	Approved Name	DTXSID2020341	Codeine	76-57-3
+codeine	3A4	Tateishi et al.	Drug Metab. Disp.	24	761	1996	Approved Name	DTXSID2020341	Codeine	76-57-3
+colchicine	3A4	Soucek et al.	Biochem. Phamacol.	53	111	1997	Approved Name	DTXSID5024845	Colchicine	64-86-8
+compound_1	3A4	Tang et al.	Drug Metab. Disp.	30	778	2002	NO_MATCH	-	-	-
+compound_4	2C9	Marques-Soares et al.	Biochemistry	42	6363	2003	NO_MATCH	-	-	-
+compound_A	2D6	Cui et al.	Drug Metab. Disp.	32	848	2004	NO_MATCH	-	-	-
+compound_A	3A4	Cui et al.	Drug Metab. Disp.	32	848	2004	NO_MATCH	-	-	-
+cortisol	3A4	Tran et al.	J. Clin. Pharmacol.	39	487	1999	Expert Validated Synonym	DTXSID7020714	Hydrocortisone	50-23-7
+cp_195543	3A4	Khojasteh-Bakht et al.	Xenobiotica	33	1201	2003	NO_MATCH	-	-	-
+cp_199331	3A4	Kuperman et al.	Drug Metab. Disp.	29	1403	2001	NO_MATCH	-	-	-
+cqa_206_291	3A4	Ball et al.	Drug Metab. Disp.	20	56	1992	NO_MATCH	-	-	-
+curcumin	2D6	Sakano and Kawanishi	Arch. Biochem. Biophys.	405	223	2002	Approved Name	DTXSID8031077	Curcumin	458-37-7
+cyclophosphamide	3A4	Bohnenstengel et al.	Eur. J. Clin. Pharmacol.	51	297	1996	Approved Name	DTXSID5020364	Cyclophosphamide	50-18-0
+cyclosporine A	3A4	Dai et al.	Biochem. Pharmacol.	68	1889	2004	Synonym from Valid Source	DTXSID0020365	Cyclosporin A	59865-13-3
+cylcobenzprine	3A4						NO_MATCH	-	-	-
+da_8159	3A4	Ji et al.	Xenobiotica	34	973	2004	NO_MATCH	-	-	-
+debrisoquine	2D6	Eiermann et al.	Drug Metab. Disp.	26	1096	1998	Synonym from Valid Source	DTXSID7022885	Debrisoquin	1131-64-2
+dehydroprandipine	3A4	Kudo et al.	Drug Metab. Disp.	27	303	1999	NO_MATCH	-	-	-
+dehydropranidipine	2D6	Kudo et al.	Drug Metab Disp.	27	303	1999	NO_MATCH	-	-	-
+delavirdine	3A4	Voorman et al.	Drug Metab. Disp.	26	631	1998	Approved Name	DTXSID6022892	Delavirdine	136817-59-9
+delaviradine	2D6	Voorman et al.	Drug Metab. Disp.	26	631	1998	NO_MATCH	-	-	-
+delta9_tetrahydrocannabinol	2C9	Miners et al.	Br. J. Pharmacol.	45	525	1998	NO_MATCH	-	-	-
+deoxycholic_acid	3A4	Bodin et al.	Biochim. Biophys. Acta.	1687	84	2005	NO_MATCH	-	-	-
+deprenyl	2D6	Bach et al.	Xenobiotica	30	297	2000	Expert Validated Synonym	DTXSID60860142	(+/-)-Deprenyl	2323-36-6
+deramciclane	3A4	Laine et al.	Eur. J. Clin. Pharm.	59	761	2003	Approved Name	DTXSID10152862	Deramciclane	120444-71-5
+desogestrel	2C9	Gentile et al.	J. Pharm. Exp. Ther.	287	975	1998	Approved Name	DTXSID6022898	Desogestrel	54024-22-5
+dexamethasone	3A4	Gentile et al.	J. Pharmacol. Exp. Ther.	277	105	1996	Approved Name	DTXSID3020384	Dexamethasone	50-02-2
+dexloxiglumide	2C9	Hall et al.	Biopharm Drug Disp.	25	163	2004	Approved Name	DTXSID50152604	Dexloxiglumide	119817-90-2
+dexloxiglumide	3A4	Hall et al.	Biopharm. Drug Disp.	25	163	2004	Approved Name	DTXSID50152604	Dexloxiglumide	119817-90-2
+dextromethorphan	2D6	Bapiro et al.	Biochem. Pharm.	64	1387	2002	Approved Name	DTXSID3022908	Dextromethorphan	125-71-3
+dextromethorphan	3A4	Wang and Unadkat	Biopharm. Drug Disp.	20	341	1999	Approved Name	DTXSID3022908	Dextromethorphan	125-71-3
+dextropropoxyphene	3A4	Somogyi et al.	Xenobiotica	34	875	2004	Synonym from Valid Source	DTXSID1023524	Propoxyphene	469-62-5
+dhea	3A4	Miller et al.	Drug Metab. Disp.	32	305	2004	Expert Validated Synonym	DTXSID4020379	Dehydroepiandrosterone	53-43-0
+diMMAMC	2D6	Venhorst et al.	J. Med. Chem.	46	74	2003	NO_MATCH	-	-	-
+diallyl_disulfide	2C9	Teyssier et al.	Drug Metab. Disp.	27	835	1999	NO_MATCH	-	-	-
+diallyl_disulfide	2D6	Teyssier et al.	Drug Metab. Disp.	27	835	1999	NO_MATCH	-	-	-
+diazepam	3A4	Yang et al.	Biochem. Pharm.	55	889	1998	Approved Name	DTXSID4020406	Diazepam	439-14-5
+dibenzo_a_h_anthracene	2C9	Shou et al.	Arch. Biochem. Biophys.	328	201	1996	NO_MATCH	-	-	-
+diclofenac	2C9	Tang et al.	Chem. Res. Toxicol.	12	192	1999	Approved Name	DTXSID6022923	Diclofenac	15307-86-5
+diclofenac	3A4	Tang et al.	Chem. Res. Toxicol.	12	192	1999	Approved Name	DTXSID6022923	Diclofenac	15307-86-5
+digitoxin	3A4	Eberhart et al.	Molec. Pharm.	40	859	1992	Approved Name	DTXSID0022933	Digitoxin	71-63-6
+dihydrocodeine	2D6	Kirkwood et al	Br. J. Clin. Pharm.	45	549	1997	Approved Name	DTXSID5022936	Dihydrocodeine	125-28-0
+dihydrocodeine	3A4	Kirkwood et al.	Br. J. Clin. Pharm.	45	549	1997	Approved Name	DTXSID5022936	Dihydrocodeine	125-28-0
+diltiazem	2D6	Molden et al.	Eur. J. Clin. Pharm.	56	575	2000	Approved Name	DTXSID50881104	Diltiazem	34933-06-7
+diltiazem	3A4	Sutton et al.	J. Pham. Exp. Ther.	282	294	1997	Approved Name	DTXSID50881104	Diltiazem	34933-06-7
+disopyramide	3A4	Eichizen et al.	Drug Metab. Disp.	28	937	2000	Approved Name	DTXSID1045536	Disopyramide	3737-09-5
+docetaxel	3A4	Cresteil et al.	Drug Metab. Disp.	30	438	2002	Approved Name	DTXSID0040464	Docetaxel	114977-28-5
+domperidone	2D6	Ward et al.	Br. J. Clin. Pharm.	58	277	2004	Approved Name	DTXSID1045116	Domperidone	57808-66-9
+domperidone	3A4	Ward et al.	Br. J. Clin. Pharm.	58	277	2004	Approved Name	DTXSID1045116	Domperidone	57808-66-9
+doxepin	2D6	Haritos et al.	Pharmacogenetics	10	591	2000	Approved Name	DTXSID7022966	Doxepin	1668-19-5
+doxepin	3A4	Haritos et al.	Pharmacogenetics	10	591	2000	Approved Name	DTXSID7022966	Doxepin	1668-19-5
+dy_9760e	2C9	Tachibana et al.	Drug Metab. Disp.	33	1628	2005	NO_MATCH	-	-	-
+dy_9760e	3A4	Tachibana et al.	Drug Metab. Disp.	33	1628	2005	NO_MATCH	-	-	-
+e_2101	3A4	Zhang et al.	Drug Metab. Disp.	30	805	2002	NO_MATCH	-	-	-
+ebastine	3A4	Hashizume et al.	Drug Metab. Disp.	26	566	1998	Approved Name	DTXSID6046472	Ebastine	90729-43-4
+ecabapide	3A4	Fujimaki et al.	Xenobiotica	29	1273	1999	Approved Name	DTXSID80146718	Ecabapide	104775-36-2
+eicosapentaenoic_acid	2C9	Barbosa-Sicard et al.	Biochem. Biophys. Res. Comm.	329	1275	2005	NO_MATCH	-	-	-
+eletriptan	2C9	Evans et al.	Drug Metab. Disp.	31	861	2003	Approved Name	DTXSID9046861	Eletriptan	143322-58-1
+eletriptan	2D6	Evans et al.	Drug Metab. Disp.	31	861	2003	Approved Name	DTXSID9046861	Eletriptan	143322-58-1
+eletriptan	3A4	Evans et al.	Drug Metab. Disp.	31	861	2003	Approved Name	DTXSID9046861	Eletriptan	143322-58-1
+emetine	2D6	Asano et al.	Biol. Pharm. Bull.	24	678	2001	Approved Name	DTXSID5022980	Emetine	483-18-1
+emetine	3A4	Asano et al.	Biol. Pharm. Bull.	24	678	2001	Approved Name	DTXSID5022980	Emetine	483-18-1
+eplerenone	3A4	Cook et al.	Drug Metab. Disp.	30	1344	2002	Approved Name	DTXSID2046094	Eplerenone	107724-20-9
+erythromycin	3A4	Wang et al.	Drug Metab. Disp.	25	502	1997	Approved Name	DTXSID4022991	Erythromycin	114-07-8
+estazolam	3A4	Miura et al.	Xenobiotica	35	455	2005	Approved Name	DTXSID5020572	Estazolam	29975-16-4
+estradiol	3A4	Lee et al.	Endocrinology	144	3382	2003	Expert Validated Synonym	DTXSID0020573	17beta-Estradiol	50-28-2
+estrone	3A4	Lee et al.	Endocrinology	114	3382	2993	Approved Name	DTXSID4022367	Estrone	53-16-7
+ethiprole	3A4	Caboni et al.	J. Agric. Food Chem.	51	7055	2003	Approved Name	DTXSID6058003	Ethiprole	181587-01-9
+ethosuximide	3A4	Bachmann et al.	Xenobiotica	33	265	2003	Approved Name	DTXSID7023019	Ethosuximide	77-67-8
+etodolac	2C9	Tougou et al.	Xenobiotica	34	449	2004	Approved Name	DTXSID9020615	Etodolac	41340-25-4
+etoperidone	3A4	Yan et al.	Xenobiotica	32	949	1999	Approved Name	DTXSID0023034	Etoperidone	52942-31-1
+etoposide	3A4	Relling et al.	Mol. Pharmacol.	45	352	1994	Approved Name	DTXSID5023035	Etoposide	33419-42-0
+etoricoxib	3A4	Kassahun et al.	Drug Metab. Disp.	29	813	2001	Approved Name	DTXSID3046457	Etoricoxib	202409-33-4
+eugenol	2D6	Sakano et al.	Mutation Res.	565	35	2004	Approved Name	DTXSID9020617	Eugenol	97-53-0
+everolimus	3A4	Kuhn et al.	J. Med. Chem.	44	2027	2001	Approved Name	DTXSID0040599	Everolimus	159351-69-6
+ezlopitant	2D6	Obach	Drug Metab. Disp.	29	1057	2001	NO_MATCH	-	-	-
+ezlopitant	3A4	Obach	Drug Metab. Disp.	29	1057	2001	NO_MATCH	-	-	-
+felodipine	3A4	Ma et al.	Drug Metab. Disp.	28	125	2000	Approved Name	DTXSID4023042	Felodipine	72509-76-3
+fenproporex	2D6	Kraemer et al.	Biochem Pharm.	68	947	2004	Approved Name	DTXSID0043921	Fenproporex	16397-28-7
+fenproporex	3A4	Kraemer et al.	Biochem. Pharm.	68	947	2004	Approved Name	DTXSID0043921	Fenproporex	16397-28-7
+fentanyl	3A4	Labroo et al.	Drug Metab. Disp.	25	1072	1997	Approved Name	DTXSID9023049	Fentanyl	437-38-7
+finasteride	3A4	Guengerich	Ann. Rev. Pharmacol. Toxicol.	39	1	1999	Approved Name	DTXSID3020625	Finasteride	98319-26-7
+fipronil	3A4	Tang et al.	Chem. Biol. Inter.	147	319	2004	Approved Name	DTXSID4034609	Fipronil	120068-37-3
+flosequinan	3A4	Kashiyama et al.	Drug Metab. Disp.	25	716	1997	Approved Name	DTXSID1048833	Flosequinan	76568-02-0
+flucloxacillin	3A4	Lakehal et al.	Chem. Res. Toxicol.	14	694	2001	Synonym from Valid Source	DTXSID8023056	Floxacillin	5250-39-5
+flunitrazepam	3A4	Hesse et al.	Drug Metab. Disp.	29	133	2001	Approved Name	DTXSID7023065	Flunitrazepam	1622-62-4
+fluoxetine	2C9	Ring et al.	J. Pharm. Exp. Ther.	297	1044	2001	Approved Name	DTXSID7023067	Fluoxetine	54910-89-3
+fluoxetine	2D6	Ring et al.	J. Pharm. Exp. Ther.	297	1044	2001	Approved Name	DTXSID7023067	Fluoxetine	54910-89-3
+fluoxetine	3A4						Approved Name	DTXSID7023067	Fluoxetine	54910-89-3
+fluphenazine	2D6	Bapiro et al.	Biochem. Pharm.	64	1387	2002	Approved Name	DTXSID2023068	Fluphenazine	69-23-8
+flurbiprofen	2C9	Yamazaki et al.	Biochem. Pharm.	56	243	1998	Approved Name	DTXSID0037231	Flurbiprofen	5104-49-4
+fluvastatin	2C9	Fischer et al.	Drug Metab. Disp.	27	410	1999	Approved Name	DTXSID2020636	Fluvastatin	93957-54-1
+fluvastatin	2D6	Fischer et al.	Drug Metab. Disp.	27	410	1999	Approved Name	DTXSID2020636	Fluvastatin	93957-54-1
+fluvastatin	3A4	Fischer et al.	Drug Metab. Disp.	27	410	1999	Approved Name	DTXSID2020636	Fluvastatin	93957-54-1
+furametpyr	3A4	Nagahori et al.	J. Agric. Food Chem.	48	5754	2000	Approved Name	DTXSID2057948	Furametpyr	123572-88-3
+galangin	2C9	Otake and Walle	Drug Metab. Disp.	30	103	2002	Approved Name	DTXSID70203288	Galangin	548-83-4
+galantamine	2D6	Mannens et al.	Drug Metab Disp.	30	553	2002	Integrated Source Name	DTXSID2045606	Galanthamine	357-70-0
+granisetron	3A4	Bloomer et al.	Br. J. Clin. Pharmacol.	38	557	1994	Approved Name	DTXSID0023111	Granisetron	109889-09-0
+gbr_12909	2D6	de Groot det al.	Drug. Metab. Disp.	23	667	1995	NO_MATCH	-	-	-
+gefitinib	2D6	McKillop et al.	Xenobiotica	35	39	2005	Approved Name	DTXSID8041034	Gefitinib	184475-35-2
+gefitinib	3A4	McKillop et al.	Xenobiotica	35	39	2005	Approved Name	DTXSID8041034	Gefitinib	184475-35-2
+gepirone	2D6	Greenblatt et al.	Biopharm. Drug Disp.	24	87	2003	Approved Name	DTXSID90232813	Gepirone	83928-76-1
+gepirone	3A4	Greenblatt et al.	Biopharm. Drug Disp.	24	87	2003	Approved Name	DTXSID90232813	Gepirone	83928-76-1
+gepirone	3A4	von Moltke et al.	Psychopharmacology	140	293	1998	Approved Name	DTXSID90232813	Gepirone	83928-76-1
+halofantrine	3A4	Flinois et al.	J. Pharm. Pharmacol.	51	419	1999	Approved Name	DTXSID0023119	Halofantrine	69756-53-2
+haloperidol	2C9	Fang et al.	Drug Metab. Disp.	12	1638	2001	Approved Name	DTXSID4034150	Haloperidol	52-86-8
+haloperidol	2D6	Fang et al.	Drug Metab. Disp.	12	1638	2001	Approved Name	DTXSID4034150	Haloperidol	52-86-8
+haloperidol	3A4	Pan and Belpaire	Eur. J. Clin. Pharmacol.	55	599	1999	Approved Name	DTXSID4034150	Haloperidol	52-86-8
+harmaline	2D6	Yu et al.	J. Pharm. Exp. Ther.	305	315	2003	Approved Name	DTXSID8041038	Harmaline	304-21-2
+harmine	2C9	Yu et al.	J. Pharm. Exp. Ther.	305	315	2003	Approved Name	DTXSID30196066	Harmine	442-51-3
+harmine	2D6	Yu et al.	J. Pharm. Exp. Ther.	305	315	2003	Approved Name	DTXSID30196066	Harmine	442-51-3
+hydrocodone	2D6	Hutchinson et al.	Br. J. Clin. Pharm.	57	287	2003	Approved Name	DTXSID8023131	Hydrocodone	125-29-1
+hydrocodone	3A4	Hutchinson et al.	Br. J. Clin. Pharm.	57	287	2004	Approved Name	DTXSID8023131	Hydrocodone	125-29-1
+hydromorphone	2C9	Benetton et al.	Xenobiotica	34	335	2004	Approved Name	DTXSID8023133	Hydromorphone	466-99-9
+hydromorphone	2D6	Benetton et al.	Xenobiotica	34	335	2004	Approved Name	DTXSID8023133	Hydromorphone	466-99-9
+hydromorphone	3A4	Benetton et al.	Xenobiotica	34	335	2004	Approved Name	DTXSID8023133	Hydromorphone	466-99-9
+ibogaine	2D6	Obach et al.	Drug Metab. Disp.	26	764	1998	Approved Name	DTXSID20894069	Ibogaine	83-74-9
+ibuprofen	2C9	Hamman et al.	Biochem. Pharmacol.	54	33	1997	Approved Name	DTXSID5020732	Ibuprofen	15687-27-1
+ifosfamide	3A4	Preiss et al.	J. Cancer. Res. Clin. Oncol.	128	385	2002	Approved Name	DTXSID7020760	Ifosfamide	3778-73-2
+iloperidone	2D6	Multib et al.	J. Pharm. Exp. Ther.	286	1285	1998	Approved Name	DTXSID6049060	Iloperidone	133454-47-4
+iloperidone	3A4	Mutlib et al.	J. Pharm. Exp. Ther.	286	1285	1998	Approved Name	DTXSID6049060	Iloperidone	133454-47-4
+imidacloprid	3A4	Schultz-Jander et al.	Chem. Res. Toxicol.	15	1158	2002	Approved Name	DTXSID5032442	Imidacloprid	138261-41-3
+imipramine	3A4	Yang et al.	Drug Metab. Disp.	27	102	1999	Approved Name	DTXSID1043881	Imipramine	50-49-7
+indinavir	3A4	Chiba et al.	Biochem. Pharmacol.	53	1187	1997	Approved Name	DTXSID4043802	Indinavir	150378-17-9
+indomethacin	2C9	Nakajima et al.	Drug Metab. Disp.	26	261	1998	Expert Validated Synonym	DTXSID9020740	1-(p-Chlorobenzoyl)-5-methoxy-2-methyl-Indole-3-acetic acid	53-86-1
+indomethacin_phenethylamide	2D6	Remmel et al.	Drug Metab. Disp.	32	113	2004	NO_MATCH	-	-	-
+indomethacin_phenethylamide	3A4	Remmel et al.	Drug Metab. Disp.	32	113	2004	NO_MATCH	-	-	-
+irinotecan	3A4	Sai et al.	Drug Metab. Disp.	29	1505	2001	Approved Name	DTXSID1041051	Irinotecan	97682-44-5
+isoquinoline	3A4	Dowers et al.	Drug Metab. Disp.	32	328	2004	Approved Name	DTXSID2047644	Isoquinoline	119-65-3
+itraconazole	3A4	Isoherranen et al.	Drug Metab. Disp.	32	1121	2004	Approved Name	DTXSID3023180	Itraconazole	84625-61-6
+ivermectin	3A4	Zeng et al.	Xenobiotica	28	313	1998	Approved Name	DTXSID7040235	Ivermectin	70288-86-7
+k_11777	3A4	Jacobsen et al.	Drug Metab. Disp.	28	1343	2000	NO_MATCH	-	-	-
+kaempferide	2C9	Otake and Walle	Drug Metab. Disp.	30	103	2002	Approved Name	DTXSID9034155	Kaempferide	491-54-3
+ketamine	2C9	HIjazi et al.	J. Pharm. Exp. Ther.	30	853	2002	Approved Name	DTXSID8023187	Ketamine	6740-88-1
+ketamine	3A4	Hijazi et al.	J. Pharm. Exp. Ther.	30	853	2002	Approved Name	DTXSID8023187	Ketamine	6740-88-1
+kr_60436	2C9	Ji et al.	Toxicology Lett.	155	103	2005	NO_MATCH	-	-	-
+kr_60436	2D6	Ji et al.	Toxicology Lett.	155	103	2005	NO_MATCH	-	-	-
+kr_60436	3A4	Ji et al.	Toxicology Lett.	155	103	2005	NO_MATCH	-	-	-
+laam	3A4	Moody et al.	Drug Metab. Disp.	25	1347	1997	Expert Validated Synonym	DTXSID3023211	Levomethadyl acetate	1477-40-3
+lansoprazole	3A4	Pearce et al.	J. Pharm. Exp. Ther.	277	805	1996	Approved Name	DTXSID4023200	Lansoprazole	103577-45-3
+laquinimod	3A4	Tuvesson et al.	Drug Metab. Disp.	33	866	2005	Approved Name	DTXSID30179536	Laquinimod	248281-84-7
+lidocaine	3A4	Wang et al.	Drug Metab. Disp.	28	959	2000	Approved Name	DTXSID1045166	Lidocaine	137-58-6
+lilopristone	3A4	Jang and Benet	Drug Metab. Disp.	25	1119	1997	NO_MATCH	-	-	-
+limonene	2C9	Miyazawa et al.	Drug Metab. Disp.	30	602	2002	Approved Name	DTXSID2029612	Limonene	138-86-3
+linoleic_acid	2C9	Draper and Hammock	Arch. Biochem. Biophys.	376	199	2000	NO_MATCH	-	-	-
+linoleic_acid	3A4	Bylund et al.	J. Pharm. Exp. Ther.	284	51	1998	NO_MATCH	-	-	-
+lisofylline	3A4	Shin and Slattery	J. Pharm. Sci.	87	390	1998	Expert Validated Synonym	DTXSID7058709	(R)-Lisofylline	100324-81-0
+lithocholic_acid	3A4	Araya and Wikvall	Biochim. Biophys. Acta	1438	47	1999	NO_MATCH	-	-	-
+loperamide	2D6	Kim et al.	Eur. J. Clin. Pharm.	60	575	2004	Approved Name	DTXSID6045165	Loperamide	53179-11-6
+loperamide	3A4	Kim et al.	Eur. J. Clin. Pharm.	60	575	2004	Approved Name	DTXSID6045165	Loperamide	53179-11-6
+loratadine	2D6	Yumibe et al.	Biochem. Pharmacol.	51	165	1996	Approved Name	DTXSID2023224	Loratadine	79794-75-5
+loratadine	3A4	Yumibe et al.	Biochem. Pharmacol.	51	165	1996	Approved Name	DTXSID2023224	Loratadine	79794-75-5
+lornoxicam	2C9	IIda et al.	Drug Metab. Disp.	32	7	2004	Approved Name	DTXSID6046133	Lornoxicam	70374-39-9
+losartan	2C9	Stearns et al.	Drug Metab. Disp.	23	207	1995	Approved Name	DTXSID7023227	Losartan	114798-26-4
+losartan	3A4	Yun et al.	Drug Metab. Disp.	23	285	1995	Approved Name	DTXSID7023227	Losartan	114798-26-4
+lovastatin	3A4	Jacobsen et al.	Drug Metab. Disp.	27	173	1999	Approved Name	DTXSID5020784	Lovastatin	75330-75-5
+lu25_109	2D6	Jensen and Dalgaard	Drug Metab. Disp.	27	125	1999	NO_MATCH	-	-	-
+lu25_109	3A4	Christensen et al.	Drug Metab. Disp.	27	1341	1999	NO_MATCH	-	-	-
+ly_333531	3A4	Hyland et al.	Drug Metab. Disp.	30	957	2002	NO_MATCH	-	-	-
+malathion	3A4	Buratti et al.	Drug Metab. Disp.	33	295	2005	Approved Name	DTXSID4020791	Malathion	121-75-5
+maprotiline	2D6	Brachtenorf et al.	Pharmacol. Toxicol.	90	144	2002	Approved Name	DTXSID7045029	Maprotiline	10262-69-8
+mefenamic_acid	2C9	Miners et al.	Br. J. Pharmacol.	45	525	1998	NO_MATCH	-	-	-
+melatonin	2C9	Facciola et al.	Eur. J. Clin. Pharm.	56	881	2001	Approved Name	DTXSID1022421	Melatonin	73-31-4
+meloxicam	2C9	Chesne et al.	Xenobiotica	28	1	1998	Approved Name	DTXSID1020803	Meloxicam	71125-38-7
+meloxicam	3A4	Chesne et al.	Xenobiotica	28	1	1998	Approved Name	DTXSID1020803	Meloxicam	71125-38-7
+mequitazine	2D6	Nakamura et al.	J. Pharm. Exp. Ther.	284	437	1998	Approved Name	DTXSID8023262	Mequitazine	29216-28-2
+meta_chlorophenylpiperazine	2D6	Rotzinger et al.	Biol. Psychiatry	44	1185	1998	NO_MATCH	-	-	-
+methadone	2D6	Wang and DeVane	Drug Metab. Disp.	31	742	2003	Approved Name	DTXSID7023273	Methadone	76-99-3
+methadone	3A4	Wamg amd DeVane	Drug Metab. Disp.	31	742	2003	Approved Name	DTXSID7023273	Methadone	76-99-3
+methamphetamine	2D6	Lin et al.	Drug Metab. Disp.	25	1059	1997	Approved Name	DTXSID8037128	Methamphetamine	537-46-2
+methaqualone	3A4	Prost and Thormann	Electrophoresis	24	2593	2003	Approved Name	DTXSID7023279	Methaqualone	72-44-6
+methiocarb	2C9	Usmani et al.	Drug Metab. Disp.	32	333	2004	Approved Name	DTXSID3032626	Methiocarb	2032-65-7
+methiocarb	3A4	Usmani et al.	Drug Metab. Disp.	32	333	2004	Approved Name	DTXSID3032626	Methiocarb	2032-65-7
+methoxychlor	2C9	Hu and Kupfer	Drug Metab. Disp.	30	1035	2002	Approved Name	DTXSID9020827	Methoxychlor	72-43-5
+methoxychlor	2D6	Hu and Kupfer	Drug Metab. Disp.	30	1035	2002	Approved Name	DTXSID9020827	Methoxychlor	72-43-5
+methoxychlor	3A4	Hu and Kupfer	Drug Metab. Disp.	30	1035	2002	Approved Name	DTXSID9020827	Methoxychlor	72-43-5
+methoxychlor	3A4	Stresser and Kupfer	Biochem. Pharm.	55	1861	1998	Approved Name	DTXSID9020827	Methoxychlor	72-43-5
+methoxyphenamine	2D6	Coutts et al.	Drug Metab. Disp.	22	756	1994	Approved Name	DTXSID0023292	Methoxyphenamine	93-30-1
+metoclopramide	2D6	Desta et al.	Drug Metab. Disp.	30	336	2002	Approved Name	DTXSID6045169	Metoclopramide	364-62-5
+metoprolol	2D6	Mautz et al.	Drug Metab. Disp.	23	513	1995	Approved Name	DTXSID2023309	Metoprolol	51384-51-1
+mexazolam	3A4	Ishigami et al.	Drug Metab. Disp.	29	282	2001	Approved Name	DTXSID9057715	Mexazolam	31868-18-5
+mexiletine	2D6	Otani et al.	Eur. J. Clin. Pharm.	59	395	2003	Approved Name	DTXSID8048446	Mexiletine	31828-71-4
+mianserin	3A4	Koyama et al.	J. Pharm. Exp. Ther.	278	21	1996	Approved Name	DTXSID6023317	Mianserin	24219-97-4
+midazolam	3A4	Mizutani et al.	Pharmacol. Toxicol.	85	157	1999	Approved Name	DTXSID5023320	Midazolam	59467-70-8
+mifepristone	3A4	Jang et al.	Biochem. Pharm.	52	753	1996	Approved Name	DTXSID5023322	Mifepristone	84371-65-3
+minaprine	2D6	Marre et al.	Drug Metab. Disp.	20	316	1992	Approved Name	DTXSID5048477	Minaprine	25905-77-5
+miocamycin	3A4	Kashahara et al.	Drug Metab. Disp.	28	409	2000	Expert Validated Synonym	DTXSID60905087	Midecamycin acetate	55881-07-7
+mirtazapine	2D6	Stormer et al.	Drug Metab. Disp.	28	1168	2000	Approved Name	DTXSID0023325	Mirtazapine	61337-67-5
+mirtazapine	3A4	Stormer et al.	Drug Metab. Disp.	28	1168	2000	Approved Name	DTXSID0023325	Mirtazapine	61337-67-5
+montelukast	2C9	Chiba et al.	Drug Metab. Disp.	25	1022	1997	Approved Name	DTXSID9023334	Montelukast	158966-92-8
+montelukast	3A4	Chiba et al.	Drug Metab. Disp.	25	1022	1997	Approved Name	DTXSID9023334	Montelukast	158966-92-8
+mycophenolic_acid	3A4	Picard et al.	Ther. Drug. Mon.	26	600	2004	NO_MATCH	-	-	-
+myristicin	3A4	Yun et al.	Toxicol. Lett.	137	143	2002	Approved Name	DTXSID1025693	Myristicin	607-91-0
+naphthalene	3A4	Cho et al.	Drug Metab. Disp.	34	176	2006	Approved Name	DTXSID8020913	Naphthalene	91-20-3
+naproxen	2C9	Miners et al.	Biochem. Pharm.	51	1003	1996	Approved Name	DTXSID4040686	Naproxen	22204-53-1
+ne_100	2D6	Yamamoto et al.	Drug Metab. Pharmacokin.	18	173	2003	NO_MATCH	-	-	-
+ne_100	3A4	Yamamoto et al.	Drug Metab. Pharmacokin.	18	173	2003	NO_MATCH	-	-	-
+nefazodone	3A4	von Moltke et al.	Psychopharmacology	145	113	1999	Approved Name	DTXSID2023357	Nefazodone	83366-66-9
+nevirapine	3A4	Erickson et al.	Drug Metab. Disp.	27	1488	1999	Approved Name	DTXSID7031797	Nevirapine	129618-40-2
+nicardipine	2D6	Nakamura et al.	Biol. Pharm. Bull	28	882	2005	Approved Name	DTXSID6023363	Nicardipine	55985-32-5
+nicardipine	3A4	Nakamura et al.	Biol. Pharm. Bull.	28	882	2005	Approved Name	DTXSID6023363	Nicardipine	55985-32-5
+nifedipine ??	3A4	Patki et al.	J. Pharm. Pharmacol.	56	963	2004	NO_MATCH	-	-	-
+nitrendipine	3A4	Guengerich et al.	J. Med. Chem.	34	1838	1991	Approved Name	DTXSID0023373	Nitrendipine	39562-70-4
+no_1886	3A4	Morioka et al.	Drug Metab. Disp.	30	301	2002	NO_MATCH	-	-	-
+nortriptyline	2D6	Venhorst et al.	J. Med. Chem.	46	74	2003	Approved Name	DTXSID9023384	Nortriptyline	72-69-5
+nortriptyline	3A4	Venkatakrishnan et al.	J. Clin. Pharm.	39	567	1999	Approved Name	DTXSID9023384	Nortriptyline	72-69-5
+ns_21	3A4	Nakamura et al.	Xenobiotica	29	243	1999	NO_MATCH	-	-	-
+ochratoxin_A	2C9	Simarro Doorten et al.	Toxicology in Vitro	18	271	2004	NO_MATCH	-	-	-
+olopatadine	3A4	Kajita et al.	Drug Metab. Disp.	30	1504	2002	Approved Name	DTXSID3023390	Olopatadine	113806-05-6
+omeprazole	3A4	Abelo et al.	Drug Metab. Disp.	28	966	2000	Approved Name	DTXSID6021080	Omeprazole	73590-58-6
+onapristone	3A4	Jang and Benet	Drug Metab. Disp.	25	1119	1997	Approved Name	DTXSID90242210	Onapristone	96346-61-1
+ondansetron	2D6	Fischer et al.	Drug Metab. Disp.	22	269	1994	Approved Name	DTXSID8023393	Ondansetron	99614-02-5
+org_30659	3A4	Verhoeven et al.	Xenobiotica	32	109	2002	NO_MATCH	-	-	-
+ortho_dichlorobenzene	3A4	Bogaards et al.	Toxicol. Appl. Pharmacol.	132	44	1995	NO_MATCH	-	-	-
+osu_6162	2D6	Wienkers and Wynalda	Drug Metab. Disp.	30	1372	2002	NO_MATCH	-	-	-
+osu_6162	3A4	Wienkers and Wynalda	Drug Metab. Disp.	30	1372	2002	NO_MATCH	-	-	-
+oxybutynin	3A4	Yaich et al.	Pharmacogenetics	8	449	1998	Approved Name	DTXSID0023406	Oxybutynin	5633-20-5
+oxycodone	2D6	Lalovic et al.	Drug Metab. Disp.	32	447	2004	Approved Name	DTXSID5023407	Oxycodone	76-42-6
+oxycodone	3A4	Lalovic et al.	Drug Metab. Disp.	32	447	2004	Approved Name	DTXSID5023407	Oxycodone	76-42-6
+parathion	2D6	Sams et al.	Toxicol. Lett.	116	217	2000	Approved Name	DTXSID7021100	Parathion	56-38-2
+parathion	3A4	Sams et al.	Toxicol. Lett.	116	217	2000	Approved Name	DTXSID7021100	Parathion	56-38-2
+pentachlorobenzene	3A4	Mehmood et al.	Chemosphere	33	759	1996	Approved Name	DTXSID7024247	Pentachlorobenzene	608-93-5
+perazine	2C9	Wojcikowski et al.	Europ. Neurospsychopharm.	14	199	2004	Approved Name	DTXSID6048628	Perazine	84-97-9
+perazine	2D6	Wojcikowski et al.	Europ. Neurospychopharm.	14	199	2004	Approved Name	DTXSID6048628	Perazine	84-97-9
+perazine	3A4	Wojcikowski et al.	Europ. Neuropsychopharm.	14	199	2004	Approved Name	DTXSID6048628	Perazine	84-97-9
+perphenazine	2D6	Olesen and Linnet	Br. J. Clin. Pharm.	50	563	2000	Approved Name	DTXSID1023441	Perphenazine	58-39-9
+perphenazine	3A4	Olesen and Linnet	Br. J. Clin. Pharm.	50	563	2000	Approved Name	DTXSID1023441	Perphenazine	58-39-9
+phenacetin	3A4	Nakajima et al.	Xenobiotica	29	885	1999	Approved Name	DTXSID1021116	Phenacetin	62-44-2
+phencyclidine	3A4	Laurenzana and Owens	Drug Metab. Disp.	25	557	1997	Approved Name	DTXSID6023446	Phencyclidine	77-10-1
+phenformin	2D6	Venhorst et al.	J. Med. Chem.	46	74	2003	Approved Name	DTXSID1023449	Phenformin	114-86-3
+phenprocoumon	2C9	Ufer et al.	Xenobiotica	34	847	2004	Approved Name	DTXSID5023459	Phenprocoumon	435-97-2
+phenprocoumon	3A4	Ufer et al.	Eur. J. Clin. Pharm.	60	173	2004	Approved Name	DTXSID5023459	Phenprocoumon	435-97-2
+phenytoin	2C9	Komatsu et al.	Drug Metab. Disp.	28	1361	2000	Expert Validated Synonym	DTXSID8020541	"5,5-Diphenylhydantoin"	57-41-0
+phenytoin	3A4	Komatsu et al.	Drug Metab. Disp.	28	1361	2000	Expert Validated Synonym	DTXSID8020541	"5,5-Diphenylhydantoin"	57-41-0
+phorate	2C9	Usmani et al.	Drug Metab. Disp.	32	333	2004	Approved Name	DTXSID4032459	Phorate	298-02-2
+phorate	3A4	Usmani et al.	Drug Metab. Disp.	32	333	2004	Approved Name	DTXSID4032459	Phorate	298-02-2
+pimobendan	3A4	Kuriya et al.	Drug Metab. Disp.	28	73	2000	Approved Name	DTXSID8048280	Pimobendan	74150-27-9
+pimozide	3A4	Desta et al.	J. Pharmacol. Exp. Ther.	285	428	1998	Synonym	DTXSID8023474	"1-(1-(4,4-bis(4-fluorophenyl)butyl)-4-piperidinyl)-1,3-dihydro-2H-Benzimidazol-2-one"	2062-78-4
+pinacidil	3A4	Zhang et al.	Biochemistry	41	2712	2002	Approved Name	DTXSID7048249	Pinacidil	60560-33-0
+pinoline	2D6	Ye et al.	Pharmacogenetics	13	307	2003	NO_MATCH	-	-	-
+piroxicam	2C9	Miners et al.	Br. J. Pharmacol.	45	525	1998	Approved Name	DTXSID5021170	Piroxicam	36322-90-4
+pranidipine	3A4	Kudo et al.	Drug Metab. Disp.	27	303	1999	Approved Name	DTXSID00875518	PRANIDIPINE	99522-79-9
+progesterone	2C9	Yamazaki and Shimada	Arch. Biochem. Biophys.	346	161	1997	Approved Name	DTXSID3022370	Progesterone	57-83-0
+progesterone	3A4	Yamazaki and Shimada	Arch. Biochem. Biophys.	346	161	1997	Approved Name	DTXSID3022370	Progesterone	57-83-0
+promazine	3A4	Wojcikowski et al.	Br. J. Pharm.	138	1465	2003	Approved Name	DTXSID2023517	Promazine	58-40-2
+propafenone	2D6	Bapiro et al.	Biochem. Pharm.	64	1387	2002	Approved Name	DTXSID9045184	Propafenone	54063-53-5
+propafenone	3A4	Botsch et al.	Mol. Pharmacol.	43	120	1993	Approved Name	DTXSID9045184	Propafenone	54063-53-5
+propanolol	2D6	Narimatsu et al.	Chem.-Biol. Inter.	127	73	2000	Synonym	DTXSID6023525	Propranolol	525-66-6
+py74	3A4	Cui et al.	Drug Metab. Disp.	33	1459	2005	NO_MATCH	-	-	-
+pyrazoloacridine	3A4	Reid et al.	Clin. Cancer Res.	10	1471	2004	NO_MATCH	-	-	-
+quazepam	2C9	Miura and Ohkubo	Xenobiotica	34	1001	2004	Approved Name	DTXSID60190193	Quazepam	36735-22-5
+quazepam	3A4	Miura and Ohkubo	Xenobiotica	34	1001	2004	Approved Name	DTXSID60190193	Quazepam	36735-22-5
+quinidine	3A4	Nielsen et al.	J. Pharmacol. Exp. Ther.	289	31	1999	Approved Name	DTXSID4023549	Quinidine	56-54-2
+quinine	3A4	Mirghani et al.	Drug Metab. Disp.	30	1368	2002	Approved Name	DTXSID0044280	Quinine	130-95-0
+quinine	3A4	Zhao et al.	J. Pharmacol. Exp. Ther.	279	1327	1996	Approved Name	DTXSID0044280	Quinine	130-95-0
+quinoline	3A4	Dowers et al.	Drug Metab. Disp.	32	328	2004	Approved Name	DTXSID1021798	Quinoline	91-22-5
+r_568	2D6	McConnachie et al.	Clin. Pharm. Ther.	75	282	2004	NO_MATCH	-	-	-
+raloxifene	3A4	Chen et al.	Chem. Res. Toxicol.	15	907	2002	Approved Name	DTXSID3023550	Raloxifene	84449-90-1
+ranitidine	2D6	Chung et al.	Jpn. J. Pharmacol.	84	213	2000	Approved Name	DTXSID8045191	Ranitidine	66357-35-5
+rebamipide	3A4	Koyama et al.	Xenobiotica	32	573	2002	Approved Name	DTXSID8045937	Rebamipide	90098-04-7
+reboxetine	3A4	Wienkers et al.	Drug Metab. Disp.	27	1334	1997	Approved Name	DTXSID1048257	Reboxetine	71620-89-8
+reduced_dolasetron	2D6	Sanwald et al.	J. Chromatography B	678	53	1996	NO_MATCH	-	-	-
+reduced_haloperidol	3A4	Kudo and Odomi	Eur. J. Clin. Pharmacol.	54	253	1998	NO_MATCH	-	-	-
+repaglinide	3A4	Bidstrup et al.	Br. J. Clin. Pharm.	56	305	2003	Approved Name	DTXSID3023552	Repaglinide	135062-02-1
+ribabutin	3A4	Iatsimirskaia et al.	Clin. Pharm. Ther.	61	554	1997	NO_MATCH	-	-	-
+riddelliine	3A4	Xia et al.	Chem. Res. Toxicol.	16	66	2003	Approved Name	DTXSID4026006	Riddelliine	23246-96-0
+rifalazil	3A4	Mae et al.	Xenobiotica	30	565	2000	NO_MATCH	-	-	-
+risperidone	2D6	Fang et al.	Naunyn-Schmiedeberg's Arch. Pharmacol.	359	147	1999	Approved Name	DTXSID8045193	Risperidone	106266-06-2
+risperidone	3A4	Fang et al.	Naunyn-Schmiedeberg's Arch. Pharmacol.	359	147	1999	Approved Name	DTXSID8045193	Risperidone	106266-06-2
+ropinirole	3A4	Bloomer et al.	Drug Metab. Disp.	25	840	1997	Approved Name	DTXSID8045195	Ropinirole	91374-21-9
+ropivacaine	3A4	Ekstrom and Gunnarson	Drug Metab. Disp.	24	955	1996	Approved Name	DTXSID4040187	Ropivacaine	84057-95-4
+roquinimex	3A4	Tuvesson et al.	Xenobiotica	30	905	2000	Approved Name	DTXSID4045680	Roquinimex	84088-42-6
+rosiglitazone	2C9	Baldwin et al.	Br. J. Clin. Pharm.	48	424	1999	Approved Name	DTXSID7037131	Rosiglitazone	122320-73-4
+rotenone	3A4	Caboni et al.	Chem. Res. Toxicol.	17	1540	2004	Approved Name	DTXSID6021248	Rotenone	83-79-4
+roxithromycin	3A4	Yamazaki and Shimada	Drug Metab. Disp.	26	1053	1998	Approved Name	DTXSID8041117	Roxithromycin	80214-83-1
+rpr_106541	3A4	Stevens et al.	J. Pharm. Exp. Ther.	290	594	1999	NO_MATCH	-	-	-
+s_145	2C9	Yamaguchi et al.	Drug Metab. Disp.	25	75	1997	NO_MATCH	-	-	-
+s_145	3A4	Yamaguchi et al.	Drug Metab. Disp.	25	75	1997	NO_MATCH	-	-	-
+safrole	2C9	Ueng et al.	Chem. Res. Toxicol.	17	1151	2004	Approved Name	DTXSID0021254	Safrole	94-59-7
+salicylate	3A4	Dupont et al.	Drug Metab. Disp.	27	322	1999	Synonym	DTXSID7026368	Salicylic acid	69-72-7
+salmeterol	3A4	Manchee et al.	Drug Metab. Disp.	24	555	1996	Approved Name	DTXSID6023571	Salmeterol	89365-50-4
+saquinavir	3A4	Fitzsimmons and Collins	Drug Metab. Disp.	25	256	1997	Approved Name	DTXSID6044012	Saquinavir	127779-20-8
+sdz_imm_125	3A4	Vickers et al.	Drug Metab. Disp.	23	321	1995	NO_MATCH	-	-	-
+selegiline	3A4	Taavitsainen et al.	Pharmacol. Toxicol.	86	215	2000	Approved Name	DTXSID6023575	Selegiline	14611-51-9
+senecionine	3A4	Reed et al.	Carciniogenesis	12	515	1991	Approved Name	DTXSID40871615	Senecionine	130-01-8
+seratrodast	2C9	Kumar et al.	Drug Metab. Disp.	25	110	1997	Integrated Source Name	DTXSID4021397	"(+-)-7-(3,5,6-trimethyl-1,4-benzoquinon-2-yl)-7-phenylheptanoic acid"	112665-43-7
+seratrodast	3A4	Kumar et al.	Drug Metab. Disp.	25	110	1997	Integrated Source Name	DTXSID4021397	"(+-)-7-(3,5,6-trimethyl-1,4-benzoquinon-2-yl)-7-phenylheptanoic acid"	112665-43-7
+serm_I	3A4	Zhang et al.	Chem. Res. Toxicol.	18	675	2005	NO_MATCH	-	-	-
+sertraline	2C9	Obach et al.	Drug Metab. Disp.	33	262	2005	Approved Name	DTXSID6023577	Sertraline	79617-96-2
+sertraline	2D6	Obach et al.	Drug Metab. Disp.	33	262	2005	Approved Name	DTXSID6023577	Sertraline	79617-96-2
+sertraline	3A4	Kobayashi et al.	Drug Metab. Disp.	27	763	1999	Approved Name	DTXSID6023577	Sertraline	79617-96-2
+sildenafil	2C9	Hyland et al.	Br. J. Clin. Pharm.	51	239	2001	Approved Name	DTXSID6023579	Sildenafil	139755-83-2
+sildenafil	3A4	Hyland et al.	Br. J. Clin. Pharm.	51	239	2001	Approved Name	DTXSID6023579	Sildenafil	139755-83-2
+simvastatin	3A4	Preuksaritanont et al.	Drug Metab. Disp.	25	1191	1997	Approved Name	DTXSID0023581	Simvastatin	79902-63-9
+sirolimus	3A4	Kuhn et al.	J. Med. Chem.	44	2027	2001	Approved Name	DTXSID5023582	Sirolimus	53123-88-9
+sni_2011	2D6	Washio et al.	Biol. Pharm. Bull.	24	1263	2001	NO_MATCH	-	-	-
+sni_2011	3A4	Washio et al.	Biol. Pharm. Bull.	24	1263	2001	NO_MATCH	-	-	-
+sparteine	2D6	Ebner et al.	Mol. Pharmacol.	48	1078	1995	Approved Name	DTXSID4023591	Sparteine	90-39-1
+spirosulfonamide	2D6	Guengerich et al.	Biochemistry	41	11025	2002	NO_MATCH	-	-	-
+sulfadiazine	2C9	Winter and Unadkat	Drug Metab. Disp.	33	969	2005	Approved Name	DTXSID7044130	Sulfadiazine	68-35-9
+sulfamethoxazole	2C9	Cribb et al.	Drug Metab. Disp.	23	406	1995	Approved Name	DTXSID8026064	Sulfamethoxazole	723-46-6
+sulfinpyrazole_sulfide	2C9	He et al.	Drug Metab. Disp.	29	701	2001	NO_MATCH	-	-	-
+sulfinpyrazone	3A4	He et al.	Drug Metab. Disp.	29	701	2001	Approved Name	DTXSID0023618	Sulfinpyrazone	57-96-5
+suprofen	2C9	O'Donnell et al.	Drug Metab. Disp.	31	1369	2003	Approved Name	DTXSID5045469	Suprofen	40828-46-4
+tamarixetin	2C9	Breinholt et al.	Food and Chem. Tox.	40	609	2002	Approved Name	DTXSID00209056	Tamarixetin	603-61-2
+tamoxifen	2D6	Desta et al.	J. Pharm. Exp. Ther.	310	1062	2004	Approved Name	DTXSID1034187	Tamoxifen	10540-29-1
+tamoxifen	3A4	Desta et al.	J. Pharm. Exp. Ther.	310	1062	2004	Approved Name	DTXSID1034187	Tamoxifen	10540-29-1
+tamsulosin	2D6	Kamimura et al.	Xenobiotica	28	909	1998	Approved Name	DTXSID3023631	Tamsulosin	106133-20-4
+tamsulosin	3A4	Kamimura et al.	Xenobiotica	28	909	1998	Approved Name	DTXSID3023631	Tamsulosin	106133-20-4
+tangeretin	2D6	Brienholt et al.	Pharmacol. Toxicol.	93	14	2003	Approved Name	DTXSID30197417	Tangeretin	481-53-8
+tangeretin	3A4	Brienholt et al.	Pharmacol. Toxicol.	93	14	2003	Approved Name	DTXSID30197417	Tangeretin	481-53-8
+tauromustine	2D6	Tuvesson et al.	Xenobiotica	29	783	1999	Approved Name	DTXSID20235317	Tauromustine	85977-49-7
+tauromustine	3A4	Tuvesson et al.	Xenobiotica	29	783	1999	Approved Name	DTXSID20235317	Tauromustine	85977-49-7
+taxol	3A4	Harris et al.	Cancer Res.	54	4026	1994	Expert Validated Synonym	DTXSID9023413	Paclitaxel	33069-62-4
+tazofelone	3A4	Surapaneni et al.	Drug Metab. Disp.	25	1383	1997	NO_MATCH	-	-	-
+tegaserod	2D6	Vickers et al.	Drug Metab. Disp.	29	1269	2001	Approved Name	DTXSID6045955	Tegaserod	145158-71-0
+teniposide	3A4	Relling et al.	Mol. Pharmacol.	45	352	1994	Approved Name	DTXSID8023638	Teniposide	29767-20-2
+tentoxin	3A4	Delaforge et al.	Eur. J. Biochem.	250	150	1997	Approved Name	DTXSID70893264	Tentoxin	28540-82-1
+terbinafine	2C9	Vickers et al.	Drug Metab. Disp.	27	1029	1999	Approved Name	DTXSID2023640	Terbinafine	91161-71-6
+terbinafine	3A4	Vickers et al.	Drug Metab. Disp.	27	1029	1999	Approved Name	DTXSID2023640	Terbinafine	91161-71-6
+terbuthylazine	3A4	Lang et al.	Chem. Res. Toxicol.	10	1037	1997	Integrated Source Name	DTXSID4027608	Terbutylazine	5915-41-3
+terbutryne	3A4	Lang et al.	Chem. Res. Toxicol	10	1037	1997	Synonym from Valid Source	DTXSID3024318	Terbutryn	886-50-0
+terbinafine	2D6	Jones et al.	Drug Metab. Disp.	26	875	1998	Approved Name	DTXSID2023640	Terbinafine	91161-71-6
+terfenadine	3A4	Jones et al.	Drug Metab. Disp.	26	875	1998	Approved Name	DTXSID2023642	Terfenadine	50679-08-8
+territrem_A	3A4	Peng et al.	J. Tox. Env. Health A	66	1237	2003	NO_MATCH	-	-	-
+testosterone	2C9	Yamazaki et al.	Arch. Biochem. Biophys.	346	161	1997	Approved Name	DTXSID8022371	Testosterone	58-22-0
+testosterone	3A4	Wang et al.	Drug Metab. Disp.	25	502	1997	Approved Name	DTXSID8022371	Testosterone	58-22-0
+thioridazazine	2D6	Bapiro et al.	Biochem. Pharm.	64	1387	2002	NO_MATCH	-	-	-
+tienilic_acid	2C9	Lopez Garcia et al.	Eur. J. Biochem.	213	223	1993	NO_MATCH	-	-	-
+timolol	2D6	Bapiro et al.	Biochem. Pharm.	64	1387	2002	Synonym	DTXSID4023674	(S)-Timolol	26839-75-8
+tolbutamide	2C9	Veronese et al.	Biochem. Biophys. Res. Comm.	175	1112	1991	Approved Name	DTXSID8021359	Tolbutamide	64-77-7
+tolperisone	2D6	Dalmadi et al.	Drug Metab. Disp.	31	631	2003	Approved Name	DTXSID8023686	Tolperisone	728-88-1
+tolterodine	2D6	Postlind et al.	Drug Metab. Disp.	26	289	1998	Approved Name	DTXSID3023687	Tolterodine	124937-51-5
+tolterodine	3A4	Postlind et al.	Drug Metab. Disp.	26	289	1998	Approved Name	DTXSID3023687	Tolterodine	124937-51-5
+torasemide	2C9	Miners et al.	Br. J. Pharmacol.	45	525	1998	Synonym from Valid Source	DTXSID2023690	Torsemide	56211-40-6
+toremifene	3A4	Berthou et al.	Biochem. Pharmacol.	47	1883	1994	Approved Name	DTXSID3023689	Toremifene	89778-26-7
+tr_14035	2C9	Tsuda-Tsukimoto et al.	Drug Metab. Pharmacokin.	20	127	2005	NO_MATCH	-	-	-
+tramadol	2D6	Subrahmanyam et al.	Drug Metab. Disp.	29	1146	2001	Approved Name	DTXSID90858931	Tramadol	27203-92-5
+tramadol	3A4	Subrahmanyam et al.	Drug Metab. Disp.	29	1146	2001	Approved Name	DTXSID90858931	Tramadol	27203-92-5
+trans_retinoic_acid	2C9	MSorley and Daly	Biochem. Pharmacol.	60	517	2000	NO_MATCH	-	-	-
+trans_retinoic_acid	3A4	McSorley and Daly	Biochem. Pharmacol.	60	517	2000	NO_MATCH	-	-	-
+traxoprodil	2D6	Johnson et al.	Drug Metab. Disp.	31	76	2003	Approved Name	DTXSID90158605	Traxoprodil	134234-12-1
+trazodone	3A4	Rotzinger et al.	Drug Metab. Disp.	26	572	1998	Approved Name	DTXSID5045043	Trazodone	19794-93-5
+triazolam	3A4	Perloff et al.	J. Pharm. Exp. Ther.	292	618	2000	Approved Name	DTXSID6046763	Triazolam	28911-01-5
+trimethadione	2C9	Tanaka et al.	J. Clin. Pharm. Ther.	28	493	2003	Approved Name	DTXSID9021396	Trimethadione	127-48-0
+trimethadione	3A4	Tanaka et al.	J. Clin. Pharm. Ther.	28	493	2003	Approved Name	DTXSID9021396	Trimethadione	127-48-0
+trimipramine	2D6	Chin et al.	Ther. Drug Mon.	22	209	2000	Approved Name	DTXSID8023715	Trimipramine	739-71-9
+trofosfamide	3A4	May-Manke et al.	Cancer Chemother. Pharmacol.	44	327	1999	Expert Validated Synonym	DTXSID60865031	Trifosfamide	22089-22-1
+troglidazone	3A4	He et al.	Biochem. Pharm.	62	191	2001	NO_MATCH	-	-	-
+tropisetron	2D6	Fischer et al.	Drug Metab. Disp.	22	269	1994	Approved Name	DTXSID2044137	Tropisetron	89565-68-4
+tropisetron	3A4	Firkusny et al.	Biochem. Pharmacol.	49	1777	1995	Approved Name	DTXSID2044137	Tropisetron	89565-68-4
+tyramine	2D6	Hiroi et al.	Biochem. Biophys. Res. Comm.	249	838	1998	Approved Name	DTXSID2043874	Tyramine	51-67-2
+uk_343664	3A4	Abel et al.	Xenobiotica	31	665	2001	NO_MATCH	-	-	-
+v11294	3A4	Subrahmanyam et al.	Xenobiotica	32	521	2002	NO_MATCH	-	-	-
+valdecoxib	2C9	Ibrahim et al.	Anesthesiology	96	88	2002	Approved Name	DTXSID6044226	Valdecoxib	181695-72-7
+valdecoxib	3A4	Ibrahim et al.	Anesthesiology	96	88	2002	Approved Name	DTXSID6044226	Valdecoxib	181695-72-7
+valproic_acid	2C9	Sadeque et al.	J. Pharm. Exp. Ther.	283	698	1997	NO_MATCH	-	-	-
+valsartan	2C9	Nakashima et al.	Xenobiotica	35	589	2005	Approved Name	DTXSID6023735	Valsartan	137862-53-4
+valspodor	3A4	Fischer et al.	Drug Metab. Disp.	26	802	1998	NO_MATCH	-	-	-
+venlafaxine	2D6	Fogelman et al.	Neuropsychopharmacology	20	480	1999	Approved Name	DTXSID6023737	Venlafaxine	93413-69-5
+venlafaxine	3A4	Fogelman et al.	Neuropsychopharmacology	20	480	1999	Approved Name	DTXSID6023737	Venlafaxine	93413-69-5
+verapamil	3A4	Ma et al.	Drug Metab. Disp.	28	125	2000	Expert Validated Synonym	DTXSID9041152	(+/-)-Verapamil	52-53-9
+vitamin_d2	3A4	Gupta et al.	J. Clin. Endocr. Metab.	90	1210	2005	NO_MATCH	-	-	-
+vivid_red	2C9	Marks et al.	J. Biomolec. Screening	9	439	2004	NO_MATCH	-	-	-
+voriconazole	2C9	Hyland et al.	Drug Metab. Disp.	31	540	2003	Approved Name	DTXSID5046485	Voriconazole	137234-62-9
+voriconazole	3A4	Hyland et al.	Drug Metab. Disp.	31	540	2003	Approved Name	DTXSID5046485	Voriconazole	137234-62-9
+vx_680	3A4						NO_MATCH	-	-	-
+warfarin	2C9	Miners et al.	Br. J. Clin. Pharmacol.	45	525	1998	Approved Name	DTXSID5023742	Warfarin	81-81-2
+yohimbine	2D6	Le Corre et al.	Clin. Pharm. Ther.	76	139	2004	Approved Name	DTXSID9040130	Yohimbine	146-48-5
+yohimbine	3A4	Le Corre et al.	Clin. Pharm. Ther.	76	139	2004	Approved Name	DTXSID9040130	Yohimbine	146-48-5
+zafirlukast	3A4	Kassahun et al.	Chem. Res. Toxicol.	18	1427	2005	Approved Name	DTXSID5023746	Zafirlukast	107753-78-6
+zaleplon	3A4	Renwick et al.	Xenobiotica	28	337	1998	Approved Name	DTXSID5023748	Zaleplon	151319-34-5
+zatosetron	3A4	Ring et al.	Drug Metab. Disp.	22	352	1994	Approved Name	DTXSID8043997	Zatosetron	123482-22-4
+zileuton	3A4	Macinist et al.	Drug Metab. Disp.	23	1163	1995	Approved Name	DTXSID9023752	Zileuton	111406-87-2
+ziprasidone	3A4	Prakash et al.	Br. J. Clin. Pharm.	49 (Suppl 1)	35S	2000	Approved Name	DTXSID4023753	Ziprasidone	146939-27-7
+zolpidem	2C9	von Moltke et al.	Br. J. Clin. Pharm.	48	89	1999	Approved Name	DTXSID7045946	Zolpidem	82626-48-0
+zolpidem	2D6	von Moltke et al.	Br. J. Clin. Pharm.	48	89	1999	Approved Name	DTXSID7045946	Zolpidem	82626-48-0
+zolpidem	3A4	von Moltke et al.	Br. J. Clin. Pharm.	48	89	1999	Approved Name	DTXSID7045946	Zolpidem	82626-48-0
+zonisamide	3A4	Nakasa et al.	Molec. Pharm.	44	216	1993	Approved Name	DTXSID9046023	Zonisamide	68291-97-4
+zopiclone	3A4	Becquemont et al.	Drug Metab. Disp.	27	1068	1999	Approved Name	DTXSID4041155	Zopiclone	43200-80-2
+zotepine	2D6	Shigura et al.	Xenobiotica	29	217	1999	Approved Name	DTXSID9023756	Zotepine	26615-21-4
+zotepine	3A4	Shigura et al.	Xenobiotica	29	217	1999	Approved Name	DTXSID9023756	Zotepine	26615-21-4
