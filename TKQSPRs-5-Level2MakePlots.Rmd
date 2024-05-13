@@ -54,10 +54,10 @@ output.prefix <- "May2024"
 ```
 
 ```{r load_data, eval= TRUE}
-load("data/Cvt-chems-level2.RData")
+load("data/level2-tables.RData")
 load("data/level2stats.RData")
-load("data/level2predswithstats.RData")
 load("data/httk-goodchems.RData")
+load("data/Cvt-chems-level1.RData")
 ```
 
 # Level II Predictions -- CvT data
@@ -82,6 +82,39 @@ Predictors evaluated:
 * HTTK PBTK with OPERA
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-comaprtment fits to CvT data
+
+## Collect the Concentration vs. time (level 2) predictions from each model:
+```{r cvt_onering, eval = TRUE}
+stats.table <- rmsle.stats.table
+
+cvttab <- statstab <- qsprbychem.table <- NULL
+for (this.qspr in names(level2tab.cvt))
+{
+  cvttab <- rbind(cvttab, level2tab.cvt[[this.qspr]])
+  statstab <- rbind(statstab, level2tab.stats[[this.qspr]])
+  this.table <- data.frame(DTXSID= names(level2tab.rmsle[[this.qspr]]),
+                      RMSLE = unlist(level2tab.rmsle[[this.qspr]]),
+                      RMSLE.early = unlist(level2tab.rmsle.early[[this.qspr]]),
+                      RMSLE.late = unlist(level2tab.rmsle.late[[this.qspr]]),
+                      AAFE = unlist(level2tab.aafe[[this.qspr]]),
+                      QSPR = this.qspr
+                      )
+  this.table$RMSLE <- as.numeric(this.table$RMSLE)
+  qsprbychem.table <- rbind(qsprbychem.table, this.table)
+}
+# Add compound names:
+qsprbychem.table <- 
+  merge(qsprbychem.table,
+        cvttab[!(duplicated(cvttab$DTXSID)),c("DTXSID","Compound")],
+        by="DTXSID")
+
+level2tab <- cvttab
+level2tab.stats <- statstab
+level2tab <- subset(level2tab,!duplicated(level2tab))
+level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
+# Occasionally we can't calculate AUC, get rid of these data:
+level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
+```
 
 ## Concentration vs. time plots for each chemical-QSPR combination
 ```{r evaluation_plots, eval=TRUE}
@@ -173,11 +206,11 @@ for (this.qspr in unique(level2tab.stats$QSPR))
     this.subset2 <- subset(this.subset, DTXSID==this.chem)
     this.index <- tolower(CvT.chems.stats.heatmap$DTXSID)==tolower(this.chem)
     CvT.chems.stats.heatmap[this.index,paste("AUC.RPE",this.qspr,sep=".")] <- 
-      mean(this.subset2$AUC.RPE)
+      mean(this.subset2$AUC.RPE,na.rm=TRUE)
     CvT.chems.stats.heatmap[this.index,paste("Cmax.RPE",this.qspr,sep=".")] <- 
-      mean(this.subset2$Cmax.RPE)
+      mean(this.subset2$Cmax.RPE,na.rm=TRUE)
     CvT.chems.stats.heatmap[this.index,paste("RMSLE",this.qspr,sep=".")] <- 
-      mean(this.subset2$RMSLE)
+      mean(this.subset2$RMSLE,na.rm=TRUE)
   }
 }
 ```
@@ -583,7 +616,7 @@ write.csv(Cmax.stats.table,file="tables/SupTable-CmaxStats.txt")
 ```
 
 
-```{r make_RMSE_bychem_analysis, eval = TRUE}
+```{r make_RMSE_bychem_analysis, eval = FALSE}
 # Get rid of NA QSPRs:
 level2tab <- subset(level2tab, !is.na(QSPR))
 
@@ -663,37 +696,37 @@ FigLev2RMSE <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE)) +
     xlab("QSPR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(
-    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
-    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
+#  annotation_custom(
+#    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
+#    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
@@ -726,37 +759,37 @@ FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
     xlab("QSPR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(
-    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
-    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
+#  annotation_custom(
+#    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
+#    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),
@@ -788,37 +821,37 @@ FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
     xlab("QSPR") +
   ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   theme_bw()+
-  annotation_custom(
-    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
-    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
-  annotation_custom(
-    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
-    rows=NULL, theme = ttheme_minimal(base_size = 14)),
-    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
+#  annotation_custom(
+#    tableGrob(stat.labels, theme = ttheme_minimal(base_size = 12)),
+#    xmin=0,xmax=1.2+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[1]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[2]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[3]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=6.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[4]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=8.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[5]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=10.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[6]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=12.3+xshift,ymin=(texty-1),ymax=texty)+
+#  annotation_custom(
+#    tableGrob(signif(stats.table[these.stats,qsprs.order[7]],2),
+#    rows=NULL, theme = ttheme_minimal(base_size = 14)),
+#    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+ 
   theme( text  = element_text(size=20),
   legend.key.height=unit(.5,"line"),
   legend.text=element_text(size=14),

@@ -1,11 +1,4 @@
-"","QSPR","R2","RMSLE","RPE"
-"1","HTPBTK-InVitro",0.556,0.849,0.155
-"2","HTPBTK-InVitro-Caco2Exp",0.557,0.848,0.148
-"3","HTPBTK-InVitro-Caco2QSPR",0.544,0.86,0.155
-"4","HTPBTK-ADmet",0.563,0.842,0.505
-"5","HTPBTK-Dawson",0.525,0.878,0.184
-"6","HTPBTK-Pradeep",0.529,0.874,0.218
-"7","HTPBTK-OPERA",0.571,0.834,0.459
-"8","FitsToData",0.625,0.771,-0.181
-"9","HTPBTK-YRandom",0.519,0.885,1.11
-"10","HTPBTK-InVitro-Measured",0.567,0.895,0.914
+"","HTPBTK-InVitro","HTPBTK-ADmet","HTPBTK-Dawson","HTPBTK-Pradeep","HTPBTK-OPERA","HTPBTK-Consensus","HTPBTK-YRandom","In Vivo Fits"
+"Chemicals with In Vitro","0.664 (4, 11)","1.16 (1, 7)","1.15 (1, 7)","0.967 (1, 7)","0.813 (3, 4)","0.63 (4, 11)","0.676 (4, 11)","0.68 (1, 7)"
+"Intersection QSPR Chemicals","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)"
+"Maximal Chemicals","0.664 (4, 11)","1.16 (1, 7)","1.28 (2, 8)","0.967 (1, 7)","0.979 (4, 5)","0.711 (5, 12)","0.676 (4, 11)","0.68 (1, 7)"

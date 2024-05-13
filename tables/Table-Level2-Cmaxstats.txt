@@ -1,0 +1,4 @@
+"","HTPBTK-InVitro","HTPBTK-ADmet","HTPBTK-Dawson","HTPBTK-Pradeep","HTPBTK-OPERA","HTPBTK-Consensus","HTPBTK-YRandom","In Vivo Fits"
+"Chemicals with In Vitro","0.664 (4, 11)","1.16 (1, 7)","1.15 (1, 7)","0.967 (1, 7)","0.813 (3, 4)","0.63 (4, 11)","0.676 (4, 11)","0.68 (1, 7)"
+"Intersection QSPR Chemicals","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)","NaN (0, 0)"
+"Maximal Chemicals","0.664 (4, 11)","1.16 (1, 7)","1.28 (2, 8)","0.967 (1, 7)","0.979 (4, 5)","0.711 (5, 12)","0.676 (4, 11)","0.68 (1, 7)"

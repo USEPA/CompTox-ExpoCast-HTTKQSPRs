@@ -1,0 +1,5 @@
+"","HTPBTK-InVitro","HTPBTK-ADmet","HTPBTK-Dawson","HTPBTK-Pradeep","HTPBTK-OPERA","HTPBTK-Consensus","HTPBTK-YRandom","In Vivo Fits"
+"RMSLE Early (Intersect)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)"
+"RMSLE Early (Max)","0.827 (4)","1.33 (1)","1.58 (2)","1.13 (1)","1.14 (4)","0.967 (5)","0.841 (4)","0.402 (1)"
+"RMSLE Late (Intersect)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)"
+"RMSLE Late (Max)","1.18 (4)","1.7 (1)","2.4 (2)","1.26 (1)","1.99 (4)","0.957 (5)","1.2 (4)","0.474 (1)"

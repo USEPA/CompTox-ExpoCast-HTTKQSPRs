@@ -71,110 +71,9 @@ Predictors evaluated:
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-comaprtment fits to CvT data
 
-## Collect the Concentration vs. time (level 2) predictions from each model:
-```{r cvt_onering, eval = TRUE}
-level2tab <- rbind(
-  level2tab.invitro,
-  level2tab.invitro.caco2exp,
-  level2tab.invitro.caco2qspr,
-  level2tab.admet,
-  level2tab.dawson,
-  level2tab.pradeep,
-  level2tab.opera,
-  level2tab.fits,
-  level2tab.yrandom)#,
-#  level2tab.consensus)
-level2tab <- subset(level2tab,!duplicated(level2tab))
-
-level2tab.stats <- rbind(
-  level2tab.invitro.stats,
-    level2tab.invitro.caco2exp.stats,
-  level2tab.invitro.caco2qspr.stats,
-  level2tab.admet.stats,
-  level2tab.dawson.stats,
-  level2tab.pradeep.stats,
-  level2tab.opera.stats,
-  level2tab.fits.stats,
-  level2tab.yrandom.stats)#,
-#  level2tab.consensus.stats)
-level2tab.stats <- subset(level2tab.stats,!duplicated(level2tab.stats))
-# Occasionally we can't calculate AUC, get rid of these data:
-level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
-```
-
-## Set a minimal value for predictions and observations using limit of quantification (LOQ)
-We treat all "low" values as the same, where we define low with loq:
-```{r use_loq_as_minimum, eval = TRUE}
-level2tab$Conc.obs <- as.numeric(level2tab$Conc.obs)
-level2tab$Conc.pred <- as.numeric(level2tab$Conc.pred) 
-  
-for (this.col in c("Conc.pred","Conc.obs"))
-{
-  level2tab[level2tab[,this.col] < level2tab$calc_loq, this.col] <- 
-    level2tab[level2tab[,this.col] < level2tab$calc_loq, "calc_loq"]
-}
-min.loq <- min(level2tab[,"calc_loq"],na.rm=TRUE)
-for (this.col in c("Cmax.obs","Cmax.pred","AUC.obs","AUC.pred"))
-{
-  level2tab.stats[level2tab.stats[,this.col] < min.loq,
-                  this.col] <- min.loq
-}
-```
-
-```{r write_out_data, eval=TRUE}
-save(level2tab, level2tab.stats, file="data/level2preds.RData")
-save(CvT.chems,
-     CvT.chems.scale,
-     CvT.chems.nona,
-     file="data/Cvt-chems-level2.RData")
-```
-
-## Assign average to missing predictions:
-```{r smooth_missing, eval = FALSE}
-  QSPRs <- unique(level2tab$QSPR)
-  for (this.chem in unique(level2tab$CAS))
-  {
-    this.subset1 <- subset(level2tab,CAS==this.chem)
-    for (this.species in unique(this.subset1$Species))
-    {
-      this.subset2 <- subset(this.subset1,Species==this.species)
-      for (this.route in unique(this.subset2$Route))
-      {
-        this.subset3 <- subset(this.subset2,Route==this.route)
-        for (this.dose in unique(this.subset3$Dose))
-        {
-          this.subset4 <- subset(this.subset3,Dose==this.dose)
-          for (this.time in unique(this.subset4$Time))
-          {
-            this.subset5 <- subset(this.subset4,Time==this.time)
-            for (this.obs in unique(this.subset5$Conc.obs))
-            {
-              this.subset6 <- subset(this.subset5,Conc.obs==this.obs)
-              # Omit the fits and y-randomization from the mean:
-              mean.pred <- mean(subset(this.subset6,
-                !(QSPR %in% c(
-                  "FitsToData","YRandom","Consensus")))$Conc.pred,na.rm=TRUE)
-              for (this.QSPR in QSPRs)
-              {
-                if (!(this.QSPR %in% this.subset6$QSPR))
-                {
-                  this.row <- this.subset6[1,]
-                  this.row$QSPR <- this.QSPR
-                  this.row$Conc.pred <- mean.pred
-                  level2tab <- rbind(level2tab,this.row)
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }      
-```
-
 # Calculate relative prediction error (RPE):  
 RPE = (pred - obs)/ obs
-```{r calc_level2_rpe, eval = TRUE}
+```{r calc_level2_rpe, eval = FALSE}
   RPE.THRESH <- Inf
   # Can't work with NA's:
   level2tab <- subset(level2tab,!is.na(Conc.pred))
@@ -203,7 +102,7 @@ level2tab$RPE[level2tab$RPE=="-Inf"]<-NA
 level2tab$RPE[level2tab$RPE=="NaN"]<-0
 ``` 
 
-```{r create_model_errors_by_datasource_table, eval=TRUE}
+```{r create_model_errors_by_datasource_table, eval=FALSE}
 source.table <- NULL
 for (this.source in unique(level2tab$Source))
 {
@@ -222,201 +121,218 @@ write.csv(source.table,file="tables/Table-modelerrorsbysource.txt",row.names=F)
 kable(source.table)
 ```
 
-## calculate some statistics
-```{r calc_level2_AbsFE_RMSE, eval = TRUE}
-#Absolute fold error (AbsFE) : abs(log10(pred/obs))
-level2tab$AbsFE<-abs(log10(level2tab$Conc.pred/level2tab$Conc.obs))
-
-#Turn -Inf and Inf into NA
-level2tab$AbsFE[level2tab$AbsFE=="Inf"]<-4   ######## lots because lots of $Conc.pred is zero
-hist(level2tab$AbsFE)  # 4 seems large but does not to mess up the distribution
-
-#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
-level2tab$AbsFE[level2tab$AbsFE=="NaN"]<-0  #none
+```{r create_summary_chemlists, eval=TRUE}
+invitro.chems <- names(level2tab.rmsle[["HTPBTK-InVitro"]])
+intersect.chems <- CvT.chems.nona$DTXSID
+for (this.qspr in names(level2tab.rmsle))
+  if (!(this.qspr %in% c("HTPBTK-InVitro","HTPBTK-YRandom","In Vivo Fits")))
+  intersect.chems <- intersect(intersect.chems, names(level2tab.rmsle[[this.qspr]]))
 ```
 
-
-```{r divide_cvt_bytime, eval = TRUE}
-level2tab.early <- NULL
-level2tab.late <- NULL
-for (this.study in unique(level2tab$Source))
-{
-  this.subset1 <- subset(level2tab,Source==this.study)
-  for (this.chem in unique(this.subset1$CAS))
-  {
-    this.subset2 <- subset(this.subset1,CAS==this.chem)
-    mid.time <- mean(unique(this.subset2$Time))
-    level2tab.early <- rbind(level2tab.early,
-      subset(this.subset2,Time < mid.time))
-    level2tab.late <- rbind(level2tab.late,
-      subset(this.subset2,Time >= mid.time))
-  }
-}
-```
-
-```{r calc_setspecific_cvt_stats, eval = TRUE}
-AAFE <- list()
-AAFE.early <- list()
-AAFE.late <- list()
-RMSLE <- list()
-RMSLE.early <- list()
-RMSLE.late <- list()
-MRPE <- list()
-MRPE.early <- list()
-MRPE.late <- list()
-
-for (this.qspr in unique(level2tab$QSPR))
-{
-  AAFE[[this.qspr]] <- calc_AAFE(subset(level2tab,
-                                        QSPR==this.qspr))
-  AAFE.early[[this.qspr]] <- calc_AAFE(subset(level2tab.early,
-                                        QSPR==this.qspr))
-  AAFE.late[[this.qspr]] <- calc_AAFE(subset(level2tab.late,
-                                        QSPR==this.qspr))
-  RMSLE[[this.qspr]] <- calc_RMSLE(subset(level2tab,
-                                        QSPR==this.qspr))
-  RMSLE.early[[this.qspr]] <- calc_RMSLE(subset(level2tab.early,
-                                        QSPR==this.qspr))
-  RMSLE.late[[this.qspr]] <- calc_RMSLE(subset(level2tab.late,
-                                        QSPR==this.qspr))
-  MRPE[[this.qspr]] <- calc_MRPE(subset(level2tab,
-                                        QSPR==this.qspr))
-  MRPE.early[[this.qspr]] <- calc_MRPE(subset(level2tab.early,
-                                              QSPR==this.qspr))
-  MRPE.late[[this.qspr]] <- calc_MRPE(subset(level2tab.late,
-                                             QSPR==this.qspr))
-}
-```
-
-## Calculate stats on just the chemicals with in vitro HTTK data
-```{r calc_setspecific_cvt_stats, eval = FALSE}
-meassub <- subset(level2tab, CAS %in% httk.both)
-meassub.early <- subset(level2tab.early, CAS %in% httk.both)
-meassub.late <- subset(level2tab.late, CAS %in% httk.both)
-
-for (this.qspr in unique(meassub$QSPR))
-{
-  AAFE[[this.qspr]] <- calc_AAFE(subset(meassub,
-                                        QSPR==this.qspr))
-  AAFE.early[[this.qspr]] <- calc_AAFE(subset(meassub.early,
-                                        QSPR==this.qspr))
-  AAFE.late[[this.qspr]] <- calc_AAFE(subset(meassub.late,
-                                        QSPR==this.qspr))
-  RMSLE[[this.qspr]] <- calc_RMSLE(subset(meassub,
-                                        QSPR==this.qspr))
-  RMSLE.early[[this.qspr]] <- calc_RMSLE(subset(meassub.early,
-                                        QSPR==this.qspr))
-  RMSLE.late[[this.qspr]] <- calc_RMSLE(subset(meassub.late,
-                                        QSPR==this.qspr))
-  MRPE[[this.qspr]] <- calc_MRPE(subset(meassub,
-                                        QSPR==this.qspr))
-  MRPE.early[[this.qspr]] <- calc_MRPE(subset(meassub.early,
-                                              QSPR==this.qspr))
-  MRPE.late[[this.qspr]] <- calc_MRPE(subset(meassub.late,
-                                             QSPR==this.qspr))
-}
-```
-
-```{r create_statistics_summary_table, eval=TRUE}
+```{r create_rmsle_summary_table_bychemnumber, eval=TRUE}     
 stats.table <- data.frame()
-for (this.qspr in names(RMSLE))
+for (this.qspr in names(level2tab.rmsle))
 {
-  stats.table["AAFE",this.qspr] <- round(AAFE[[this.qspr]],2)
-  stats.table["RMSLE",this.qspr] <- round(RMSLE[[this.qspr]],2)
-  stats.table["MRPE",this.qspr] <- round(MRPE[[this.qspr]],2)
-  stats.table["RMSLE.early",this.qspr] <- round(RMSLE.early[[this.qspr]],2)
-  stats.table["RMSLE.late",this.qspr] <- round(RMSLE.late[[this.qspr]],2)
-  stats.table["AAFE.early",this.qspr] <- round(AAFE.early[[this.qspr]],2)
-  stats.table["AAFE.late",this.qspr] <- round(AAFE.late[[this.qspr]],2)
-  stats.table["MRPE.early",this.qspr] <- round(MRPE.early[[this.qspr]],2)
-  stats.table["MRPE.late",this.qspr] <- round(MRPE.late[[this.qspr]],2)
+  these.rmsles <- level2tab.rmsle[[this.qspr]][
+    names(level2tab.rmsle[[this.qspr]]) %in% invitro.chems]
+  this.count <- length(these.rmsles)
+  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
+  stats.table["Chemicals with In Vitro",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
+  these.rmsles <- level2tab.rmsle[[this.qspr]][
+    names(level2tab.rmsle[[this.qspr]]) %in% intersect.chems]
+  this.count <- length(these.rmsles)
+  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
+  stats.table["Intersection QSPR Chemicals",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
+  these.rmsles <- level2tab.rmsle[[this.qspr]]
+  this.count <- length(these.rmsles)
+  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
+  stats.table["Maximal Chemicals",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
 }
-write.csv(stats.table,file="tables/Table-Level2-Cvt-stats.txt",row.names=TRUE)
+write.csv(stats.table,file="tables/Table-Level2-Cvt-rmslestats.txt",row.names=TRUE)
 kable(stats.table)
+rmsle.stats.table <- stats.table
 ```
 
-```{r calc_auc_stats, eval = TRUE}
-AUC.stats.table <- NULL
-for (this.qspr in unique(level2tab.stats$QSPR))
+```{r create_aafe_summary_table_bychemnumber, eval=TRUE}     
+stats.table <- data.frame()
+for (this.qspr in names(level2tab.aafe))
 {
-  this.subset <- subset(level2tab.stats,QSPR==this.qspr)
-  this.fit <- lm(data=subset(this.subset, AUC.pred>0),
-                 log10(AUC.obs)~log10(AUC.pred))
-  this.row <- data.frame(
-    QSPR=this.qspr,
-    R2=signif(summary(this.fit)$adj.r.squared,3),
-    RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
-    RPE=signif(median(this.subset$AUC.RPE),3),
-    RPE.low=signif(median(subset(this.subset,AUC.obs<10)$AUC.RPE),3),
-    RPE.high=signif(median(subset(this.subset,AUC.obs>=10)$AUC.RPE),3)
-    )
-  AUC.stats.table <- rbind(AUC.stats.table,this.row)
+  these.aafes <- level2tab.aafe[[this.qspr]][
+    names(level2tab.aafe[[this.qspr]]) %in% invitro.chems]
+  this.count <- length(these.aafes)
+  this.mean <- signif(mean(unlist(these.aafes), na.rm=TRUE), 3)
+  stats.table["Chemicals with In Vitro",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
+  these.aafes <- level2tab.aafe[[this.qspr]][
+    names(level2tab.aafe[[this.qspr]]) %in% intersect.chems]
+  this.count <- length(these.aafes)
+  this.mean <- signif(mean(unlist(these.aafes), na.rm=TRUE), 3)
+  stats.table["Intersection QSPR Chemicals",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
+  these.aafes <- level2tab.aafe[[this.qspr]]
+  this.count <- length(these.aafes)
+  this.mean <- signif(mean(unlist(these.aafes), na.rm=TRUE), 3)
+  stats.table["Maximal Chemicals",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
 }
-# Add HTTK without in silico predictions:
-this.qspr <- "HTPBTK-InVitro"
-this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
-this.fit <- lm(data=subset(this.subset, AUC.pred>0),
-               log10(AUC.obs)~log10(AUC.pred))
-this.row <- data.frame(
-  QSPR=paste(this.qspr,"Measured",sep="-"),
-  R2=signif(summary(this.fit)$adj.r.squared,3),
-  RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
-  RPE=signif(median(this.subset$AUC.RPE),3),
-  RPE.low=signif(median(subset(this.subset,AUC.obs<10)$AUC.RPE),3),
-  RPE.high=signif(median(subset(this.subset,AUC.obs>=10)$AUC.RPE),3)
-  )
-AUC.stats.table <- rbind(AUC.stats.table,this.row)
-write.csv(AUC.stats.table,file="tables/Table-AUC-stats.txt",row.names=FALSE)
-kable(AUC.stats.table)
+write.csv(stats.table,file="tables/Table-Level2-Cvt-aafestats.txt",row.names=TRUE)
+kable(stats.table)
+aafe.stats.table <- stats.table
 ```
 
-```{r calc_cmax_stats, eval = TRUE}
-Cmax.stats.table <- NULL
-for (this.qspr in unique(level2tab.stats$QSPR))
+```{r create_rmsle_summary_table_early_late, eval=TRUE}
+stats.table <- data.frame()
+for (this.qspr in names(level2tab.rmsle))
 {
-  QSPR=this.subset <- subset(level2tab.stats,QSPR==this.qspr)
-  this.fit <- lm(data=subset(this.subset,Cmax.pred>0),
-                 log10(Cmax.obs)~log10(Cmax.pred))
-  this.row <- data.frame(
-    QSPR=this.qspr,
-    R2=signif(summary(this.fit)$adj.r.squared,3),
-    RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
-    RPE=signif(median(this.subset$Cmax.RPE),3)
-    )
-  Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
+  these.rmsles <- level2tab.rmsle.early[[this.qspr]][
+    names(level2tab.rmsle.early[[this.qspr]]) %in% intersect.chems]
+  this.count <- length(these.rmsles)
+  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
+  stats.table["RMSLE Early (Intersect)",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
+  these.rmsles <- level2tab.rmsle.early[[this.qspr]]
+  this.count <- length(these.rmsles)
+  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
+  stats.table["RMSLE Early (Max)",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
+  these.rmsles <- level2tab.rmsle.late[[this.qspr]][
+    names(level2tab.rmsle.late[[this.qspr]]) %in% intersect.chems]
+  this.count <- length(these.rmsles)
+  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
+  stats.table["RMSLE Late (Intersect)",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
+  these.rmsles <- level2tab.rmsle.late[[this.qspr]]
+  this.count <- length(these.rmsles)
+  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
+  stats.table["RMSLE Late (Max)",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ")",
+    sep="")
 }
-this.qspr <- "HTPBTK-InVitro"
-this.subset <- subset(level2tab.stats,QSPR==this.qspr& CAS %in% httk.both)
-this.fit <- lm(data=subset(this.subset, Cmax.pred>0),
-               log10(Cmax.obs)~log10(Cmax.pred))
-this.row <- data.frame(
-  QSPR=paste(this.qspr,"Measured",sep="-"),
-  R2=signif(summary(this.fit)$adj.r.squared,3),
-  RMSLE=signif(sqrt(mean(summary(this.fit)$residuals^2)),3),
-  RPE=signif(median(this.subset$Cmax.RPE),3)
-  )
-Cmax.stats.table <- rbind(Cmax.stats.table,this.row)
-write.csv(Cmax.stats.table,file="tables/Table-Cmax-stats.txt",row.names=FALSE)
-kable(Cmax.stats.table)
+write.csv(stats.table,file="tables/Table-Level2-Cvt-earlylatestats.txt",row.names=TRUE)
+kable(stats.table)
+earlylate.stats.table <- stats.table
 ```
+
+
+```{r create_auc_summary_table_bychem, eval=TRUE}     
+stats.table <- data.frame()
+for (this.qspr in names(level2tab.stats))
+{
+  all.chem.meanAUCs <- vector()
+  all.chem.nobs <- vector()
+  for (this.chem in unique(level2tab.stats[[this.qspr]]$DTXSID))
+  {
+    this.subset <- subset(level2tab.stats[[this.qspr]], 
+                                  DTXSID == this.chem)$AUC.RMSLE
+    all.chem.meanAUCs[this.chem] <- mean(this.subset)
+    all.chem.nobs[this.chem] <- length(this.subset)
+  }
+  these.aucs <- all.chem.meanAUCs[names(all.chem.meanAUCs) %in% invitro.chems]
+  this.count <- length(these.aucs)
+  this.mean <- signif(mean(unlist(these.aucs), na.rm=TRUE), 3)
+  this.nobs <- sum(all.chem.nobs[names(all.chem.nobs) %in% invitro.chems])
+  stats.table["Chemicals with In Vitro",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ", ",
+    this.nobs, ")",
+    sep="")
+  these.aucs <- all.chem.meanAUCs[names(all.chem.meanAUCs) %in% intersect.chems]
+  this.count <- length(these.aucs)
+  this.mean <- signif(mean(unlist(these.aucs), na.rm=TRUE), 3)
+  this.nobs <- sum(all.chem.nobs[names(all.chem.nobs) %in% intersect.chems])
+  stats.table["Intersection QSPR Chemicals",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ", ",
+    this.nobs, ")",
+    sep="")
+  these.aucs <- all.chem.meanAUCs
+  this.count <- length(these.aucs)
+  this.mean <- signif(mean(unlist(these.aucs), na.rm=TRUE), 3)
+  this.nobs <- sum(all.chem.nobs)
+  stats.table["Maximal Chemicals",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ", ",
+    this.nobs, ")",
+    sep="")
+}
+write.csv(stats.table,file="tables/Table-Level2-AUCstats.txt",row.names=TRUE)
+kable(stats.table)
+AUC.stats.table <- stats.table
+```
+```{r create_cmax_summary_table_bychem, eval=TRUE}     
+stats.table <- data.frame()
+for (this.qspr in names(level2tab.stats))
+{
+  all.chem.meanCmaxs <- vector()
+  all.chem.nobs <- vector()
+  for (this.chem in unique(level2tab.stats[[this.qspr]]$DTXSID))
+  {
+    this.subset <- subset(level2tab.stats[[this.qspr]], 
+                                  DTXSID == this.chem)$Cmax.RMSLE
+    all.chem.meanCmaxs[this.chem] <- mean(this.subset)
+    all.chem.nobs[this.chem] <- length(this.subset)
+  }
+  these.Cmaxs <- all.chem.meanCmaxs[names(all.chem.meanCmaxs) %in% invitro.chems]
+  this.count <- length(these.Cmaxs)
+  this.mean <- signif(mean(unlist(these.Cmaxs), na.rm=TRUE), 3)
+  this.nobs <- sum(all.chem.nobs[names(all.chem.nobs) %in% invitro.chems])
+  stats.table["Chemicals with In Vitro",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ", ",
+    this.nobs, ")",
+    sep="")
+  these.Cmaxs <- all.chem.meanCmaxs[names(all.chem.meanCmaxs) %in% intersect.chems]
+  this.count <- length(these.Cmaxs)
+  this.mean <- signif(mean(unlist(these.Cmaxs), na.rm=TRUE), 3)
+  this.nobs <- sum(all.chem.nobs[names(all.chem.nobs) %in% intersect.chems])
+  stats.table["Intersection QSPR Chemicals",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ", ",
+    this.nobs, ")",
+    sep="")
+  these.Cmaxs <- all.chem.meanCmaxs
+  this.count <- length(these.Cmaxs)
+  this.mean <- signif(mean(unlist(these.Cmaxs), na.rm=TRUE), 3)
+  this.nobs <- sum(all.chem.nobs)
+  stats.table["Maximal Chemicals",this.qspr] <- paste(
+    this.mean, " (",
+    this.count, ", ",
+    this.nobs, ")",
+    sep="")
+}
+write.csv(stats.table,file="tables/Table-Level2-Cmaxstats.txt",row.names=TRUE)
+kable(stats.table)
+Cmax.stats.table <- stats.table
+```
+
 
 ```{r write_level2_results}
-save(level2tab.stats,
-     AAFE,
-     AAFE.early,
-     AAFE.late,
-     RMSLE,
-     RMSLE.early,
-     RMSLE.late,
-     MRPE,
-     MRPE.early,
-     MRPE.late,
-     stats.table,
+save(rmsle.stats.table,
+     aafe.stats.table,
+     earlylate.stats.table,
      AUC.stats.table,
      Cmax.stats.table,
      file="data/level2stats.RData")
-save(level2tab,
-     level2tab.early,
-     level2tab.late,
-     file="data/level2predswithstats.RData")
 ```

@@ -17,7 +17,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
     
     if (!is.null(this.model))
     {
- #     print(this.cas)
+      print(paste(label,": ",this.cas,sep=""))
       this.subset1 <- subset(CvT.data,CAS==this.cas & 
         !is.na(Time) & 
         !is.na(Value))
@@ -65,14 +65,11 @@ makeCvTpreds <- function(CvT.data,label,model.args)
                      default.to.human=TRUE,
                      suppress.messages=TRUE,
                      input.units='mg/kg',
+                     output.units <- "ug/mL",
                      exp.conc=0),
                 model.args)))
 
             pred <- subset(pred,pred[,"time"]>0.0001)
-            # Convert from uM to ug/mL:
-            pred[,"Cven"] <- pred[,"Cven"]*suppressWarnings(parameterize_pbtk(
-              chem.cas=this.cas,
-              suppress.messages=TRUE))$MW/1000
             if (any(tolower(unlist(this.subset4[,"Media"]))=="blood"))
             {
               Rb2p <- suppressWarnings(available_rblood2plasma(
@@ -102,7 +99,10 @@ makeCvTpreds <- function(CvT.data,label,model.args)
               if (any(tolower(new.row[,"Media"])=="blood"))
               {
                 new.row[tolower(new.row[,"Media"])=="blood","Conc.pred"] <-
-                  Rb2p * new.row[tolower(new.row[,"Media"])=="blood","Conc.pred"]
+                  signif(
+                    Rb2p * 
+                      new.row[tolower(new.row[,"Media"])=="blood","Conc.pred"],
+                    4)
               }
               cvt.table <- rbind(cvt.table,new.row)
               this.subset4means <- rbind(this.subset4means,
@@ -140,9 +140,77 @@ makeCvTpreds <- function(CvT.data,label,model.args)
   }
   cvt.table$QSPR <- label
   stats.table$QSPR <- label
+  
+  out <- calc_cvt_stats(cvt.table, stats.table)
+  
+  return(out)
+}
+
+calc_cvt_stats <- function(cvt.table, stats.table)
+{
+  # Set a minimal value for predictions and observations using limit of quantification (LOQ)
+  # We treat all "low" values as the same, where we define low with loq:
+  for (this.col in c("Conc.pred","Conc.obs"))
+  {
+    cvt.table[cvt.table[,this.col] < cvt.table$calc_loq, this.col] <- 
+      cvt.table[cvt.table[,this.col] < cvt.table$calc_loq, "calc_loq"]
+  }
+  min.loq <- min(cvt.table[,"calc_loq"],na.rm=TRUE)
+  for (this.col in c("Cmax.obs","Cmax.pred","AUC.obs","AUC.pred"))
+  {
+    stats.table[stats.table[,this.col] < min.loq,
+                this.col] <- min.loq
+  }
+  for (this.row in 1:dim(stats.table)[1])
+  {
+    stats.table[this.row, "Cmax.RMSLE"] <- calc_RMSLE(stats.table[this.row, ],
+                                                      obs.col="Cmax.obs",
+                                                      pred.col="Cmax.pred")
+    stats.table[this.row, "AUC.RMSLE"] <- calc_RMSLE(stats.table[this.row, ],
+                                                     obs.col="AUC.obs",
+                                                     pred.col="AUC.pred")
+  }
+  
+  # Calculate absolute fold error for all observations
+  cvt.table$AbsFE <- calc_AbsFE(cvt.table)
+  
+  # Calculate chemical-specific RMSLE and AAFE:
+  rmsle <- aafe <- rmsle.early <- rmsle.late <- aafe.early <- aafe.late <- list()
+  for (this.chem in unique(cvt.table$DTXSID))
+  {
+    this.data <- subset(cvt.table,DTXSID==this.chem)
+    rmsle[[this.chem]] <- calc_RMSLE(this.data)
+    aafe[[this.chem]] <- calc_AAFE(this.data)
+    
+    # Separate data into early and late times:
+    this.data.early <- this.data.late <- NULL
+    for (this.study in unique(this.data$Source))
+    {
+      this.sourcedata <- subset(this.data,Source==this.study)
+      mid.time <- median(unique(this.sourcedata$Time))
+      this.data.early <- rbind(this.data.early,
+                               subset(this.sourcedata,
+                                      Time < mid.time))
+      this.data.late <- rbind(this.data.late,
+                              subset(this.sourcedata,
+                                     Time >= mid.time))
+    }
+    rmsle.early[[this.chem]] <- calc_RMSLE(this.data.early)
+    aafe.early[[this.chem]] <- calc_AAFE(this.data.early)
+    rmsle.late[[this.chem]] <- calc_RMSLE(this.data.late)
+    aafe.late[[this.chem]] <- calc_AAFE(this.data.late)
+  }
+  
   return(list(
     cvt=cvt.table,
-    stats=stats.table))
+    stats=stats.table,
+    rmsle=rmsle,
+    aafe=aafe,
+    rmsle.early=rmsle.early,
+    rmsle.late=rmsle.late,
+    aafe.early = aafe.early,
+    aafe.late = aafe.late
+    ))
 }
 
 #'Analytical 1-compartment model
@@ -379,8 +447,9 @@ makeCvTpredsfromfits <- function(
             #  if (Cmax.pred == 0) browser()
               if (length(obs.times)>1)
               {
-                AUC.obs <- AUC(this.subset4means$Time,this.subset4means$Value)
-                AUC.pred <- AUC(obs.times,pred)
+                AUC.obs <- signif(AUC(this.subset4means$Time,
+                                      this.subset4means$Value), 4)
+                AUC.pred <- signif(AUC(obs.times, pred), 4)
               } else {
                 AUC.obs <- NA
                 AUC.pred <- NA
@@ -407,128 +476,11 @@ makeCvTpredsfromfits <- function(
         
   cvt.table$QSPR <- label
   stats.table$QSPR <- label
-  return(list(
-    cvt=cvt.table,
-    stats=stats.table))
-}
-
-# This function does the level II concentration comparisons:
-makeCvTpredsfromfits2 <- function(
-    CvT.data, # Concentration vs. time data
-    fit.preds,
-    label = "FitsToData") # How the predictions should be labeled
-{
-  cvt.table <- NULL
-  stats.table <- NULL
-  for (this.cas in unique(CvT.data$CAS))
-  {
-    this.cvt.subset1 <- subset(CvT.data,
-                               CAS==this.cas & 
-                               !is.na(Time) & 
-                               !is.na(Value))
-    this.pred.subset1 <- subset(fit.preds, 
-                                CAS==this.cas & 
-                                !is.na(Time) & 
-                                !is.na(Value))
-    this.compound <- this.cvt.subset1$Compound[1]
-    this.dtxsid <- this.cvt.subset1$DTXSID[1]
-    
-    for (this.species in unique(tolower(this.cvt.subset1$Species)))
-      if (this.species %in% tolower(this.pred.subset1$Species))
-      {
-        this.pred.subset2 <- subset(this.pred.subset1,
-                                    tolower(Species)==this.species)
-        this.cvt.subset2 <- subset(this.cvt.subset1,
-                                    tolower(Species)==this.species)
-
-        for (this.route in unique(tolower(this.cvt.subset2$Route)))
-          if (this.route %in% tolower(this.pred.subset2$Route))
-          {
-            this.cvt.subset3 <- subset(this.cvt.subset2,
-                                       Route==this.route)
-            this.pred.subset3 <- subset(this.pred.subset2,
-                                        Route==this.route)
-            for (this.dose in unique(this.cvt.subset3$Dose))
-              if (this.dose %in% tolower(this.pred.subset3$Dose))
-            {
-              this.cvt.subset4 <- subset(this.cvt.subset3,
-                                         Dose==this.dose)              
-              this.pred.subset4 <- subset(this.pred.subset3,
-                                          Dose==this.dose)
-              obs.times <- signif(sort(unique(this.cvt.subset4$Time)),4)
-              this.cvt.subset4means <- NULL
-              for (this.time in obs.times)
-              {
-                this.cvt.subset5 <- subset(this.cvt.subset4,
-                                           signif(Time,4)==this.time)
-                new.row <- data.frame(
-                  Compound=this.compound,
-                  DTXSID=this.dtxsid,
-                  CAS=this.cas,
-                  Species=this.species,
-                  Route=this.route,
-                  Dose=this.dose,
-                  Time=this.time,
-                  Conc.pred=this.pred.subset4[obs.times == this.time,"Conc_est"],
-                  stringsAsFactors=FALSE)
-                new.row <- merge(new.row,
-                                 this.cvt.subset5[,c(
-                                   "CAS","Media","Value","Source","calc_loq")], by="CAS")
-                colnames(new.row)[colnames(new.row)=="Value"] <- "Conc.obs"
-                cvt.table <- rbind(cvt.table,new.row)
-                this.cvt.subset4means <- rbind(this.cvt.subset4means,
-                                           data.frame(
-                                             Time=this.time,
-                                             Value=mean(this.cvt.subset5$Value,
-                                                        na.rm=TRUE)))
-              }
-              Cmax.obs <- max(this.cvt.subset4means$Value, na.rm=TRUE)
-              Cmax.pred <- max(this.pred.subset4[,
-                                                 "Conc_est"], 
-                               na.rm=TRUE)
-              if (length(obs.times)>1)
-              {
-                AUC.obs <- AUC(this.cvt.subset4means$Time,
-                               this.cvt.subset4means$Value)
-                if (length(obs.times) != 
-                    length(this.pred.subset4[
-                      !duplicated(this.pred.subset4[,"Time"]),
-                      "Conc_est"])) browser()
-                AUC.pred <- AUC(obs.times,
-                                this.pred.subset4[
-                                  !duplicated(this.pred.subset4[,"Time"]),
-                                                  "Conc_est"])
-              } else {
-                AUC.obs <- NA
-                AUC.pred <- NA
-              }
-              new.row <- data.frame(
-                Compound=this.compound,
-                DTXSID=this.dtxsid,
-                CAS=this.cas,
-                Species=this.species,
-                Route=this.route,
-                Dose=this.dose,
-                Cmax.obs=Cmax.obs,
-                Cmax.pred=Cmax.pred,
-                AUC.obs=AUC.obs,
-                AUC.pred=AUC.pred,
-                stringsAsFactors=FALSE)
-              stats.table <- rbind(stats.table,new.row)            
-            }
-          }
-        
-      }
-    
-  }
   
-  cvt.table$QSPR <- label
-  stats.table$QSPR <- label
-  return(list(
-    cvt=cvt.table,
-    stats=stats.table))
+  out <- calc_cvt_stats(cvt.table, stats.table)
+  
+  return(out)
 }
-
 
 # This function does the level III statistic comparisons:
 maketkstatpreds <- function(
@@ -584,30 +536,55 @@ maketkstatpreds <- function(
   return(out.table)
 }
 
+## calculate absolute fold error
+calc_AbsFE <- function(level2tab)
+{
+  #Absolute fold error (AbsFE) : abs(log10(pred/obs))
+  AbsFE<-signif(abs(log10(level2tab$Conc.pred/level2tab$Conc.obs)),
+                          4)
+
+  #Turn -Inf and Inf into finite value
+  AbsFE[AbsFE=="Inf"]<-4   ######## lots because lots of $Conc.pred is zero
+
+  #Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
+  AbsFE[AbsFE=="NaN"]<-0  #none
+
+  return(AbsFE)
+}
+
+
 ## Absolute Average Fold Error (AAFE) :  
 # 10^((1/n)*sum(abs(FE)))
 # use this. It's good to see fold error
 calc_AAFE <- function(level2.table)
 {
-  return(10^(mean(level2.table$AbsFE,
-                  na.rm=TRUE)))
+  return(signif(
+    10^(mean(level2.table$AbsFE,
+                  na.rm=TRUE)),
+    4))
 }
 
 ## Root mean squared log10 Error (RMSLE): 
 # sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)
 # use this
-calc_RMSLE <- function(level2.table)
+calc_RMSLE <- function(level2.table,
+                       pred.col="Conc.pred",
+                       obs.col="Conc.obs")
 {
-  return(sqrt(mean((log10(level2.table$Conc.pred /
-                            level2.table$Conc.obs))^2,
-                   na.rm=TRUE)))
+  return(signif(
+    sqrt(mean((log10(level2.table[,pred.col] /
+                            level2.table[,obs.col]))^2,
+                   na.rm=TRUE)),
+    4))
 }
 
 ## Median relative predictive error (MPRE)
 calc_MRPE <- function(level2.table)
 {
-  return(median(level2.table$RPE,
-                na.rm=TRUE))
+  return(signif(
+    median(level2.table$RPE,
+                na.rm=TRUE)),
+    4)
 }
 
 ## Relative predictive error (MPRE)

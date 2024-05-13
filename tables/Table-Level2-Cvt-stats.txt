@@ -1,0 +1,4 @@
+"","HTPBTK-InVitro","HTPBTK-ADmet","HTPBTK-Dawson","HTPBTK-Pradeep","HTPBTK-OPERA","HTPBTK-Consensus","HTPBTK-YRandom"
+"Chemicals with In Vitro","1.05 (4)","1.54 (1)","1.48 (1)","1.2 (1)","1.3 (3)","0.804 (4)","1.06 (4)"
+"Intersection QSPR Chemicals","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)","NA (0)"
+"All QSPR Chemicals","1.05 (4)","1.54 (1)","2.04 (2)","1.2 (1)","1.66 (4)","0.983 (5)","1.06 (4)"
