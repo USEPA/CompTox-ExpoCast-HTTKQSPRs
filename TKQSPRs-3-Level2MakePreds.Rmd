@@ -81,65 +81,6 @@ the Level II and III calculations are the same time (rather than rewriting
 the parameter values twice).
 TK Stats (including Vd and thalf) calculated from CvTdb:
 
-## There are ten chemicals where only opera could make predictions:
-### Turned off because of different approach
-```{r leave_opera_only_in}
-CvT.chems.outsidedoa <- NULL
-```
-
-```{r separate_out_opera_only, eval=FALSE}
-length(unique(CvT.data$DTXSID))
-CvT.chems.outsidedoa <- subset(CvT.chems,DTXSID %in% c(
-  "DTXSID0022985",
-  "DTXSID1051432",
-  "DTXSID3032179",
-  "DTXSID30575892",
-  "DTXSID3061635",
-  "DTXSID5020285",
-  "DTXSID5024219",
-  "DTXSID50881104",
-  "DTXSID7030066",
-  "DTXSID80108992"))
-CvT.chems <- subset(CvT.chems,!(DTXSID %in% c(
-  "DTXSID0022985",
-  "DTXSID1051432",
-  "DTXSID3032179",
-  "DTXSID30575892",
-  "DTXSID3061635",
-  "DTXSID5020285",
-  "DTXSID5024219",
-  "DTXSID50881104",
-  "DTXSID7030066",
-  "DTXSID80108992")))
-CvT.data.outsidedoa <- subset(CvT.data,DTXSID %in% c(
-  "DTXSID0022985",
-  "DTXSID1051432",
-  "DTXSID3032179",
-  "DTXSID30575892",
-  "DTXSID3061635",
-  "DTXSID5020285",
-  "DTXSID5024219",
-  "DTXSID50881104",
-  "DTXSID7030066",
-  "DTXSID80108992"))
-CvT.data <- subset(CvT.data,!(DTXSID %in% c(
-  "DTXSID0022985",
-  "DTXSID1051432",
-  "DTXSID3032179",
-  "DTXSID30575892",
-  "DTXSID3061635",
-  "DTXSID5020285",
-  "DTXSID5024219",
-  "DTXSID50881104",
-  "DTXSID7030066",
-  "DTXSID80108992")))
-length(unique(CvT.data$DTXSID))
-write.csv(CvT.chems.outsidedoa[,c(
-  "DTXSID",
-  "PREFERRED_NAME",                               
-  "CASRN")], row.names=FALSE,file="tables/SupTable-OPERAOnlyChems.txt")
-```
-
 There are chemicals where the in vivo data don't permit empirical fits, drop
 those from the level II/III evaluation:
 ```{r separate_out_badfits, eval=TRUE}
@@ -156,7 +97,10 @@ write.csv(CvT.chems.nofits[,c(
   "CASRN")], row.names=FALSE,file="tables/SupTable-NoEmpiricalFitChems.txt")
 
 CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CASRN))
-length(unique(CvT.data$DTXSID)) # Number of chemicals with good fits
+cat(paste(length(unique(CvT.data$DTXSID)),
+          "chemicals with good invivoPKfit fits of CvT data.\n"))
+cat(paste(dim(subset(fittable,!is.na(Vdist) | !is.na(V1)))[1],
+          "chemicals where volume of distribution could be estimated (iv data available), allowing us to make empirical predictions.\n"))
 ```
 ## Get rid of chemical predictions that are possibly just training set lookups:
 ```{r remove_training_chems, eval=TRUE}
@@ -175,16 +119,10 @@ for (this.qspr in unique(possible.training.chems$QSPR))
 length(unique(CvT.chems.notraining$DTXSID))
 ```
 
-## Get rid of chemicals with only OPERA predictions, or bad empirical fits:
-```{r remove_problem_chems, eval=TRUE}
-CvT.chems.nobad <- subset(CvT.chems.notraining,
-                          !(DTXSID %in% CvT.chems.outsidedoa$DTXSID) &
-                          !(DTXSID %in% CvT.chems.nofits$DTXSID))
-dim(CvT.chems.nobad)
+# Data size
+```{r data_Size, eval=TRUE}
+CvT.chems.nobad <- CvT.chems[!(CvT.chems %in% CvT.chems.nofits)] 
 dim(CvT.data)
-CvT.data <- subset(CvT.data,CAS%in%CvT.chems.nobad$CASRN)
-# Hours to days:
-CvT.data$Time <- CvT.data$Time/24
 length(unique(CvT.data$DTXSID))
 length(unique(CvT.chems.nobad$DTXSID))
 ```
@@ -227,63 +165,16 @@ CvT.chems.nobad$Human.Fup.Mean <- apply(
 CvT.chems.nona <- CvT.chems.nobad
 ```
 
-```{r remove_missing_predictions, eval = FALSE}
-CvT.chems.nona <- CvT.chems.nobad
-chems.with.all.NAs <- NULL
-
-# Can't run PBTK for fup=0
-# convert any NA's to zeros temporarily:
-for (this.col in fup.cols)
-  CvT.chems.nona[is.na(CvT.chems.nona[,this.col]),this.col] <- 0
-# then convert all zeros to NA's:
-for (this.col in fup.cols)
-  CvT.chems.nona[CvT.chems.nona[,this.col]==0,this.col] <- NA
-
-for (this.chem in CvT.chems.nona$DTXSID)
-{
-  this.row <- which(CvT.chems.nona$DTXSID==this.chem)
-# Check Clints:
-  if (all(is.na(CvT.chems.nona[this.row,clint.cols])))
-  {
-    chems.with.all.NAs <- c(chems.with.all.NAs, this.chem) 
-  } else if (any(is.na(CvT.chems.nona[this.row,clint.cols])))
-  {
-    for (this.col in clint.cols)
-      if (is.na(CvT.chems.nona[this.row,this.col])) 
-        CvT.chems.nona[this.row,this.col] <- 
-          CvT.chems.nona[this.row,"Human.Clint.Mean"] 
-  }
-# Check fups:
-  if (all(is.na(CvT.chems.nona[this.row,fup.cols])))
-  {
-    chems.with.all.NAs <- c(chems.with.all.NAs, this.chem)
-  } else if (any(is.na(CvT.chems.nona[this.row,fup.cols])) |
-      any(sapply(CvT.chems.nona[this.row,fup.cols],is.nan)))
-  {
-    for (this.col in fup.cols)
-      if (is.na(CvT.chems.nona[this.row,this.col]) |
-          is.nan(CvT.chems.nona[this.row,this.col])) 
-        CvT.chems.nona[this.row,this.col] <- 
-          CvT.chems.nona[this.row,"Human.Fup.Mean"]
-  }
-}
-
-CvT.chems.allna <- subset(CvT.chems.nona, DTXSID %in% chems.with.all.NAs)
-length(unique(CvT.chems.allna$DTXSID))
-CvT.chems.nona <- subset(CvT.chems.nona, !(DTXSID %in% chems.with.all.NAs))
-length(unique(CvT.chems.nona$DTXSID))
-```
-
 ## Speed up run time
-```{r speedup, eval=FALSE}
+```{r speedup, eval=TRUE}
 # Test with just five chems to make code go faster:
-CvT.data <- subset(CvT.data,DTXSID %in% unique(CvT.data$DTXSID)[1:5])
+CvT.data <- subset(CvT.data,DTXSID %in% unique(CvT.data$DTXSID)[1:10])
 CvT.chems.nona <- subset(CvT.chems.nona,DTXSID %in% CvT.data$DTXSID)
 ```
 
 ## Randomize the in vitro descriptors as a sort of prediction "floor"
 ```{r cvt_yrandomize_desc, eval = TRUE}
-NUM.YRANDOM <- 10
+NUM.YRANDOM <- 3
 
 invitro.subset.rows <- which(!(is.na(CvT.chems.nona$Human.Clint.httk)) &
                          !(is.na(CvT.chems.nona$Human.Fup.httk)))
@@ -496,6 +387,7 @@ level2tab.yrandom.rmsle.late <- list()
 level2tab.yrandom.aafe.late <- list()
 for (i in 1:NUM.YRANDOM)
 {
+  print(paste("Y-randomization Number",i))
   out <- make_cvt_comparisons(this.label, 
                             paste("Human.Clint.YRandom",i,sep=""), 
                             paste("Human.Fup.YRandom",i,sep=""),

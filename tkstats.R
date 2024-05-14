@@ -38,13 +38,17 @@ makeCvTpreds <- function(CvT.data,label,model.args)
             {
               params <- suppressWarnings(do.call("parameterize_pbtk",
                                                  args=c(list(
-                                                   chem.cas=this.cas),
+                                                   ,
+                                                   species=this.species,
+                                                   default.to.human=TRUE),
                                                    model.args)))
             } else if (this.model=="solve_gas_pbtk")
             {
               params <- suppressWarnings(do.call("parameterize_gas_pbtk",
                                                  args=c(list(
-                                                   chem.cas=this.cas),
+                                                   chem.cas=this.cas,
+                                                   species=this.species,
+                                                   default.to.human=TRUE),
                                                    model.args)))
             }
             if ("Caco2.options" %in% names(model.args))
@@ -65,10 +69,10 @@ makeCvTpreds <- function(CvT.data,label,model.args)
                      default.to.human=TRUE,
                      suppress.messages=TRUE,
                      input.units='mg/kg',
-                     output.units <- "ug/mL",
+                     output.units <- "mg/L",
                      exp.conc=0),
                 model.args)))
-
+# Units of pred are Cplasma: mg/L and time: days
             pred <- subset(pred,pred[,"time"]>0.0001)
             if (any(tolower(unlist(this.subset4[,"Media"]))=="blood"))
             {
@@ -158,8 +162,9 @@ calc_cvt_stats <- function(cvt.table, stats.table)
   min.loq <- min(cvt.table[,"calc_loq"],na.rm=TRUE)
   for (this.col in c("Cmax.obs","Cmax.pred","AUC.obs","AUC.pred"))
   {
-    stats.table[stats.table[,this.col] < min.loq,
-                this.col] <- min.loq
+      which.rows <- stats.table[,this.col] < min.loq
+      which.rows[is.na(which.rows)] <- FALSE
+      stats.table[which.rows, this.col] <- min.loq
   }
   for (this.row in 1:dim(stats.table)[1])
   {

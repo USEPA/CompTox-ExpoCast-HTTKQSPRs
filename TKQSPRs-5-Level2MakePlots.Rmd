@@ -677,7 +677,7 @@ stat.labels <- c("RMSLE","AAFE")
 qsprs.rmsle.bychem <- NULL
 for (this.qspr in unique(qsprbychem.table$QSPR)) 
   qsprs.rmsle.bychem[this.qspr] <-
-  median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE) 
+    median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE) 
 
 qsprs.order <- names(sort(qsprs.rmsle.bychem))
 qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
