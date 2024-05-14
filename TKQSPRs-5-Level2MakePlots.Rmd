@@ -49,7 +49,7 @@ source("tkstats.R")
 
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
-# Time stamp:
+# Time_Days stamp:
 output.prefix <- "May2024"
 ```
 
@@ -139,17 +139,17 @@ for (this.chem in unique(level2tab$DTXSID))
           level2tab.stats$QSPR == this.QSPR &
           level2tab.stats$Species == this.species,
           "RMSLE"] <- RMSLE
-        FigCvt <- ggplot(data=this.subset,aes(x=Time,y=Conc.obs)) +
+        FigCvt <- ggplot(data=this.subset,aes(x=Time_Days,y=Conc.obs)) +
           geom_point(size=3,
-                     aes(x=Time,y=Conc.obs,
+                     aes(x=Time_Days,y=Conc.obs,
                          colour = factor(Dose),
                          shape = factor(Route)))+
-          geom_line(aes(x=Time,y=Conc.pred,
+          geom_line(aes(x=Time_Days,y=Conc.pred,
                         linetype=factor(Route),
                         colour = factor(Dose),
                     ))+
           ylab("Concentration (mg/L)")+
-          xlab("Time (h)") +
+          xlab("Time_Days (h)") +
           scale_y_log10(label=scientific_10)+
           ggtitle(label=paste(this.subset$Compound[1],
                               "-",
@@ -616,55 +616,6 @@ write.csv(Cmax.stats.table,file="tables/SupTable-CmaxStats.txt")
 ```
 
 
-```{r make_RMSE_bychem_analysis, eval = FALSE}
-# Get rid of NA QSPRs:
-level2tab <- subset(level2tab, !is.na(QSPR))
-
-qsprbychem.table <- NULL
-QSPRs <- unique(level2tab$QSPR)
-for (this.chemical in unique(level2tab$Compound))
-{
-  for (this.qspr in QSPRs)
-    if (regexpr("Caco2",this.qspr)==-1)
-  {
-    this.subset <- subset(level2tab,QSPR==this.qspr & Compound==this.chemical)
-    if (dim(this.subset)[1]>0)
-    {
-      this.row <- this.subset[1,c(1:3,13)]
-      this.row$RMSLE <- calc_RMSLE(this.subset)
-      this.subset <- subset(level2tab.early,
-                            QSPR==this.qspr & Compound==this.chemical)
-      this.row$RMSLE.early <- calc_RMSLE(this.subset)
-      this.subset <- subset(level2tab.late,
-                            QSPR==this.qspr & Compound==this.chemical)
-      this.row$RMSLE.late <- calc_RMSLE(this.subset)
-      qsprbychem.table <- rbind(qsprbychem.table,this.row)
-    }
-  }
-}
-
-for (this.qspr in unique(qsprbychem.table$QSPR))
-{
-  stats.table["RMSLE.bychem",this.qspr] <- 
-    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE),3)
-  stats.table["RMSLE.bychem.early",this.qspr] <-
-    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.early),3)
-  stats.table["RMSLE.bychem.late",this.qspr] <-
-    signif(median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE.late),3)
-}
-meassub <- subset(qsprbychem.table, CAS %in% httk.both)
-this.qspr <- "HTPBTK-InVitro-Measured"
-stats.table["RMSLE.bychem",this.qspr] <- 
-  signif(median(subset(meassub,QSPR=="HTPBTK-InVitro")$RMSLE),3)
-stats.table["RMSLE.bychem.early",this.qspr] <-
-  signif(median(subset(meassub,QSPR=="HTPBTK-InVitro")$RMSLE.early),3)
-stats.table["RMSLE.bychem.late",this.qspr] <-
-  signif(median(subset(meassub,QSPR=="HTPBTK-InVitro")$RMSLE.late),3)
-
-write.csv(stats.table,file="tables/Table-Level2Stats.txt",row.names=TRUE)
-
-```
-
 
 ```{r make_RMSE_bychem_plot, eval = TRUE}
 #### add AAFE & RMSLE for all points (not per chemical) to the table
@@ -675,9 +626,12 @@ stat.labels <- c("RMSLE","AAFE")
 
 #### Set order from left to right:
 qsprs.rmsle.bychem <- NULL
-for (this.qspr in unique(qsprbychem.table$QSPR)) 
+# just the chemicals with in vitro data:
+invitro.chems <- subset(qsprbychem.table, QSPR=="HTPBTK-InVitro")$DTXSID
+qsprbychem.table2 <- subset(qsprbychem.table, DTXSID %in% invitro.chems)
+for (this.qspr in unique(qsprbychem.table2$QSPR)) 
   qsprs.rmsle.bychem[this.qspr] <-
-    median(subset(qsprbychem.table,QSPR==this.qspr)$RMSLE) 
+    median(subset(qsprbychem.table2,QSPR==this.qspr)$RMSLE) 
 
 qsprs.order <- names(sort(qsprs.rmsle.bychem))
 qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
@@ -747,7 +701,7 @@ stat.labels <- c("RMSLE","AAFE")
 
 #### Make Plot
 FigLev2RMSE.early <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.early)) +
-   ggtitle("Early Time Points")+
+   ggtitle("Early Time_Days Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
@@ -809,7 +763,7 @@ stat.labels <- c("RMSLE","AAFE")
 
 #### Make Plot
 FigLev2RMSE.late <- ggplot(data=qsprbychem.table, aes(x=QSPR, y=RMSLE.late)) +
-   ggtitle("Late Time Points")+
+   ggtitle("Late Time_Days Points")+
     geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
@@ -901,9 +855,9 @@ for (this.cas in unique(level2tab$CAS))
   for (this.source in unique(this.subset1$Source))
   {
     this.subset2 <- subset(this.subset1,Source==this.source)  
-    for (this.time in unique(this.subset2$Time))
+    for (this.time in unique(this.subset2$Time_Days))
     {
-      this.subset3 <- subset(this.subset2,Time==this.time)
+      this.subset3 <- subset(this.subset2,Time_Days==this.time)
       this.subset3.invitro <- subset(this.subset3, QSPR=="HTPBTK-InVitro")
       this.subset3.admet <- subset(this.subset3, QSPR=="HTPBTK-ADmet")
       this.subset3 <- cbind(this.subset3.invitro,
