@@ -166,7 +166,7 @@ CvT.chems.nona <- CvT.chems.nobad
 ```
 
 ## Speed up run time
-```{r speedup, eval=TRUE}
+```{r speedup, eval=FALSE}
 # Test with just five chems to make code go faster:
 CvT.data <- subset(CvT.data,DTXSID %in% unique(CvT.data$DTXSID)[1:10])
 CvT.chems.nona <- subset(CvT.chems.nona,DTXSID %in% CvT.data$DTXSID)
@@ -174,7 +174,7 @@ CvT.chems.nona <- subset(CvT.chems.nona,DTXSID %in% CvT.data$DTXSID)
 
 ## Randomize the in vitro descriptors as a sort of prediction "floor"
 ```{r cvt_yrandomize_desc, eval = TRUE}
-NUM.YRANDOM <- 3
+NUM.YRANDOM <- 10
 
 invitro.subset.rows <- which(!(is.na(CvT.chems.nona$Human.Clint.httk)) &
                          !(is.na(CvT.chems.nona$Human.Fup.httk)))

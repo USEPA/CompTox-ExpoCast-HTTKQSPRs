@@ -19,8 +19,8 @@ makeCvTpreds <- function(CvT.data,label,model.args)
     {
       print(paste(label,": ",this.cas,sep=""))
       this.subset1 <- subset(CvT.data,CAS==this.cas & 
-        !is.na(Time) & 
-        !is.na(Value))
+        !is.na(Time_Days) & 
+        !is.na(Conc_mgpL))
       this.compound <- this.subset1$Compound[1]
       this.dtxsid <- this.subset1$DTXSID[1]
       for (this.species in unique(this.subset1$Species))
@@ -32,7 +32,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
           for (this.dose in unique(this.subset3$Dose))
           {
             this.subset4 <- subset(this.subset3,Dose==this.dose)
-            obs.times <- signif(sort(unique(this.subset4$Time)),4)
+            obs.times <- signif(sort(unique(this.subset4$Time_Days)),4)
 
             if (this.model=="solve_pbtk")
             {
@@ -69,7 +69,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
                      default.to.human=TRUE,
                      suppress.messages=TRUE,
                      input.units='mg/kg',
-                     output.units <- "mg/L",
+                     output.units = "mg/L",
                      exp.conc=0),
                 model.args)))
 # Units of pred are Cplasma: mg/L and time: days
@@ -84,7 +84,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
             this.subset4means <- NULL
             for (this.time in obs.times)
             {
-              this.subset5 <- subset(this.subset4,signif(Time,4)==this.time)
+              this.subset5 <- subset(this.subset4,signif(Time_Days,4)==this.time)
   #            print(this.subset5)
               new.row <- data.frame(
                 Compound=this.compound,
@@ -93,13 +93,13 @@ makeCvTpreds <- function(CvT.data,label,model.args)
                 Species=this.species,
                 Route=this.route,
                 Dose=this.dose,
-                Time=this.time,
+                Time_Days=this.time,
                 Conc.pred=pred[pred[,"time"] == this.time,"Cven"],
                 stringsAsFactors=F)
               new.row <- merge(new.row,
                 this.subset5[,c(
-                  "CAS","Media","Value","Source","calc_loq")], by="CAS")
-              colnames(new.row)[colnames(new.row)=="Value"] <- "Conc.obs"
+                  "CAS","Media","Conc_mgpL","Source","calc_loq")], by="CAS")
+              colnames(new.row)[colnames(new.row)=="Conc_mgpL"] <- "Conc.obs"
               if (any(tolower(new.row[,"Media"])=="blood"))
               {
                 new.row[tolower(new.row[,"Media"])=="blood","Conc.pred"] <-
@@ -111,14 +111,14 @@ makeCvTpreds <- function(CvT.data,label,model.args)
               cvt.table <- rbind(cvt.table,new.row)
               this.subset4means <- rbind(this.subset4means,
                 data.frame(
-                  Time=this.time,
-                  Value=mean(this.subset5$Value,na.rm=0)))
+                  Time_Days=this.time,
+                  Conc_mgpL=mean(this.subset5$Conc_mgpL,na.rm=0)))
             }
-            Cmax.obs <- max(this.subset4means$Value,na.rm=T)
+            Cmax.obs <- max(this.subset4means$Conc_mgpL,na.rm=T)
             Cmax.pred <- max(pred[,"Cven"],na.rm=T)
-            if (length(unique(this.subset4means$Time))>1)
+            if (length(unique(this.subset4means$Time_Days))>1)
             {
-              AUC.obs <- AUC(this.subset4means$Time,this.subset4means$Value)
+              AUC.obs <- AUC(this.subset4means$Time_Days,this.subset4means$Conc_mgpL)
               AUC.pred <- AUC(pred[,"time"],pred[,"Cven"])
             } else {
               AUC.obs <- NA
@@ -192,13 +192,13 @@ calc_cvt_stats <- function(cvt.table, stats.table)
     for (this.study in unique(this.data$Source))
     {
       this.sourcedata <- subset(this.data,Source==this.study)
-      mid.time <- median(unique(this.sourcedata$Time))
+      mid.time <- median(unique(this.sourcedata$Time_Days))
       this.data.early <- rbind(this.data.early,
                                subset(this.sourcedata,
-                                      Time < mid.time))
+                                      Time_Days < mid.time))
       this.data.late <- rbind(this.data.late,
                               subset(this.sourcedata,
-                                     Time >= mid.time))
+                                     Time_Days >= mid.time))
     }
     rmsle.early[[this.chem]] <- calc_RMSLE(this.data.early)
     aafe.early[[this.chem]] <- calc_AAFE(this.data.early)
@@ -366,8 +366,8 @@ makeCvTpredsfromfits <- function(
   for (this.cas in unique(CvT.data$CAS))
   {
     this.subset1 <- subset(CvT.data,CAS==this.cas & 
-                             !is.na(Time) & 
-                             !is.na(Value))
+                             !is.na(Time_Days) & 
+                             !is.na(Conc_mgpL))
     this.compound <- this.subset1$Compound[1]
     this.dtxsid <- this.subset1$DTXSID[1]
     
@@ -408,7 +408,7 @@ makeCvTpredsfromfits <- function(
             for (this.dose in unique(this.subset3$Dose))
             {
               this.subset4 <- subset(this.subset3,Dose==this.dose)
-              obs.times <- signif(sort(unique(this.subset4$Time)),4)
+              obs.times <- signif(sort(unique(this.subset4$Time_Days)),4)
               # Dose is in mg/kg. Vd is in L/kg
               pred <- suppressWarnings(signif(do.call(
                 model,
@@ -422,7 +422,7 @@ makeCvTpredsfromfits <- function(
               this.subset4means <- NULL
               for (this.time in obs.times)
               {
-                this.subset5 <- subset(this.subset4,signif(Time,4)==this.time)
+                this.subset5 <- subset(this.subset4,signif(Time_Days,4)==this.time)
                 new.row <- data.frame(
                   Compound=this.compound,
                   DTXSID=this.dtxsid,
@@ -430,30 +430,30 @@ makeCvTpredsfromfits <- function(
                   Species=this.species,
                   Route=this.route,
                   Dose=this.dose,
-                  Time=this.time,
+                  Time_Days=this.time,
                   Conc.pred=pred[obs.times == this.time],
                   stringsAsFactors=FALSE)
                 new.row <- merge(new.row,
                                  this.subset5[,c(
                                    "CAS",
                                    "Media",
-                                   "Value",
+                                   "Conc_mgpL",
                                    "Source",
                                    "calc_loq")], by="CAS")
-                colnames(new.row)[colnames(new.row)=="Value"] <- "Conc.obs"
+                colnames(new.row)[colnames(new.row)=="Conc_mgpL"] <- "Conc.obs"
                 cvt.table <- rbind(cvt.table,new.row)
                 this.subset4means <- rbind(this.subset4means,
                                            data.frame(
-                                             Time=this.time,
-                                             Value=mean(this.subset5$Value,na.rm=0)))
+                                             Time_Days=this.time,
+                                             Conc_mgpL=mean(this.subset5$Conc_mgpL,na.rm=0)))
               }
-              Cmax.obs <- max(this.subset4means$Value,na.rm=T)
+              Cmax.obs <- max(this.subset4means$Conc_mgpL,na.rm=T)
               Cmax.pred <- max(pred,na.rm=T)
             #  if (Cmax.pred == 0) browser()
               if (length(obs.times)>1)
               {
-                AUC.obs <- signif(AUC(this.subset4means$Time,
-                                      this.subset4means$Value), 4)
+                AUC.obs <- signif(AUC(this.subset4means$Time_Days,
+                                      this.subset4means$Conc_mgpL), 4)
                 AUC.pred <- signif(AUC(obs.times, pred), 4)
               } else {
                 AUC.obs <- NA

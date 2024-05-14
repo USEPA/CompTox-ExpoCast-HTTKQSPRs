@@ -47,7 +47,7 @@ source("tkstats.R")
 
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
-# Time stamp:
+# Time_Days stamp:
 output.prefix <- "May2024"
 ```
 
@@ -59,8 +59,8 @@ test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
 series_res_set <- read.csv("CvTdb/CvTdb_fullData_20230906.csv")
 series_res_set$Species <- series_res_set$subjects.species_harmonized
 series_res_set$Media <- series_res_set$series.conc_medium_normalized
-series_res_set$Time <- series_res_set$conc_time_values.time_h / 24 # days
-series_res_set$Value <- series_res_set$conc_time_values.conc # mg/L
+series_res_set$Time_Days <- series_res_set$conc_time_values.time_h / 24 # days
+series_res_set$Conc_mgpL <- series_res_set$conc_time_values.conc # mg/L
 series_res_set$Dose <- series_res_set$studies.dose_level_normalized # mg/kg
 series_res_set$Route <- series_res_set$studies.administration_route_normalized
 series_res_set$calc_loq <- series_res_set$series.loq_normalized # mg/L
@@ -100,19 +100,19 @@ series_res_set$Media <- tolower(series_res_set$Media)
 unique(series_res_set$Media)
 
 # Significant figures:
-series_res_set$Time <- suppressWarnings(signif(
-  as.numeric(series_res_set$Time),2))
-series_res_set$Value <- suppressWarnings(signif(
-  as.numeric(series_res_set$Value),4))
+series_res_set$Time_Days <- suppressWarnings(signif(
+  as.numeric(series_res_set$Time_Days),2))
+series_res_set$Conc_mgpL <- suppressWarnings(signif(
+  as.numeric(series_res_set$Conc_mgpL),4))
 
 CvT.data <- series_res_set
 CvT.chems <- unique(CvT.data$DTXSID)
 length(CvT.chems)
 
 CvT.data[,"Dose"] <- signif(as.numeric(CvT.data[,"Dose"]), 3)
-CvT.data[,"Time"] <- signif(as.numeric(CvT.data[,"Time"]), 3)
+CvT.data[,"Time_Days"] <- signif(as.numeric(CvT.data[,"Time_Days"]), 3)
 
-CvT.data <- subset(CvT.data,Time>0)
+CvT.data <- subset(CvT.data,Time_Days>0)
 
 write.csv(CvT.data,row.names=FALSE,file="tables/SupTable-CvTData.txt")
 ```
@@ -128,13 +128,13 @@ for (this.study in unique(CvT.data$Source))
                            DTXSID==this.chem)
     for (this.media in unique(this.subset2$Media))
     {
-      this.subset3 <- subset(this.subset2,Media==this.media & !is.na(Value))
-      this.subset3 <- subset(this.subset3,Value>0)
+      this.subset3 <- subset(this.subset2,Media==this.media & !is.na(Conc_mgpL))
+      this.subset3 <- subset(this.subset3,Conc_mgpL>0)
       if (any(!is.na(this.subset3$calc_loq)))
       {
         this.loq <- min(this.subset3$calc_loq,na.rm=TRUE)
       } else {
-        this.loq <- suppressWarnings(min(this.subset3$Value,na.rm=TRUE))
+        this.loq <- suppressWarnings(min(this.subset3$Conc_mgpL,na.rm=TRUE))
         this.loq <- this.loq*0.9
       }
       CvT.data[
@@ -209,7 +209,7 @@ fittable$k12 <- fittable$k12*24 # 1/day
 fittable$k21 <- fittable$k21*24 # 1/day
 fittable$kelim <- fittable$kelim*24 # 1/day
 fittable$kgutabs <- fittable$kgutabs*24 # 1/day
-fittable$Time.Units <- "days"
+fittable$Time_Days.Units <- "days"
 length(unique(fittable$DTXSID))
 ```
 # Load predictions made with fits
@@ -232,8 +232,8 @@ cat(paste(length(unique(fittable$Chemical))),
 
 # Set the signfifant digits to something reasonable:
 ```{r subset_cvt_data, eval = TRUE}
-CvT.data$Value <- signif(CvT.data$Value,3)
-CvT.data$Time <- signif(CvT.data$Time,3)
+CvT.data$Conc_mgpL <- signif(CvT.data$Conc_mgpL,3)
+CvT.data$Time_Days <- signif(CvT.data$Time_Days,3)
 CvT.data$calc_loq <- signif(CvT.data$calc_loq,3)
 
 for (this.col in colnames(fittable)[c(6:15,18,20)])
