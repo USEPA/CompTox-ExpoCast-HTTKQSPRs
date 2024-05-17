@@ -1,0 +1,350 @@
+---
+title: "TK QSPR Bakeoff"
+author: "John Wambaugh and Nisha Sipes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QSPR Bakeoff}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+First we clear the memory to make sure there are no holdovers from previous R runs
+```{r clear_mermor, eval=TRUE}
+rm(list=ls()) 
+```
+
+To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
+```{r load_packages, eval = TRUE}
+library(readxl)
+library(ggplot2)
+library(scales)
+library(knitr)
+```
+
+```{r load_data, eval= TRUE}
+load("data/level3-tables.RData")
+load("data/level2stats.RData")
+load("data/httk-goodchems.RData")
+```
+
+Load custom code 
+```{r load_code, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+source("tkstats.R")
+```
+
+
+Set the time stamp:
+```{r time_stamp, eval = TRUE}
+# Time stamp:
+output.prefix <- "May2024"
+```
+
+#Level III Predictions -- predicted half-life or volume of distribution (Vd)
+# vs. estimates from CvT data (invivoPKfit)
+# 
+# Jon Arnot provide two models that directly predicted half-life. All the other
+# QSPR values were used with HTTK to predict half-life and Vd. Hopefully we
+# can also have Admet predict these values.
+#
+# As with level II, we can only compare the HTTK+in vitro measured preditions
+# for a subset of the chemicals and to date I have lumped everything together.
+# 
+# Further complicating things, not every chemical in the evaluation set 
+# permitted estimation
+# of Vd and thalf. The optimizer had to be able to fine a maximimum likelihood
+# estimate and it fails some of the time. The estimates we are using were made
+# with invivoPKfit and published in Sayre et al. (2020)
+
+# Jon Arnot:
+#We suggest using the QSPRs for HUMAN total elimination half-life (HLT; hours) 
+#as these are most relevant to the rodent time course data (half-lives/clearance)
+# half-life (HLB; hours) predictions for possible comparisons. For each 
+# prediction Alessandro has reported an indication of the AD (i.e. "OK" or 
+# "Warning"), there are more explicit AD details available for all models, but 
+# this provides a starting indication of expected prediction reliability.
+#
+#I have scaled the half-lives from 70 kg bw (assumed humans) to 0.25 kg bw for 
+#typical rat body weight using a  bw allometric scaling factor.
+#
+#The human half-life QSPRs are detailed in these publications:
+#
+#1.	IFS-QSPR Human HLB and HLT predictions:
+#Arnot, J. A.; Brown, T. N.; Wania, F., Estimating screening-level organic 
+#chemical half-lives in humans. Environ. Sci. Technol. 2014, 48, 723-730.
+#2.	QSPRINS Human HLB and HLT predictions:
+#Papa, E.; Sangion, A.; Arnot, J. A.; Gramatica, P., Development of human 
+#biotransformation QSPRs and application for PBT assessment refinement. Food 
+#Chem. Toxicol. 2018, 112, 535-543.
+#
+#We have also included Biotransformation HL in fish (hours) by QSPRINS, IFS and 
+#EPI suite models as well as that were used in the 
+#training/testing sets. I don''t think they are as comparable to rodent data as 
+#the human predictions, but they were developed with different training sets 
+#(and for fish, not mammals!).
+
+
+## Collect the Concentration vs. time (level 2) predictions from each model:
+```{r level3_onering, eval = TRUE}
+longtab <- NULL
+for (this.qspr in names(level3tab))
+{
+  longtab <- rbind(longtab, level3tab[[this.qspr]])
+}
+level3tab.old <- level3tab
+level3tab <- longtab 
+```
+
+```{r level3_load_arnot, eval = TRUE}
+level3.arnot <- read_excel("qsprs/TK_QSAR_evaluation_set_HumanQSARHLPredictions.xlsx")
+level3.arnot <- subset(level3.arnot,administration_route_normalized=="iv")
+level3tab.arnot1 <- level3tab.old[["HTPBTK-OPERA"]]
+level3tab.arnot1$Vd.pred <- NA
+level3tab.arnot1$thalf.pred <- NA
+level3tab.arnot2 <- level3tab.arnot1
+level3tab.arnot1$QSPR <- "QSARINS"
+level3tab.arnot2$QSPR <- "IFS-QAPR"
+for (this.dtxsid in level3.arnot$test_substance_dtxsid)
+  if (this.dtxsid %in% level3tab.arnot1$DTXSID)
+{
+  level3tab.arnot1[level3tab.arnot1$DTXSID==this.dtxsid,"thalf.pred"] <- 
+    as.numeric(level3.arnot[level3.arnot$test_substance_dtxsid==this.dtxsid,
+    "QINS_Hum_HLT_Hour"])                            
+  level3tab.arnot2[level3tab.arnot1$DTXSID==this.dtxsid,"thalf.pred"]  <- 
+    as.numeric(level3.arnot[level3.arnot$test_substance_dtxsid==this.dtxsid,
+    "IFS_Hum_HLT_Hour"]) 
+  }
+
+# Pull in some Vd's so we can calculated clearance:
+for (this.chem in level3tab.arnot1$DTXSID)
+  if (this.chem %in% level3tab.old[["HTPBTK-InVitro"]]$DTXSID)
+{
+  level3tab.arnot1[level3tab.arnot1$DTXSID==this.chem,"Vd.pred"] <- 
+    level3tab.old[["HTPBTK-InVitro"]][level3tab.old[["HTPBTK-InVitro"]]$DTXSID==this.chem,"Vd.pred"]
+}
+for (this.chem in level3tab.arnot2$DTXSID)
+    if (this.chem %in% level3tab.old[["HTPBTK-InVitro"]]$DTXSID)
+{
+  level3tab.arnot2[level3tab.arnot2$DTXSID==this.chem,"Vd.pred"] <- 
+    level3tab.old[["HTPBTK-InVitro"]][level3tab.old[["HTPBTK-InVitro"]]$DTXSID==this.chem,"Vd.pred"]
+}
+
+level3tab <- rbind(level3tab, level3tab.arnot1, level3tab.arnot2)
+```
+
+```{r prep_level3, eval = TRUE}
+level3tab$thalf.RPE <- 
+  (level3tab$thalf.pred - level3tab$thalf.obs)/level3tab$thalf.obs
+level3tab$Vd.RPE <- (level3tab$Vd.pred - level3tab$Vd.obs)/level3tab$Vd.obs
+
+level3tab$Cl.obs <- level3tab$Vd.obs * log(2) / level3tab$thalf.obs
+level3tab$Cl.pred <- level3tab$Vd.pred * log(2) / level3tab$thalf.pred
+level3tab$Cl.RPE <- (level3tab$Cl.pred - level3tab$Cl.obs)/level3tab$Cl.obs
+
+kable(Cmax.stats.table)
+kable(AUC.stats.table)
+```
+
+
+```{r halflife_stats, eval = TRUE}
+halflife.stats.table <- makestatstable(level3tab,
+                                       obs.col="thalf.obs",
+                                       pred.col="thalf.pred",
+                                       chem.lists=list(
+                                         "In Vitro" = invitro.chems,
+                                         "QSPR Intersection" = intersect.chems,
+                                         "Maximal" = unique(level3tab$DTXSID)
+                                         ),
+                                       logrsquared = FALSE
+                                       )
+kable(halflife.stats.table)
+write.csv(halflife.stats.table,file="tables/SupTable-halflife-stats.txt",row.names=FALSE)
+```
+
+```{r vdist_stats, eval=TRUE}
+vd.stats.table <- makestatstable(level3tab,
+                                       obs.col="Vd.obs",
+                                       pred.col="Vd.pred",
+                                       chem.lists=list(
+                                         "In Vitro" = invitro.chems,
+                                         "QSPR Intersection" = intersect.chems,
+                                         "Maximal" = unique(level3tab$DTXSID)
+                                         ),
+                                       logrsquared = TRUE
+                                       )
+kable(vd.stats.table)
+write.csv(vd.stats.table,file="tables/SupTable-VD-stats.txt",row.names=FALSE)
+```
+
+```{r total_clearnace_stats, eval=TRUE}
+cl.stats.table <- makestatstable(level3tab,
+                                       obs.col="Cl.obs",
+                                       pred.col="Cl.pred",
+                                       chem.lists=list(
+                                         "In Vitro" = invitro.chems,
+                                         "QSPR Intersection" = intersect.chems,
+                                         "Maximal" = unique(level3tab$DTXSID)
+                                         ),
+                                       logrsquared = TRUE
+                                       )
+kable(cl.stats.table)
+write.csv(cl.stats.table,file="tables/SupTable-Cl-stats.txt",row.names=FALSE)
+```
+
+# Half-life scatter plot:
+```{r make_level3_halflife_scatter_plot, eval = TRUE}
+
+FigLev3a <- ggplot(data=level3tab) +
+  geom_point(size=3,aes(x=thalf.pred,y=thalf.obs,shape=QSPR,color=QSPR))+
+  scale_x_log10(label=scientific_10)+
+  scale_y_log10(label=scientific_10)+
+  scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
+  geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
+  geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
+  xlab(bquote('Predicted'~t[half]~"(h)")) +
+  ylab(bquote('Observed'~t[half]~"(h)")) +
+  scale_shape_manual(values = 0:10)+
+  theme_bw()+
+  facet_grid(cols=vars(QSPR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         strip.text.x = element_text(size = 8),
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=10))
+print(FigLev3a)
+ggsave(paste("figs/FigLev3a_thalf_obsVpred_",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
+```
+
+```{r make_level3_halflife_box_plot, eval = TRUE}
+FigLev3b <- ggplot(data=level3tab, aes(x=QSPR, y=thalf.RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSPR") +
+  ylab(bquote('RPE in '~t[half]~"(h)")) +
+  scale_y_continuous(limits=c(-2,6)) +
+#  scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=20))   +
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.75, hjust=0.75))
+print(FigLev3b) 
+ggsave(paste("figs/FigLev3b_thalf_boxplot_",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
+```
+
+```{r make_level3_vd_scatter_plot, eval = TRUE}
+FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS")))) +
+  geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,shape=QSPR,color=QSPR))+
+  scale_x_log10(label=scientific_10)+
+  scale_y_log10(label=scientific_10)+
+  scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
+  geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
+  geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
+  xlab(bquote('Predicted'~V[d]~"(L/kg BW)")) +
+  ylab(bquote('Observed'~V[d]~"(L/kg BW)")) +
+  scale_shape_manual(values = 0:10)+
+  theme_bw()+
+  facet_grid(cols=vars(QSPR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         strip.text.x = element_text(size = 10),
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=10))
+print(FigLev3c)
+ggsave(paste("figs/FigLev3c_Vd_obsVpred_",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
+```
+
+```{r make_level3_vd_box_plot, eval = TRUE}
+
+FigLev3d <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS"))), 
+  aes(x=QSPR, y=Vd.RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSPR") +
+  ylab(bquote('RPE in '~V[d]~"(L/kg BW)")) +
+  scale_y_continuous(limits=c(-1.2,1)) +
+#  scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=20))+
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.75, hjust=0.75))
+print(FigLev3d)  
+ggsave(paste("figs/FigLev3d_Vd_boxplot_",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
+```                 
+
+```{r make_level3_cl_scatter_plot, eval = TRUE}
+FigLev3e <- ggplot(data=level3tab) +
+  geom_point(size=3,aes(x=Cl.pred,y=Cl.obs,shape=QSPR,color=QSPR))+
+  scale_x_log10(label=scientific_10)+
+  scale_y_log10(label=scientific_10)+
+  scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
+  geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
+  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
+  geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
+  xlab(bquote('Predicted'~Cl[tot]~"(L/h/kg BW)")) +
+  ylab(bquote('Observed'~Cl[tot]~"(L/h/kg BW)")) +
+  scale_shape_manual(values = 0:10)+
+  theme_bw()+
+  facet_grid(cols=vars(QSPR))+
+  theme( text  = element_text(size=20),
+         legend.position = "none",
+         strip.text.x = element_text(size = 8),
+         axis.title = element_text(size=20),
+         axis.text.x = element_text(size=10))
+print(FigLev3e)
+ggsave(paste("figs/FigLev3e_Cltot_obsVpred_",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
+```
+
+```{r make_level3_cl_box_plot, eval = TRUE}
+
+FigLev3f <- ggplot(data=level3tab, 
+  aes(x=QSPR, y=Vd.RPE)) + 
+#  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
+#  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
+  geom_boxplot(outlier.colour="red",
+    outlier.size=2,
+    outlier.alpha=0.1)+
+  xlab("QSPR") +
+  ylab(bquote('RPE in'~Cl[tot]~"(L/h/kg BW)")) +
+  scale_y_continuous(limits=c(-1.2,1)) +
+#  scale_y_log10(breaks=c(10^-2,10^-1,1,3,10,10^2,10^3),label=scientific_10)+
+  theme_bw()+
+  theme( text  = element_text(size=19))+
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.75, hjust=0.75))
+print(FigLev3f)
+ggsave(paste("figs/FigLev3f_Cltot_boxplot_",output.prefix,".tiff",sep=""), 
+       width=6, height=4, dpi=300)
+``` 
+
+```{r make_level3_sup_table, eval=TRUE}
+lev3suptable <- level3tab
+for (this.col in 1:dim(lev3suptable)[2])
+  if (is.numeric(lev3suptable[1,this.col]))
+    lev3suptable[,this.col] <- signif(lev3suptable[,this.col],3)
+  
+write.csv(lev3suptable,row.names=FALSE,file="tables/SupTable-Level3.txt")
+
+```
+

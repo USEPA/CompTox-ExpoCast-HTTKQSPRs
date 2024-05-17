@@ -175,32 +175,42 @@ CvT.chems.nona <- subset(CvT.chems.nona,DTXSID %in% CvT.data$DTXSID)
 ## Randomize the in vitro descriptors as a sort of prediction "floor"
 ```{r cvt_yrandomize_desc, eval = TRUE}
 NUM.YRANDOM <- 10
-
 invitro.subset.rows <- which(!(is.na(CvT.chems.nona$Human.Clint.httk)) &
                          !(is.na(CvT.chems.nona$Human.Fup.httk)))
-invitro.subset <- CvT.chems.nona[invitro.subset.rows,]
+
+# Get all chemials with measured HTTK:
+reset_httk()
+invitro.meas <- get_cheminfo(model="pbtk", 
+                             median.only=TRUE,
+                             info=c("DTXSID","Clint","Funbound.plasma"))
 
 set.seed(123456)
 for (i in 1:NUM.YRANDOM) # Ten sets of parameters
 {
-  yrandom.ids <- sample(1:dim(invitro.subset)[1],dim(invitro.subset)[1])
+  yrandom.ids <- sample(1:dim(invitro.meas)[1], length(invitro.subset.rows))
   # Make sure we don't get the right values:
-  accidentally.right <- yrandom.ids[yrandom.ids == 1:dim(invitro.subset)[1]]
-  first.right <-accidentally.right[1]
-  for (j in 1:(length(accidentally.right)-1))
+  accidentally.right <- yrandom.ids[invitro.meas[yrandom.ids,"DTXSID"] == 
+                                      CvT.chems.nona[invitro.subset.rows,
+                                                     "DTXSID"]]
+  if (length(accidentally.right)== 1)
   {
-    yrandom.ids[accidentally.right[j]] <-
-      accidentally.right[j+1]
-  }
-  yrandom.ids[tail(accidentally.right,1)] <-
-    first.right
-  
+    yrandom.ids[accidentally.right] <- yrandom.ids[accidentally.right] + 1
+  } else {
+    first.right <-accidentally.right[1]
+    for (j in 1:(length(accidentally.right)-1))
+    {
+      yrandom.ids[accidentally.right[j]] <-
+        accidentally.right[j+1]
+    }
+    yrandom.ids[tail(accidentally.right,1)] <-
+      first.right
+  }  
   CvT.chems.nona[invitro.subset.rows,
                  paste("Human.Clint.YRandom",i,sep="")] <- 
-    CvT.chems.nona[invitro.subset.rows[yrandom.ids], "Human.Clint.httk"]
+    invitro.meas[yrandom.ids, "Human.Clint"]
   CvT.chems.nona[invitro.subset.rows,
                  paste("Human.Fup.YRandom",i,sep="")] <- 
-    CvT.chems.nona[invitro.subset.rows[yrandom.ids], "Human.Fup.httk"]
+    invitro.meas[yrandom.ids, "Human.Funbound.plasma"]
 }
 ```
 
@@ -498,7 +508,8 @@ this.label <- "In Vivo Fits"
 fit.chems <- subset(fittable, !is.na(Vdist) | !is.na(V1))$DTXSID
 out <- makeCvTpredsfromfits(
   subset(CvT.data, DTXSID %in% fit.chems),
-  subset(fittable, DTXSID %in% fit.chems))
+  subset(fittable, DTXSID %in% fit.chems),
+  label = this.label)
 
 level2tab.cvt[[this.label]] <- out$cvt
 level2tab.stats[[this.label]] <- out$stats
@@ -522,6 +533,17 @@ save(
   level2tab.rmsle.late,
   level2tab.aafe.late,
   file="data/level2-tables.RData")
+save(
+  level2tab.yrandom.cvt,
+  level2tab.yrandom.stats,
+  level3tab.yrandom,
+  level2tab.yrandom.rmsle,
+  level2tab.yrandom.aafe,
+  level2tab.yrandom.rmsle.early,
+  level2tab.yrandom.aafe.early,
+  level2tab.yrandom.rmsle.late,
+  level2tab.yrandom.aafe.late,
+  file = "data/level2-yrandomindividualresults.RData")
 save(
   level3tab,
      file="data/level3-tables.RData")

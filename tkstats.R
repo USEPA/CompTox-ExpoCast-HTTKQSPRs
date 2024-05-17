@@ -588,8 +588,8 @@ calc_MRPE <- function(level2.table)
 {
   return(signif(
     median(level2.table$RPE,
-                na.rm=TRUE)),
-    4)
+                na.rm=TRUE),
+    4))
 }
 
 ## Relative predictive error (MPRE)
@@ -607,3 +607,66 @@ scientific_10 <- function(x) {
   out <- gsub("10\\^01","10",out)                               
   out <- parse(text=gsub("10\\^00","1",out))                    
 }  
+
+# Generate standard table comparing predictions and observations for multiple
+# chemical lists
+makestatstable <- function(obspred.table,
+                           obs.col,
+                           pred.col,
+                           chem.lists, # Different lists for subsetting the chemicals
+                           logrsquared = TRUE,
+                           average.per.chemical = FALSE)
+{
+  stats.table <- data.frame()
+  for (this.qspr in unique(obspred.table$QSPR))
+    for (list.index in 1:length(chem.lists))
+    {
+      this.chem.list <- chem.lists[[list.index]]
+      this.chem.list.name <- names(chem.lists)[list.index]
+      these.data <- subset(obspred.table, 
+                           QSPR == this.qspr & 
+                             DTXSID %in% this.chem.list)
+      if (!average.per.chemical)
+      {
+        this.count <- length(unique(these.data$DTXSID))
+        this.nobs <- dim(these.data)[1]
+        if (logrsquared)
+        {
+          this.fit <- lm(log10(eval(these.data[,obs.col])) ~ eval(log10(these.data[,pred.col])))
+        } else {
+          this.fit <- lm(eval(these.data[,obs.col]) ~ eval(these.data[,pred.col]))
+        }
+        this.rsquared <- signif(summary(this.fit)$r.squared, 2)
+        this.rmsle <- signif(calc_RMSLE(these.data, 
+                                        pred.col = pred.col,
+                                        obs.col = obs.col), 2)
+        stats.table[paste("RMSLE",this.chem.list.name), this.qspr] <- paste(
+          this.rmsle, " (",
+          this.count, ", ",
+          this.nobs, ")",
+          sep="")
+        stats.table[paste("RSquared",this.chem.list.name), this.qspr] <- paste(
+          this.rsquared, " (",
+          this.count, ", ",
+          this.nobs, ")",
+          sep="")
+      } else {
+        mean.rmsle <- NULL
+        for (this.chem.index in 1:length(unique(these.data$DTXSID)))
+        {
+          this.chem <- unique(these.data$DTXSID)[this.chem.index]
+          mean.rmsle[this.chem.index] <- signif(calc_RMSLE(subset(these.data,
+                                                                  DTXSID == this.chem), 
+                                                           pred.col = pred.col,
+                                                           obs.col = obs.col), 3)
+        }
+        this.mean.rmsle <- signif(mean(mean.rmsle),2)
+        this.count <- length(mean.rmsle)
+        stats.table[paste("RMSLE",this.chem.list.name), this.qspr] <- paste(
+          this.mean.rmsle, " (",
+          this.count, ")",
+          sep="")
+      } 
+    } 
+  return(stats.table)
+}

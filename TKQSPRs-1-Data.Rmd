@@ -209,6 +209,7 @@ fittable$k12 <- fittable$k12*24 # 1/day
 fittable$k21 <- fittable$k21*24 # 1/day
 fittable$kelim <- fittable$kelim*24 # 1/day
 fittable$kgutabs <- fittable$kgutabs*24 # 1/day
+fittable$halflife <- fittable$halflife*24 # 1/day
 fittable$Time_Days.Units <- "days"
 length(unique(fittable$DTXSID))
 ```

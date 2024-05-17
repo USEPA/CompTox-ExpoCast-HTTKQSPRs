@@ -220,6 +220,20 @@ for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <-
     cexCol=1,
     trace="none",
     col=mypalette)
+  png(paste("figs/Fig-physchemandpredictors-heatmap-",
+           output.prefix,
+           ".tiff",sep=""),
+          width=800, height=750)
+  heatmap.2(as.matrix(CvT.chems.scale[,4:(dim(CvT.chems.scale)[2])]),
+    lwid=c(0.4,1),
+    lhei=c(0.4,1),
+    margins=c(15,1),
+    labRow = FALSE,
+    cexCol=1.5,
+    trace="none",
+    dendrogram = "none",
+    col=mypalette)
+  dev.off()
 ```
 
 Divide into individual tables:
@@ -462,18 +476,31 @@ hist(subset(level1tab,QSPR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
 Make Level1 predictions vs. observed plot for Clint:
 ```{r clint_rpe_scatter, eval = TRUE}
 FigLev1a <- ggplot(data=level1tab) +
-  geom_point(size=3,aes(x=Human.Clint.pred+10^-4,y=Human.Clint.httk+10^-4,shape=QSPR,color=QSPR))+
+  geom_point(size=3,alpha=0.5,
+             aes(x=Human.Clint.pred+10^-4,
+                 y=Human.Clint.httk+10^-4,
+                 shape=QSPR,
+                 color=QSPR))+
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10)+
-  geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
-  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
-  geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
+  geom_abline(intercept = log10(10^(1/2)), 
+              slope = 1,
+              linetype="dashed", 
+              colour="lightBlue") + 
+  geom_abline(intercept = 0, 
+              slope = 1,
+              linetype="solid", 
+              colour="Grey") + 
+  geom_abline(intercept = log10(10^(-1/2)), 
+              slope = 1
+              ,linetype="dashed", 
+              colour="lightBlue") + 
   xlab(bquote('Predicted'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
-  ylab(bquote('Observed'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
+  ylab(bquote('Obs.'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
   theme_bw()+
-  theme( text  = element_text(size=20))
+  theme( text  = element_text(size=18))
 print(FigLev1a)
-ggsave(paste("figs/FigLev1a_Clint_RPE",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/FigLev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
@@ -506,7 +533,7 @@ FigLev1a_facet <- ggplot(data=level1tab) +
          axis.text.x = element_text(size=14))
 
 print(FigLev1a_facet)
-ggsave(paste("figs/FigLev1a-Clint_obsvpred-facet-",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/FigLev1a-Clint-obsvpred-facet-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
@@ -669,19 +696,30 @@ FigLev1b<-ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) +
          legend.text=element_text(size=7),
          legend.title = element_text(size=8))
 print(FigLev1b) 
-ggsave(paste("figs/FigLev1b_Clint_boxplot_wtable-",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/FigLev1b-Clint-boxplot-wtable-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
-  geom_point(size=3,aes(x=Human.Fup.pred+10^-4,y=Human.Fup.httk+10^-4,shape=QSPR,color=QSPR))+
+  geom_point(size=3,
+             alpha=0.5,
+             aes(x=Human.Fup.pred+10^-4,
+                 y=Human.Fup.httk+10^-4,
+                 shape=QSPR,color=QSPR))+
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10)+
-  geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
-  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
-  geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
+  geom_abline(intercept = log10(10^(1/2)), 
+              slope = 1,linetype="dashed", 
+              colour="lightBlue") +
+  geom_abline(intercept = 0, 
+              slope = 1,
+              linetype="solid", 
+              colour="Grey") + 
+  geom_abline(intercept = log10(10^(-1/2)), 
+              slope = 1,linetype="dashed", 
+              colour="lightBlue") + 
   xlab(bquote('Predicted'~f[up])) +
   ylab(bquote('Observed'~f[up])) +
   theme_bw()+
@@ -774,7 +812,7 @@ FigLev1d<-ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))
          legend.text=element_text(size=7),
          legend.title = element_text(size=8))
 print(FigLev1d) 
-ggsave(paste("figs/FigLev1d_fup_boxplot_wtable-",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/FigLev1d-fup-boxplot-wtable-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
