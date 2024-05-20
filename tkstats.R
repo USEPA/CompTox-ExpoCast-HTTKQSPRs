@@ -561,26 +561,38 @@ calc_AbsFE <- function(level2tab)
 ## Absolute Average Fold Error (AAFE) :  
 # 10^((1/n)*sum(abs(FE)))
 # use this. It's good to see fold error
-calc_AAFE <- function(level2.table)
+calc_AAFE <- function(in.table,
+                      AbsFE.col="AbsFE",
+                      sigfig=4)
 {
-  return(signif(
-    10^(mean(level2.table$AbsFE,
+    return(signif(
+    10^(mean(in.table[,AbsFE.col],
                   na.rm=TRUE)),
-    4))
+    sigfig))
 }
 
 ## Root mean squared log10 Error (RMSLE): 
 # sqrt(mean(log10(Xpred+1)-log10(Xobs+1))2)
 # use this
-calc_RMSLE <- function(level2.table,
+calc_RMSLE <- function(in.table,
                        pred.col="Conc.pred",
-                       obs.col="Conc.obs")
+                       obs.col="Conc.obs",
+                       sigfig=4,zeroval=14-6)
 {
+# Get red of NA's:
+  in.table <- subset(in.table, 
+                      !is.na(in.table[,pred.col]) & 
+                      !is.na(in.table[,obs.col]))
+
+# How to handle very small values which diverge to negative infinity:
+  for (this.col in c(pred.col, obs.col))
+    in.table[in.table[,this.col] < zeroval,this.col] <- zeroval
+
   return(signif(
-    sqrt(mean((log10(level2.table[,pred.col] /
-                            level2.table[,obs.col]))^2,
+    sqrt(mean((log10(in.table[,pred.col] /
+                       in.table[,obs.col]))^2,
                    na.rm=TRUE)),
-    4))
+    sigfig))
 }
 
 ## Median relative predictive error (MPRE)

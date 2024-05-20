@@ -35,6 +35,7 @@ library(RColorBrewer)
 library(DescTools)
 library(gridExtra)
 library(reshape2)
+library(knitr)
 ```
 
 Load custom code 
@@ -71,6 +72,7 @@ ADmet Sipes et al. (2017)
 Pradeep et al. (2020)
 Dawson et al. (2021)
 OPERA (in prep.?)
+IVBP (?)
 
 Get the in vitro measured values:
 In Vitro Measured:
@@ -358,6 +360,7 @@ for (this.row in 1:dim(level1tab)[1])
       {
         possible.training.chems <- rbind(possible.training.chems,
                                          level1tab[this.row,])
+        # Remove possible training chems fromt he analysis:
         level1tab[this.row,"Human.Clint.pred"] <-NA
         level1tab[this.row,"Human.Clint.AbsFE"] <-NA
         level1tab[this.row,"Human.Fup.pred"] <-NA
@@ -371,6 +374,7 @@ for (this.col in colnames(possible.training.chems))
   if (is.numeric(possible.training.chems[1,this.col]))
     possible.training.chems[,this.col] <- 
   signif(possible.training.chems[,this.col],3)
+kable(possible.training.chems)
 write.csv(possible.training.chems,row.names=FALSE,
           file="tables/SupTable-PossibleTrainingChems.txt")
 ```
@@ -412,11 +416,15 @@ for (this.qspr1 in unique(level1tab$QSPR))
   }
 }
 
-FE.table <- apply(FE.table,2,function(x) signif(x,3))
-print(ks.tests.clint)
-print(ks.tests.fup)
-write.csv(ks.tests.clint,file="tables/Table-Level1KSCorClint.txt")
-write.csv(ks.tests.fup,file="tables/Table-Level1KSCorFup.txt")
+FE.table <- apply(FE.table, 2, function(x) signif(x,3))
+ks.tests.clint <- apply(ks.tests.clint,2,function(x) signif(x,3))
+ks.tests.fup <- apply(ks.tests.fup, 2, function(x) signif(x,3))
+kable(FE.table)
+kable(ks.tests.clint)
+kable(ks.tests.fup)
+write.csv(FE.table, file="tables/SupTable-Level1FoldError.txt")
+write.csv(ks.tests.clint, file="tables/Table-Level1KSCorClint.txt")
+write.csv(ks.tests.fup, file="tables/Table-Level1KSCorFup.txt")
 ```
 
 Calculate RPE:     
@@ -447,20 +455,6 @@ hist(subset(level1tab,QSPR=="SPlus")$Human.Fup.RPE,
      main="SPlus",xlab="Fup RPE")
 hist(subset(level1tab,QSPR=="OPERA")$Human.Fup.RPE,
      main="OPERA",xlab="Fup RPE")
-```
-
-Add average RPE where missing:
-```{r interpolate_rpe, eval = TRUE}
-for (this.chem in unique(level1tab$DTXSID))
-{
-  this.subset <- subset(level1tab,DTXSID==this.chem)
-  this.mean.clint <- mean(this.subset$Human.Clint.RPE,na.rm=TRUE)
-  level1tab[level1tab$DTXSID==this.chem & is.na(level1tab$Human.Clint.RPE),
-    "Human.Clint.RPE"] <- this.mean.clint
-  this.mean.fup <- mean(this.subset$Human.Fup.RPE,na.rm=TRUE)
-  level1tab[level1tab$DTXSID==this.chem & is.na(level1tab$Human.Fup.RPE),
-    "Human.Fup.RPE"] <- this.mean.fup
-}
 ```
 
 Check distribution of RPE for Clint:
@@ -537,7 +531,7 @@ ggsave(paste("figs/FigLev1a-Clint-obsvpred-facet-",output.prefix,".tiff",sep="")
        width=6, height=4, dpi=300)
 ```
 
-Make Level1 RPE boix and whisker plot for Clint:
+Make Level1 RPE box and whisker plot for Clint:
 ```{r clint_rpe_boxwhisker, eval = TRUE}
 FigLev1b <- ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) + 
   geom_boxplot(outlier.colour="red",    
@@ -553,148 +547,73 @@ FigLev1b <- ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) +
 
 ## calculate some statistics
 ```{r calc_AbsFE_RMSE, eval=TRUE}
-
+Human.Clint.stats.table <- Human.fup.stats.table <- data.frame()
+level1tab$Human.Clint.pred <- as.numeric(level1tab$Human.Clint.pred)
+level1tab$Human.Clint.httk <- as.numeric(level1tab$Human.Clint.httk)
+level1tab$Human.Fup.pred <- as.numeric(level1tab$Human.Fup.pred)
+level1tab$Human.Clint.AbsFE <- as.numeric(level1tab$Human.Clint.AbsFE)
+level1tab$Human.fup.AbsFE <- as.numeric(level1tab$Human.fup.AbsFE)
+for (this.qspr in unique(level1tab$QSPR))
+  if (!(this.qspr %in% c("In Vitro")))
+  {
 #Absolute Average Fold Error (AAFE) :  10^((1/n)*sum(abs(FE)))  ### use this. It's good to see fold error
-ADMet.Human.Clint.AAFE <- 10^(mean(
-  level1tab$Human.Clint.AbsFE[level1tab$QSPR=="SPlus"],
-  na.rm=TRUE))
-Dawson.Human.Clint.AAFE <- 10^(mean(
-  level1tab$Human.Clint.AbsFE[level1tab$QSPR=="Dawson"],
-  na.rm=TRUE))
-OPERA.Human.Clint.AAFE <- 10^(mean(
-  level1tab$Human.Clint.AbsFE[level1tab$QSPR=="OPERA"],
-  na.rm=TRUE))
-Pradeep.Human.Clint.AAFE <- 10^(mean(
-  level1tab$Human.Clint.AbsFE[level1tab$QSPR=="Pradeep"],
-  na.rm=TRUE))
-IVBP.Human.Clint.AAFE <- 10^(mean(
-  level1tab$Human.Clint.AbsFE[level1tab$QSPR=="IVBP"],
-  na.rm=TRUE))
-
-ADMet.Human.fup.AAFE <- 10^(mean(
-  level1tab$Human.fup.AbsFE[level1tab$QSPR=="SPlus"],
-  na.rm=TRUE))
-Dawson.Human.fup.AAFE <- 10^(mean(
-  level1tab$Human.fup.AbsFE[level1tab$QSPR=="Dawson"],
-  na.rm=TRUE))
-OPERA.Human.fup.AAFE <- 10^(mean(
-  level1tab$Human.fup.AbsFE[level1tab$QSPR=="OPERA"],
-  na.rm=TRUE))
-Pradeep.Human.fup.AAFE <- 10^(mean(
-  level1tab$Human.fup.AbsFE[level1tab$QSPR=="Pradeep"],
-  na.rm=TRUE))
-
+    Human.Clint.stats.table["AAFE",this.qspr] <- calc_AAFE(
+        subset(level1tab, QSPR==this.qspr),
+        AbsFE.col="Human.Clint.AbsFE",
+        sigfig=2)                                
+    Human.fup.stats.table["AAFE",this.qspr] <- calc_AAFE(
+        subset(level1tab, QSPR==this.qspr),
+        AbsFE.col="Human.fup.AbsFE",
+        sigfig=2)                                
 #RMSLE sqrt(mean(log10(Xpred+1)-log10(Xobs+1))^2)  ### use this
-ADMet.Human.Clint.RMSLE <- sqrt(mean(
-  (log10(level1tab$Human.Clint.pred[level1tab$QSPR=="SPlus"]+1) -
-     log10(level1tab$Human.Clint.httk[level1tab$QSPR=="SPlus"]+1))^2,
-  na.rm=TRUE))
-Dawson.Human.Clint.RMSLE <- sqrt(mean(
-  (log10(level1tab$Human.Clint.pred[level1tab$QSPR=="Dawson"]+1) -
-     log10(level1tab$Human.Clint.httk[level1tab$QSPR=="Dawson"]+1))^2,
-  na.rm=TRUE))
-OPERA.Human.Clint.RMSLE <- sqrt(mean(
-  (log10(level1tab$Human.Clint.pred[level1tab$QSPR=="OPERA"]+1) -
-     log10(level1tab$Human.Clint.httk[level1tab$QSPR=="OPERA"]+1))^2,
-  na.rm=TRUE))
-Pradeep.Human.Clint.RMSLE <- sqrt(mean(
-  (log10(level1tab$Human.Clint.pred[level1tab$QSPR=="Pradeep"]+1) -
-     log10(level1tab$Human.Clint.httk[level1tab$QSPR=="Pradeep"]+1))^2,
-  na.rm=TRUE))
-IVBP.Human.Clint.RMSLE <- sqrt(mean(
-  (log10(level1tab$Human.Clint.pred[level1tab$QSPR=="IVBP"]+1) -
-     log10(level1tab$Human.Clint.httk[level1tab$QSPR=="IVBP"]+1))^2,
-  na.rm=TRUE))
-
-ADMet.Human.fup.RMSLE <- sqrt(mean(
-  (log10(level1tab$Human.Fup.pred[level1tab$QSPR=="SPlus"]+1) -
-     log10(level1tab$Human.Fup.httk[level1tab$QSPR=="SPlus"]+1))^2,
-  na.rm=TRUE))
-Dawson.Human.fup.RMSLE <- sqrt(mean(
-  (log10(level1tab$Human.Fup.pred[level1tab$QSPR=="Dawson"]+1) -
-     log10(level1tab$Human.Fup.httk[level1tab$QSPR=="Dawson"]+1))^2,
-  na.rm=TRUE))
-OPERA.Human.fup.RMSLE <- sqrt(mean(
-  (log10(level1tab$Human.Fup.pred[level1tab$QSPR=="OPERA"]+1) -
-     log10(level1tab$Human.Fup.httk[level1tab$QSPR=="OPERA"]+1))^2,
-  na.rm=TRUE))
-Pradeep.Human.fup.RMSLE<-sqrt(mean(
-  (log10(level1tab$Human.Fup.pred[level1tab$QSPR=="Pradeep"]+1) -
-     log10(level1tab$Human.Fup.httk[level1tab$QSPR=="Pradeep"]+1))^2,
-  na.rm=TRUE))
-
-Human.Clint.stats.table<-do.call("rbind",
-                                 list(c(NA, "SPlus", "Dawson", 
-                                        "OPERA", "Pradeep", "IVBP"),
-                                 c("AAFE",round(ADMet.Human.Clint.AAFE,2),
-                                   round(Dawson.Human.Clint.AAFE,2),
-                                   round(OPERA.Human.Clint.AAFE,2),
-                                   round(Pradeep.Human.Clint.AAFE,2),
-                                   round(IVBP.Human.Clint.AAFE,2)),
-                                 c("RMSLE",round(ADMet.Human.Clint.RMSLE,2),
-                                           round(Dawson.Human.Clint.RMSLE,2),
-                                           round(OPERA.Human.Clint.RMSLE,2),
-                                           round(Pradeep.Human.Clint.RMSLE,2),
-                                   round(IVBP.Human.Clint.RMSLE,2))))
-
-Human.fup.stats.table<-do.call("rbind",list(c(NA, "SPlus", "Dawson", "OPERA", "Pradeep"),
-                                              c("AAFE",round(ADMet.Human.fup.AAFE,2),
-                                                round(Dawson.Human.fup.AAFE,2),
-                                                round(OPERA.Human.fup.AAFE,2),
-                                                round(Pradeep.Human.fup.AAFE,2)),
-                                              c("RMSLE",round(ADMet.Human.fup.RMSLE,2),
-                                                round(Dawson.Human.fup.RMSLE,2),
-                                                round(OPERA.Human.fup.RMSLE,2),
-                                                round(Pradeep.Human.fup.RMSLE,2))))
-                                 
-# colnames(Human.Clint.stats.table)<-Human.Clint.stats.table[1,]
-# Human.Clint.stats.table<-Human.Clint.stats.table[2:3,]
-# rownames(Human.Clint.stats.table)<-Human.Clint.stats.table[,1]
-# Human.Clint.stats.table<-Human.Clint.stats.table[,2:5]
+    Human.Clint.stats.table["RMSLE",this.qspr] <- calc_RMSLE(
+        subset(level1tab, QSPR==this.qspr),
+        pred.col="Human.Clint.pred",
+        obs.col="Human.Clint.httk",
+        sigfig=2)                           
+    Human.fup.stats.table["RMSLE",this.qspr] <- calc_RMSLE(
+        subset(level1tab, QSPR==this.qspr),
+        pred.col="Human.Fup.pred",
+        obs.col="Human.Fup.httk",
+        sigfig=2)  
+  }
+kable(Human.Clint.stats.table)
+kable(Human.fup.stats.table)
 write.csv(Human.Clint.stats.table, file="tables/SupTable-ClintStats.txt")
 write.csv(Human.fup.stats.table, file="tables/SupTable-FupStats.txt")
 ```
 
 #### add AAFE & RMSLE to the table
 ```{r clint_rpe_boxwhisker_stats, eval = TRUE}
+# Make sure the QSPRs are displayed in the same order as columns in stats table:
+level1tab$QSPR <- factor(level1tab$QSPR,
+                             levels=colnames(Human.Clint.stats.table))
 FigLev1b.texty <- -2
-FigLev1b<-ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) + 
+FigLev1b <- ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) + 
   geom_boxplot(lwd=.3,  #reduce the boxplot linewidth
                outlier.shape=NA)+
   coord_cartesian(ylim=c(-3,8))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   xlab("QSPR") +
   ylab(bquote("Relative Error in"~Cl[int]))+
-#  scale_y_log10(breaks=c(10^-3,10^-2,10^-1,1,10,10^2,10^3),label=scientific_10)+
-  #scale_y_continuous(limits=c(-100,100))+
   theme_bw()+
-  # annotation_custom(tableGrob(Human.Clint.stats.table,theme = ttheme_default(base_size = 5),padding.h = unit(1, "mm")), ymin=-5, ymax=-2.5)+
-  #  annotation_custom(tableGrob(Human.Clint.stats.table,padding.v=unit(1, "mm")), ymin=-5, ymax=-2.5)+
-  
-  annotation_custom(tableGrob(Human.Clint.stats.table[2:3,1], 
-                              theme = ttheme_minimal(base_size = 14)),
-                              xmin=0,xmax=1.5,
-                              ymin=(FigLev1b.texty-1),ymax=FigLev1b.texty)+
-  annotation_custom(tableGrob(Human.Clint.stats.table[2:3,3],rows=NULL, 
-                              theme = ttheme_minimal(base_size = 14)),
-                              xmin=0,xmax=2.3,
-                              ymin=(FigLev1b.texty-1),ymax=FigLev1b.texty)+
-  annotation_custom(tableGrob(Human.Clint.stats.table[2:3,4],rows=NULL, 
-                              theme = ttheme_minimal(base_size = 14)),
-                              xmin=0,xmax=4.3,
-                              ymin=(FigLev1b.texty-1),ymax=FigLev1b.texty)+
-  annotation_custom(tableGrob(Human.Clint.stats.table[2:3,5],rows=NULL, 
-                              theme = ttheme_minimal(base_size = 14)),
-                              xmin=0,xmax=6.3,
-                              ymin=(FigLev1b.texty-1),ymax=FigLev1b.texty)+
-  annotation_custom(tableGrob(Human.Clint.stats.table[2:3,2],rows=NULL, 
-                              theme = ttheme_minimal(base_size = 14)),
-                              xmin=0,xmax=8.3,
-                              ymin=(FigLev1b.texty-1),ymax=FigLev1b.texty)+
-  
   theme( text  = element_text(size=20),
          legend.key.height=unit(.5,"line"),
          legend.text=element_text(size=7),
          legend.title = element_text(size=8))
+
+FigLev1b <- FigLev1b + annotation_custom(tableGrob(rownames(Human.Clint.stats.table), 
+                              theme = ttheme_minimal(base_size = 10)),
+                              xmin=0,xmax=1.5,
+                              ymin=(FigLev1b.texty-1),ymax=FigLev1b.texty)
+for (i in 1:length(colnames(Human.Clint.stats.table)))
+{
+  FigLev1b <- FigLev1b + annotation_custom(
+    tableGrob(Human.Clint.stats.table[,i],rows=NULL, 
+              theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=(2*i+0.3),
+    ymin=(FigLev1b.texty-1),ymax=FigLev1b.texty)
+}
+
 print(FigLev1b) 
 ggsave(paste("figs/FigLev1b-Clint-boxplot-wtable-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
@@ -733,16 +652,18 @@ ggsave(paste("figs/FigLev1c-Fup-obsvpred-",output.prefix,".tiff",sep=""),
 
 ## faceted
 FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
-  geom_point(size=2,aes(x=Human.Fup.pred+10^-4,y=Human.Fup.httk+10^-4,shape=QSPR,color=QSPR))+
-  ##  scale_x_log10(label=scientific_10) +
+  geom_point(size=2,
+             aes(x=Human.Fup.pred+10^-4,
+                 y=Human.Fup.httk+10^-4,
+                 shape=QSPR, color=QSPR))+
   scale_x_log10(breaks=c(10^-8,10^-6,10^-4,10^-2,1),label=scientific_10)+
-  ##  scale_y_log10(label=scientific_10)+
   scale_y_log10(breaks=c(10^-8,10^-6,10^-4,10^-2,1),label=scientific_10)+
-  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.2) +
-  # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
-  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
-  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
-  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray66",size=0.3) +
+  geom_abline(intercept = 0, slope = 1,
+              linetype="solid", colour="black", linewidth=0.2) +
+  geom_abline(intercept = 1, slope = 1,
+              linetype="dashed", colour="gray66", linewidth=0.3) +
+  geom_abline(intercept = -1, slope = 1,
+              linetype="dashed", colour="gray66", linewidth=0.3) +
   xlab(bquote('Predicted'~f[up])) +
   ylab(bquote('Observed'~f[up])) +
   facet_grid(cols=vars(QSPR))+
@@ -776,41 +697,34 @@ ggsave(paste("figs/FigLev1d-Fup-RPE-",output.prefix,".tiff",sep=""),
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
 
 texty <- 3
-FigLev1d<-ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))
+FigLev1d <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))
                              , aes(x=QSPR, y=Human.Fup.RPE)) + 
   geom_boxplot(lwd=.3,  #reduce the boxplot linewidth
                outlier.shape=NA)+
  # coord_cartesian(ylim=c(-3,6))+ ### Pradeep NEW !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
   coord_cartesian(ylim=c(-1.5,3))+ ### !!!!!!! "coord" does NOT alter the data if data points are removed. "scale" does
-  
   xlab("QSPR") +
   ylab(bquote("Relative Error in"~f[up]))+
-#  scale_y_log10(breaks=c(10^-3,10^-2,10^-1,1,10,10^2,10^3),label=scientific_10)+
-#  scale_y_continuous(limits=c(-3,5))+
   theme_bw()+
-  # annotation_custom(tableGrob(Human.Clint.stats.table,theme = ttheme_default(base_size = 5),padding.h = unit(1, "mm")), ymin=-5, ymax=-2.5)+
-  #  annotation_custom(tableGrob(Human.Clint.stats.table,padding.v=unit(1, "mm")), ymin=-5, ymax=-2.5)+
-  
-  annotation_custom(tableGrob(Human.fup.stats.table[2:3,1], 
-                              theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=1.5,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(Human.fup.stats.table[2:3,2],rows=NULL, 
-                              theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=2.3,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(Human.fup.stats.table[2:3,3],rows=NULL, 
-                              theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=4.3,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(Human.fup.stats.table[2:3,4],rows=NULL, 
-                              theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=6.3,ymin=(texty-1),ymax=texty)+
-  annotation_custom(tableGrob(Human.fup.stats.table[2:3,5],rows=NULL, 
-                              theme = ttheme_minimal(base_size = 14)),
-                    xmin=0,xmax=8.3,ymin=(texty-1),ymax=texty)+
-  
   theme( text  = element_text(size=20),
          legend.key.height=unit(.5,"line"),
          legend.text=element_text(size=7),
          legend.title = element_text(size=8))
+
+FigLev1d <- FigLev1d + annotation_custom(tableGrob(rownames(Human.fup.stats.table), 
+                              theme = ttheme_minimal(base_size = 14)),
+                              xmin=0,xmax=1.5,
+                              ymin=(texty-1),ymax=texty)
+for (i in 1:length(colnames(Human.fup.stats.table)))
+  if (!(colnames(Human.fup.stats.table)[i] %in% c("IVBP")))
+{
+  FigLev1d <- FigLev1d + annotation_custom(
+    tableGrob(Human.Clint.stats.table[,i],rows=NULL, 
+              theme = ttheme_minimal(base_size = 14)),
+    xmin=0,xmax=(2*i+0.3),
+    ymin=(texty-1),ymax=texty)
+}      
+
 print(FigLev1d) 
 ggsave(paste("figs/FigLev1d-fup-boxplot-wtable-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
