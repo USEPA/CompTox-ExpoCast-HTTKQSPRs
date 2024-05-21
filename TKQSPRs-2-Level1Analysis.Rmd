@@ -386,6 +386,8 @@ FE.table <- data.frame()
 for (this.qspr1 in unique(level1tab$QSPR))
 {
   this.subset <-subset(level1tab,QSPR==this.qspr1)
+  FE.table[this.qspr1,"Num.Clint.Compared"] <-
+    sum(!is.na(this.subset$Human.Clint.AbsFE))
   FE.table[this.qspr1,"Median.Clint.AbsFE"] <- 
     median(this.subset$Human.Clint.AbsFE,na.rm=TRUE)
   FE.table[this.qspr1,"Median.Clint.FE"] <- 
@@ -394,6 +396,8 @@ for (this.qspr1 in unique(level1tab$QSPR))
     min(this.subset$Human.Clint.FE,na.rm=TRUE)
   FE.table[this.qspr1,"Max.Clint.FE"] <- 
     max(this.subset$Human.Clint.FE,na.rm=TRUE)
+  FE.table[this.qspr1,"Num.fup.Compared"] <-
+    sum(!is.na(this.subset$Human.fup.AbsFE))
   FE.table[this.qspr1,"Median.fup.AbsFE"] <- 
     median(this.subset$Human.fup.AbsFE,na.rm=TRUE)
   FE.table[this.qspr1,"Median.fup.FE"] <- 
@@ -570,12 +574,15 @@ for (this.qspr in unique(level1tab$QSPR))
         subset(level1tab, QSPR==this.qspr),
         pred.col="Human.Clint.pred",
         obs.col="Human.Clint.httk",
-        sigfig=2)                           
+        sigfig=2,
+# How low do we want the zeros to be in the log10 calculation? This makes them at least 10x lower than lowest non-zero prediciton.
+        zeroval=sort(unique(subset(level1tab, QSPR==this.qspr)$Human.Clint.pred,na.rm=TRUE))[2]/10)                           
     Human.fup.stats.table["RMSLE",this.qspr] <- calc_RMSLE(
         subset(level1tab, QSPR==this.qspr),
         pred.col="Human.Fup.pred",
         obs.col="Human.Fup.httk",
-        sigfig=2)  
+        sigfig=2,
+        zeroval=sort(unique(subset(level1tab, QSPR==this.qspr)$Human.Fup.pred,na.rm=TRUE))[2]/10)  
   }
 kable(Human.Clint.stats.table)
 kable(Human.fup.stats.table)

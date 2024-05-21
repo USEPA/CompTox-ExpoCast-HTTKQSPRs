@@ -108,36 +108,21 @@ intersect.chems <- CvT.chems.nona$DTXSID
 for (this.qspr in names(level2tab.rmsle))
   if (!(this.qspr %in% c("HTPBTK-InVitro","HTPBTK-YRandom","In Vivo Fits")))
   intersect.chems <- intersect(intersect.chems, names(level2tab.rmsle[[this.qspr]]))
+max.chems <- unique(CvT.chems.nona$DTXSID)
+noinvitro.chems <- max.chems[!(max.chems %in% invitro.chems)]
 ```
 
 ```{r create_rmsle_summary_table_bychemnumber, eval=TRUE}     
+chem.lists<-list("In Vitro" = invitro.chems,
+                 "No In Vitro" = noinvitro.chems,
+                 "QSPR Intersection" = intersect.chems,
+                 "Maximal" = max.chems
+                )
+                                         
 stats.table <- data.frame()
-for (this.qspr in names(level2tab.rmsle))
-{
-  these.rmsles <- level2tab.rmsle[[this.qspr]][
-    names(level2tab.rmsle[[this.qspr]]) %in% invitro.chems]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["Chemicals with In Vitro",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-  these.rmsles <- level2tab.rmsle[[this.qspr]][
-    names(level2tab.rmsle[[this.qspr]]) %in% intersect.chems]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["Intersection QSPR Chemicals",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-  these.rmsles <- level2tab.rmsle[[this.qspr]]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["Maximal Chemicals",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-}
+stats.table <- makestatstable2(stats.table,
+                level2tab.rmsle,
+                chem.lists)
 write.csv(stats.table,file="tables/Table-Level2-Cvt-rmslestats.txt",row.names=TRUE)
 kable(stats.table)
 rmsle.stats.table <- stats.table
@@ -145,32 +130,9 @@ rmsle.stats.table <- stats.table
 
 ```{r create_aafe_summary_table_bychemnumber, eval=TRUE}     
 stats.table <- data.frame()
-for (this.qspr in names(level2tab.aafe))
-{
-  these.aafes <- level2tab.aafe[[this.qspr]][
-    names(level2tab.aafe[[this.qspr]]) %in% invitro.chems]
-  this.count <- length(these.aafes)
-  this.mean <- signif(mean(unlist(these.aafes), na.rm=TRUE), 3)
-  stats.table["Chemicals with In Vitro",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-  these.aafes <- level2tab.aafe[[this.qspr]][
-    names(level2tab.aafe[[this.qspr]]) %in% intersect.chems]
-  this.count <- length(these.aafes)
-  this.mean <- signif(mean(unlist(these.aafes), na.rm=TRUE), 3)
-  stats.table["Intersection QSPR Chemicals",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-  these.aafes <- level2tab.aafe[[this.qspr]]
-  this.count <- length(these.aafes)
-  this.mean <- signif(mean(unlist(these.aafes), na.rm=TRUE), 3)
-  stats.table["Maximal Chemicals",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-}
+stats.table <- makestatstable2(stats.table,
+                level2tab.aafe,
+                chem.lists)
 write.csv(stats.table,file="tables/Table-Level2-Cvt-aafestats.txt",row.names=TRUE)
 kable(stats.table)
 aafe.stats.table <- stats.table
@@ -178,55 +140,14 @@ aafe.stats.table <- stats.table
 
 ```{r create_rmsle_summary_table_early_late, eval=TRUE}
 stats.table <- data.frame()
-for (this.qspr in names(level2tab.rmsle))
-{
-  these.rmsles <- level2tab.rmsle.early[[this.qspr]][
-    names(level2tab.rmsle.early[[this.qspr]]) %in% invitro.chems]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["RMSLE Early (In Vitro)",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-  these.rmsles <- level2tab.rmsle.early[[this.qspr]][
-    names(level2tab.rmsle.early[[this.qspr]]) %in% intersect.chems]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["RMSLE Early (Intersect)",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-  these.rmsles <- level2tab.rmsle.early[[this.qspr]]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["RMSLE Early (Max)",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-  these.rmsles <- level2tab.rmsle.late[[this.qspr]][
-    names(level2tab.rmsle.late[[this.qspr]]) %in% invitro.chems]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["RMSLE Late (In Vitro)",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-these.rmsles <- level2tab.rmsle.late[[this.qspr]][
-    names(level2tab.rmsle.late[[this.qspr]]) %in% intersect.chems]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["RMSLE Late (Intersect)",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-  these.rmsles <- level2tab.rmsle.late[[this.qspr]]
-  this.count <- length(these.rmsles)
-  this.mean <- signif(mean(unlist(these.rmsles), na.rm=TRUE), 3)
-  stats.table["RMSLE Late (Max)",this.qspr] <- paste(
-    this.mean, " (",
-    this.count, ")",
-    sep="")
-}
+stats.table <- makestatstable2(stats.table,
+                level2tab.rmsle.early,
+                chem.lists,
+                label="Early")
+stats.table <- makestatstable2(stats.table,
+                level2tab.rmsle.late,
+                chem.lists,
+                label="Late")
 write.csv(stats.table,file="tables/Table-Level2-Cvt-earlylatestats.txt",row.names=TRUE)
 kable(stats.table)
 earlylate.stats.table <- stats.table
@@ -246,6 +167,9 @@ stats.table <- makestatstable(level2tab.stats,
                                        pred.col="AUC.pred",
                                        chem.lists=list(
                                          "In Vitro" = invitro.chems,
+                                         "No In Vitro" = unique(level2tab.stats$DTXSID)[
+                                           !(unique(level2tab.stats$DTXSID) %in%
+                                               invitro.chems)],
                                          "QSPR Intersection" = intersect.chems,
                                          "Maximal" = unique(level2tab.stats$DTXSID)
                                          ),
@@ -262,6 +186,9 @@ stats.table <- makestatstable(level2tab.stats,
                                        pred.col="Cmax.pred",
                                        chem.lists=list(
                                          "In Vitro" = invitro.chems,
+                                         "No In Vitro" = unique(level2tab.stats$DTXSID)[
+                                           !(unique(level2tab.stats$DTXSID) %in%
+                                               invitro.chems)],
                                          "QSPR Intersection" = intersect.chems,
                                          "Maximal" = unique(level2tab.stats$DTXSID)
                                          ),

@@ -163,6 +163,9 @@ halflife.stats.table <- makestatstable(level3tab,
                                        pred.col="thalf.pred",
                                        chem.lists=list(
                                          "In Vitro" = invitro.chems,
+                                         "No In Vitro" = unique(level2tab.stats$DTXSID)[
+                                           !(unique(level2tab.stats$DTXSID) %in%
+                                               invitro.chems)],
                                          "QSPR Intersection" = intersect.chems,
                                          "Maximal" = unique(level3tab$DTXSID)
                                          ),
@@ -178,6 +181,9 @@ vd.stats.table <- makestatstable(level3tab,
                                        pred.col="Vd.pred",
                                        chem.lists=list(
                                          "In Vitro" = invitro.chems,
+                                         "No In Vitro" = unique(level2tab.stats$DTXSID)[
+                                           !(unique(level2tab.stats$DTXSID) %in%
+                                               invitro.chems)],
                                          "QSPR Intersection" = intersect.chems,
                                          "Maximal" = unique(level3tab$DTXSID)
                                          ),

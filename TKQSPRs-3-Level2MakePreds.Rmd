@@ -175,8 +175,10 @@ CvT.chems.nona <- subset(CvT.chems.nona,DTXSID %in% CvT.data$DTXSID)
 ## Randomize the in vitro descriptors as a sort of prediction "floor"
 ```{r cvt_yrandomize_desc, eval = TRUE}
 NUM.YRANDOM <- 10
-invitro.subset.rows <- which(!(is.na(CvT.chems.nona$Human.Clint.httk)) &
-                         !(is.na(CvT.chems.nona$Human.Fup.httk)))
+#invitro.subset.rows <- which(!(is.na(CvT.chems.nona$Human.Clint.httk)) &
+#                         !(is.na(CvT.chems.nona$Human.Fup.httk)))
+# Just do yrandom for all chemicals:
+invitro.subset.rows <- rep(TRUE, dim(CvT.chems.nona)[1])
 
 # Get all chemials with measured HTTK:
 reset_httk()

@@ -184,7 +184,7 @@ calc_cvt_stats <- function(cvt.table, stats.table)
   for (this.chem in unique(cvt.table$DTXSID))
   {
     this.data <- subset(cvt.table,DTXSID==this.chem)
-    rmsle[[this.chem]] <- calc_RMSLE(this.data)
+    rmsle[[this.chem]] <- calc_RMSLE(this.data, zeroval = -Inf)
     aafe[[this.chem]] <- calc_AAFE(this.data)
     
     # Separate data into early and late times:
@@ -200,9 +200,9 @@ calc_cvt_stats <- function(cvt.table, stats.table)
                               subset(this.sourcedata,
                                      Time_Days >= mid.time))
     }
-    rmsle.early[[this.chem]] <- calc_RMSLE(this.data.early)
+    rmsle.early[[this.chem]] <- calc_RMSLE(this.data.early, zeroval = -Inf)
     aafe.early[[this.chem]] <- calc_AAFE(this.data.early)
-    rmsle.late[[this.chem]] <- calc_RMSLE(this.data.late)
+    rmsle.late[[this.chem]] <- calc_RMSLE(this.data.late, zeroval = -Inf)
     aafe.late[[this.chem]] <- calc_AAFE(this.data.late)
   }
   
@@ -577,7 +577,7 @@ calc_AAFE <- function(in.table,
 calc_RMSLE <- function(in.table,
                        pred.col="Conc.pred",
                        obs.col="Conc.obs",
-                       sigfig=4,zeroval=14-6)
+                       sigfig=4,zeroval=1e-6)
 {
 # Get red of NA's:
   in.table <- subset(in.table, 
@@ -681,4 +681,24 @@ makestatstable <- function(obspred.table,
       } 
     } 
   return(stats.table)
+}
+
+makestatstable2 <- function(this.table,
+                            stats.list,
+                            chem.lists,
+                            label="")
+{
+  for (this.qspr in names(stats.list))
+    for (this.list in names(chem.lists))
+    {
+      these.stats <- stats.list[[this.qspr]][
+        names(stats.list[[this.qspr]]) %in% chem.lists[[this.list]]]
+      this.count <- length(these.stats)
+      this.mean <- signif(mean(unlist(these.stats), na.rm=TRUE), 3)
+      this.table[paste(this.list, label), this.qspr] <- paste(
+        this.mean, " (",
+        this.count, ")",
+        sep="")
+    }
+  return(this.table)
 }

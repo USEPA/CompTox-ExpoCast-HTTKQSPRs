@@ -353,6 +353,19 @@ colnames(CvT.chems)[colnames(CvT.chems)=="Human.Clint"] <- "Human.Clint.httk"
 colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- "Human.Fup.httk"
 ```
 
+Generate results for text:
+```{r default_table, eval = TRUE}
+median.clint <- median(CvT.chems$Human.Clint.httk,na.rm=TRUE)
+twofold.clint <- CvT.chems$Human.Clint.httk[!is.na(CvT.chems$Human.Clint.httk)]
+twofold.clint <- twofold.clint < 2*twofold.clint &
+                 twofold.clint > 0.5*twofold.clint
+
+cat(paste(sum(CvT.chems$Human.Clint.httk>100,na.rm=TRUE),
+          "chemicals had Clint > 10^3 and",
+          signif(sum(twofold.clint)/length(twofold.clint)*100,2),
+          "percent were within two-fold of the median."))
+```
+
 ```{r write_out_data, eval= TRUE}
 invitro <- httk.data
 save(invitro,file="data/httkinvitro.RData")
