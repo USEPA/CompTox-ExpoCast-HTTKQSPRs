@@ -1,6 +1,0 @@
-"","Median.Clint.AbsFE","Median.Clint.FE","Min.Clint.FE","Max.Clint.FE","Median.fup.AbsFE","Median.fup.FE","Min.fup.FE","Max.fup.FE"
-"SPlus",0.492,0.223,-1.54,2.1,0.289,-0.125,-1.47,6.27
-"Dawson",0.348,-0.00525,-2.54,1.42,0.153,0.0264,-1.23,6.38
-"Pradeep",0.215,0.00647,-2.2,1.5,0.123,-0.0485,-0.506,1.08
-"OPERA",0.00141,-0.00015,-1.86,0.63,0.0281,0,-1.11,7.1
-"IVBP",0.878,0.878,-0.79,3.02,NA,NA,Inf,-Inf

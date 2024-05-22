@@ -638,17 +638,25 @@ makestatstable <- function(obspred.table,
       these.data <- subset(obspred.table, 
                            QSPR == this.qspr & 
                              DTXSID %in% this.chem.list)
+      these.data <- subset(these.data,
+                           !is.na(these.data[,pred.col]) &
+                           !is.na( these.data[,pred.col]))
       if (!average.per.chemical)
       {
         this.count <- length(unique(these.data$DTXSID))
         this.nobs <- dim(these.data)[1]
-        if (logrsquared)
+        if (this.nobs > 1)
         {
-          this.fit <- lm(log10(eval(these.data[,obs.col])) ~ eval(log10(these.data[,pred.col])))
+          if (logrsquared)
+          {
+            this.fit <- lm(log10(eval(these.data[,obs.col])) ~ eval(log10(these.data[,pred.col])))
+          } else {
+            this.fit <- lm(eval(these.data[,obs.col]) ~ eval(these.data[,pred.col]))
+          }
+          this.rsquared <- signif(summary(this.fit)$r.squared, 2)
         } else {
-          this.fit <- lm(eval(these.data[,obs.col]) ~ eval(these.data[,pred.col]))
+          this.rsquared <- NA
         }
-        this.rsquared <- signif(summary(this.fit)$r.squared, 2)
         this.rmsle <- signif(calc_RMSLE(these.data, 
                                         pred.col = pred.col,
                                         obs.col = obs.col), 2)
@@ -686,7 +694,8 @@ makestatstable <- function(obspred.table,
 makestatstable2 <- function(this.table,
                             stats.list,
                             chem.lists,
-                            label="")
+                            label="",
+                            sigfig=3)
 {
   for (this.qspr in names(stats.list))
     for (this.list in names(chem.lists))
@@ -694,7 +703,7 @@ makestatstable2 <- function(this.table,
       these.stats <- stats.list[[this.qspr]][
         names(stats.list[[this.qspr]]) %in% chem.lists[[this.list]]]
       this.count <- length(these.stats)
-      this.mean <- signif(mean(unlist(these.stats), na.rm=TRUE), 3)
+      this.mean <- signif(mean(unlist(these.stats), na.rm=TRUE), sigfig)
       this.table[paste(this.list, label), this.qspr] <- paste(
         this.mean, " (",
         this.count, ")",

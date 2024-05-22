@@ -61,7 +61,7 @@ series_res_set$Species <- series_res_set$subjects.species_harmonized
 series_res_set$Media <- series_res_set$series.conc_medium_normalized
 series_res_set$Time_Days <- series_res_set$conc_time_values.time_h / 24 # days
 series_res_set$Conc_mgpL <- series_res_set$conc_time_values.conc # mg/L
-series_res_set$Dose <- series_res_set$studies.dose_level_normalized # mg/kg
+series_res_set$Dose <- series_res_set$studies.dose_level_normalized_corrected # mg/kg
 series_res_set$Route <- series_res_set$studies.administration_route_normalized
 series_res_set$calc_loq <- series_res_set$series.loq_normalized # mg/L
 series_res_set$DTXSID <- series_res_set$series.analyte_dtxsid
@@ -77,6 +77,11 @@ series_res_set$Reference <- series_res_set$documents_extraction.pmid
 series_res_set[is.na(series_res_set$Reference), "Reference"] <-
   "NTP"
 series_res_set$Source <- series_res_set$Reference
+```
+
+```{r baddose, eval=TRUE}
+# Looks like a problem with the extraction here:
+series_res_set <- subset(series_res_set, !(DTXSID %in% c("DTXSID3032179")))
 ```
 
 ```{r organize_eval_chems, eval = TRUE}
@@ -284,6 +289,10 @@ print(paste("There were",
             length(unique(fittable$DTXSID)) -
                      length(unique(fittable.noflat$DTXSID)),
             "chemicals where we did not get an empirical fit (flat model selected)."))
+write.csv(subset(fittable, !(DTXSID%in%fittable.noflat$DTXSID))[,
+          c("DTXSID","CAS","Model","AIC","Species","method")], 
+          row.names=FALSE,
+          file="tables/SupTable-NoEmpiricalFitChems.txt")
 fittable <- fittable.noflat
 
 length(unique(fittable$DTXSID))

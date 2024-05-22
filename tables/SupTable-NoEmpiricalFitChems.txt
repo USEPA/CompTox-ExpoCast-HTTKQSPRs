@@ -1,1 +1,4 @@
-"DTXSID","PREFERRED_NAME","CASRN"
+"DTXSID","CAS","Model","AIC","Species","method"
+"DTXSID1034187","10540-29-1","model_flat",6.05e+08,"rat","L-BFGS-B"
+"DTXSID2021315","1746-01-6","model_flat",227,"rat","L-BFGS-B"
+"DTXSID5025607","93-15-2","model_flat",54400,"rat","L-BFGS-B"

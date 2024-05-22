@@ -36,6 +36,7 @@ library(knitr)
 load("data/level3-tables.RData")
 load("data/level2stats.RData")
 load("data/httk-goodchems.RData")
+load("data/chemicallists.RData")
 ```
 
 Load custom code 
@@ -155,7 +156,10 @@ level3tab$Cl.RPE <- (level3tab$Cl.pred - level3tab$Cl.obs)/level3tab$Cl.obs
 kable(Cmax.stats.table)
 kable(AUC.stats.table)
 ```
-
+# Get rid of Vd predictions from HTTK not made by QSPR:
+```{r remove_placeholder_vd, eval = TRUE}
+level3tab[level3tab$QSPR %in% c("QSARINS", "IFS-QAPR"),"Vd.pred"] <- NA
+```
 
 ```{r halflife_stats, eval = TRUE}
 halflife.stats.table <- makestatstable(level3tab,
@@ -163,11 +167,9 @@ halflife.stats.table <- makestatstable(level3tab,
                                        pred.col="thalf.pred",
                                        chem.lists=list(
                                          "In Vitro" = invitro.chems,
-                                         "No In Vitro" = unique(level2tab.stats$DTXSID)[
-                                           !(unique(level2tab.stats$DTXSID) %in%
-                                               invitro.chems)],
+                                         "No In Vitro" = noinvitro.chems,
                                          "QSPR Intersection" = intersect.chems,
-                                         "Maximal" = unique(level3tab$DTXSID)
+                                         "Maximal" = max.chems
                                          ),
                                        logrsquared = FALSE
                                        )
@@ -181,11 +183,9 @@ vd.stats.table <- makestatstable(level3tab,
                                        pred.col="Vd.pred",
                                        chem.lists=list(
                                          "In Vitro" = invitro.chems,
-                                         "No In Vitro" = unique(level2tab.stats$DTXSID)[
-                                           !(unique(level2tab.stats$DTXSID) %in%
-                                               invitro.chems)],
+                                         "No In Vitro" = noinvitro.chems,
                                          "QSPR Intersection" = intersect.chems,
-                                         "Maximal" = unique(level3tab$DTXSID)
+                                         "Maximal" = max.chems
                                          ),
                                        logrsquared = TRUE
                                        )
@@ -208,6 +208,26 @@ kable(cl.stats.table)
 write.csv(cl.stats.table,file="tables/SupTable-Cl-stats.txt",row.names=FALSE)
 ```
 
+# Compiled Stats Table for main manuscript:
+```{r make_manuscritplevel3_table, eval =TRUE}
+level3stats.table <- rbind(
+  halflife.stats.table[c("RMSLE In Vitro","RSquared In Vitro"),],
+  cl.stats.table[c("RMSLE In Vitro","RSquared In Vitro"),],
+  vd.stats.table[c("RMSLE In Vitro","RSquared In Vitro"),]
+  )
+rownames(level3stats.table) <- c(
+  "Half-Life RMSLE",
+  "Half-Life RSquared",
+  "Cltot RMSLE",
+  "CLtot RSquared",
+  "Vd RMSLE",
+  "Vd RSquared"
+)
+level3stats.table<-apply(level3stats.table,c(1,2),function(x) strsplit(x, " ")[[1]][1])
+kable(level3stats.table)
+write.csv(level3stats.table,file="tables/Table-Level3-stats.txt",row.names=FALSE)
+```
+
 # Half-life scatter plot:
 ```{r make_level3_halflife_scatter_plot, eval = TRUE}
 
@@ -223,14 +243,14 @@ FigLev3a <- ggplot(data=level3tab) +
   ylab(bquote('Observed'~t[half]~"(h)")) +
   scale_shape_manual(values = 0:10)+
   theme_bw()+
-  facet_grid(cols=vars(QSPR))+
+  facet_wrap(~QSPR)+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 8),
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=10))
 print(FigLev3a)
-ggsave(paste("figs/FigLev3a_thalf_obsVpred_",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
+ggsave(paste("figs/FigLev3a_thalf_obsVpred_",output.prefix,".tiff",sep=""), width=6, height=8, dpi=300)
 ```
 
 ```{r make_level3_halflife_box_plot, eval = TRUE}
@@ -265,7 +285,7 @@ FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS")))) 
   ylab(bquote('Observed'~V[d]~"(L/kg BW)")) +
   scale_shape_manual(values = 0:10)+
   theme_bw()+
-  facet_grid(cols=vars(QSPR))+
+  facet_wrap(~QSPR)+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 10),
@@ -273,7 +293,7 @@ FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS")))) 
          axis.text.x = element_text(size=10))
 print(FigLev3c)
 ggsave(paste("figs/FigLev3c_Vd_obsVpred_",output.prefix,".tiff",sep=""), 
-       width=6, height=4, dpi=300)
+       width=6, height=8, dpi=300)
 ```
 
 ```{r make_level3_vd_box_plot, eval = TRUE}
@@ -311,7 +331,7 @@ FigLev3e <- ggplot(data=level3tab) +
   ylab(bquote('Observed'~Cl[tot]~"(L/h/kg BW)")) +
   scale_shape_manual(values = 0:10)+
   theme_bw()+
-  facet_grid(cols=vars(QSPR))+
+  facet_wrap(~QSPR)+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 8),
@@ -319,7 +339,7 @@ FigLev3e <- ggplot(data=level3tab) +
          axis.text.x = element_text(size=10))
 print(FigLev3e)
 ggsave(paste("figs/FigLev3e_Cltot_obsVpred_",output.prefix,".tiff",sep=""), 
-       width=6, height=4, dpi=300)
+       width=6, height=8, dpi=300)
 ```
 
 ```{r make_level3_cl_box_plot, eval = TRUE}

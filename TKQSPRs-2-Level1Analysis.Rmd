@@ -77,10 +77,32 @@ IVBP (?)
 Get the in vitro measured values:
 In Vitro Measured:
 ```{r add_invitro, eval = TRUE}
-print(paste("Evaluation data for Clint for",
+cat(paste("Evaluation data for Clint for",
       sum(sapply(invitro$Human.Clint,function(x) !is.na(x))),
       "chemicals and Fup for",
-      sum(sapply(invitro$Human.Funbound.plasma,function(x) !is.na(x)))))
+      sum(sapply(invitro$Human.Funbound.plasma,function(x) !is.na(x))),
+      ".\n"
+      ))
+reset_httk()
+tot.zero <- sum(sapply(get_cheminfo(info="Clint",
+                                    median.only = TRUE,
+                                    suppress.messages = TRUE),
+                       function(x) 0%in%x))
+tot.clint <- sum(sapply(get_cheminfo(info="Clint",
+                                     median.only = TRUE,
+                                     suppress.messages=TRUE),
+                        function(x) !is.na(x)))
+cat(paste(sum(invitro$Human.Clint%in% 0),
+          "out of",
+          sum(!is.na(invitro$Human.Clint)),
+          "chemicals with CvT data have no measured in vitro clearance compared with",
+          tot.zero,
+          "out of",
+          tot.clint,
+          "measured Clint values (",
+          signif(tot.zero/tot.clint*100,2),
+          "percent).\n"
+          ))
 
 ```
 
@@ -222,7 +244,7 @@ for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <-
     cexCol=1,
     trace="none",
     col=mypalette)
-  png(paste("figs/Fig-physchemandpredictors-heatmap-",
+  png(paste("figs/Fig1-physchemandpredictors-heatmap-",
            output.prefix,
            ".tiff",sep=""),
           width=800, height=750)
@@ -294,17 +316,17 @@ level1tab$Human.Clint.pred <- as.numeric(level1tab$Human.Clint.pred)
 
 ## calculate fold error (FE) and absolute fold error (AbsFE)
 ```{r calc_Level1AbsFE, eval=TRUE}
-
+MINVAL <- 1e-6
 #Absolute fold error (AbsFE) : abs(log10(pred/obs))
-level1tab$Human.Clint.AbsFE <- abs(log10(level1tab$Human.Clint.pred /
-  level1tab$Human.Clint.httk))
-level1tab$Human.fup.AbsFE <- abs(log10(level1tab$Human.Fup.pred /
-  level1tab$Human.Fup.httk))
+level1tab$Human.Clint.AbsFE <- abs(log10((level1tab$Human.Clint.pred + MINVAL) /
+  (level1tab$Human.Clint.httk + MINVAL)))
+level1tab$Human.fup.AbsFE <- abs(log10((level1tab$Human.Fup.pred + MINVAL) /
+  (level1tab$Human.Fup.httk + MINVAL)))
 
 # Fo
-level1tab$Human.Clint.FE<- log10(level1tab$Human.Clint.pred /
+level1tab$Human.Clint.FE<- log10((level1tab$Human.Clint.pred + MINVAL) /
   level1tab$Human.Clint.httk)
-level1tab$Human.fup.FE<- log10(level1tab$Human.Fup.pred /
+level1tab$Human.fup.FE<- log10((level1tab$Human.Fup.pred + MINVAL) /
   level1tab$Human.Fup.httk)
 
 for (this.row in 1:dim(level1tab)[1])
@@ -344,6 +366,21 @@ for (this.row in 1:dim(level1tab)[1])
 }
 ```
 
+# Count the number of predictions
+```{r number_predictions, eval = TRUE}
+pred.counts <- data.frame()
+for (this.qspr in unique(level1tab$QSPR))
+{
+  pred.counts[this.qspr,"Clint"] <-
+    sum(!is.na(subset(level1tab, QSPR==this.qspr)$Human.Clint.pred))
+  pred.counts[this.qspr,"Fup"] <-
+    sum(!is.na(subset(level1tab, QSPR==this.qspr)$Human.Fup.pred))
+}
+kable(pred.counts)
+write.csv(pred.counts,row.names = FALSE,
+          file="tables/SupTable-QSPRPredCounts.txt")
+```
+
 # Let's try to avoid values that are just being retrieved from the training set:
 ```{r fold_error_cutoff, eval = TRUE}
 TOOCLOSE.THRESHOLD <- 0.01
@@ -360,11 +397,15 @@ for (this.row in 1:dim(level1tab)[1])
       {
         possible.training.chems <- rbind(possible.training.chems,
                                          level1tab[this.row,])
-        # Remove possible training chems fromt he analysis:
+        # Remove possible training chems from the analysis:
         level1tab[this.row,"Human.Clint.pred"] <-NA
         level1tab[this.row,"Human.Clint.AbsFE"] <-NA
         level1tab[this.row,"Human.Fup.pred"] <-NA
         level1tab[this.row,"Human.fup.AbsFE"] <-NA
+        CvT.chems[CvT.chems$DTXSID %in% level1tab[this.row,"DTXSID"],
+                  "Human.Clint.OPERA"] <- NA                            
+        CvT.chems[CvT.chems$DTXSID %in% level1tab[this.row,"DTXSID"],
+                  "Human.Fup.OPERA"] <- NA
       }
     }
   }
@@ -426,9 +467,9 @@ ks.tests.fup <- apply(ks.tests.fup, 2, function(x) signif(x,3))
 kable(FE.table)
 kable(ks.tests.clint)
 kable(ks.tests.fup)
-write.csv(FE.table, file="tables/SupTable-Level1FoldError.txt")
-write.csv(ks.tests.clint, file="tables/Table-Level1KSCorClint.txt")
-write.csv(ks.tests.fup, file="tables/Table-Level1KSCorFup.txt")
+write.csv(FE.table, file="tables/Table3-Level1FoldError.txt")
+write.csv(ks.tests.clint, file="tables/SupTable-Level1KSCorClint.txt")
+write.csv(ks.tests.fup, file="tables/SupTable-Level1KSCorFup.txt")
 ```
 
 Calculate RPE:     
@@ -498,7 +539,7 @@ FigLev1a <- ggplot(data=level1tab) +
   theme_bw()+
   theme( text  = element_text(size=18))
 print(FigLev1a)
-ggsave(paste("figs/FigLev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/Fig2-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
@@ -524,15 +565,15 @@ FigLev1a_facet <- ggplot(data=level1tab) +
   xlab(bquote('Predicted'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
   ylab(bquote('Observed'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
   theme_bw()+
-  facet_grid(cols=vars(QSPR))+
+  facet_wrap(~QSPR)+
   theme( text  = element_text(size=20),
          legend.position = "none",
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=14))
 
 print(FigLev1a_facet)
-ggsave(paste("figs/FigLev1a-Clint-obsvpred-facet-",output.prefix,".tiff",sep=""), 
-       width=6, height=4, dpi=300)
+ggsave(paste("figs/SupFigLev1a-Clint-obsvpred-facet-",output.prefix,".tiff",sep=""), 
+       width=6, height=5, dpi=300)
 ```
 
 Make Level1 RPE box and whisker plot for Clint:
@@ -622,7 +663,7 @@ for (i in 1:length(colnames(Human.Clint.stats.table)))
 }
 
 print(FigLev1b) 
-ggsave(paste("figs/FigLev1b-Clint-boxplot-wtable-",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/SupFigLev1b-Clint-boxplot-wtable-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
@@ -651,7 +692,7 @@ FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1c)
-ggsave(paste("figs/FigLev1c-Fup-obsvpred-",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/Fig3-Lev1c-Fup-obsvpred-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
@@ -673,15 +714,15 @@ FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
               linetype="dashed", colour="gray66", linewidth=0.3) +
   xlab(bquote('Predicted'~f[up])) +
   ylab(bquote('Observed'~f[up])) +
-  facet_grid(cols=vars(QSPR))+
+  facet_wrap(~QSPR)+
   theme_bw()+
   theme( text  = element_text(size=20),
          legend.position = "none",
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=14))
 print(FigLev1c)
-ggsave(paste("figs/FigLev1c-Fup-obsVpred-facet-",output.prefix,".tiff",sep=""), 
-       width=6, height=4, dpi=300)
+ggsave(paste("figs/SupFigLev1c-Fup-obsVpred-facet-",output.prefix,".tiff",sep=""), 
+       width=6, height=5, dpi=300)
 ```
 
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
@@ -696,7 +737,7 @@ FigLev1d <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP")),
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1d)  
-ggsave(paste("figs/FigLev1d-Fup-RPE-",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/SupFigLev1d-Fup-RPE-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
@@ -733,7 +774,7 @@ for (i in 1:length(colnames(Human.fup.stats.table)))
 }      
 
 print(FigLev1d) 
-ggsave(paste("figs/FigLev1d-fup-boxplot-wtable-",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/SupFigLev1d-fup-boxplot-wtable-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 

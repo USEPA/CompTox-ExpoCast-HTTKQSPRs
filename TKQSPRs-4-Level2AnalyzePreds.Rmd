@@ -122,8 +122,9 @@ chem.lists<-list("In Vitro" = invitro.chems,
 stats.table <- data.frame()
 stats.table <- makestatstable2(stats.table,
                 level2tab.rmsle,
-                chem.lists)
-write.csv(stats.table,file="tables/Table-Level2-Cvt-rmslestats.txt",row.names=TRUE)
+                chem.lists,
+                sigfig=2)
+write.csv(stats.table,file="tables/Table4-Level2-Cvt-RMSLEstats.txt",row.names=TRUE)
 kable(stats.table)
 rmsle.stats.table <- stats.table
 ```
@@ -132,8 +133,9 @@ rmsle.stats.table <- stats.table
 stats.table <- data.frame()
 stats.table <- makestatstable2(stats.table,
                 level2tab.aafe,
-                chem.lists)
-write.csv(stats.table,file="tables/Table-Level2-Cvt-aafestats.txt",row.names=TRUE)
+                chem.lists,
+                sigfig=2)
+write.csv(stats.table,file="tables/SupTable-Level2-Cvt-AAFEstats.txt",row.names=TRUE)
 kable(stats.table)
 aafe.stats.table <- stats.table
 ```
@@ -143,12 +145,14 @@ stats.table <- data.frame()
 stats.table <- makestatstable2(stats.table,
                 level2tab.rmsle.early,
                 chem.lists,
-                label="Early")
+                label="Early",
+                sigfig=2)
 stats.table <- makestatstable2(stats.table,
                 level2tab.rmsle.late,
                 chem.lists,
-                label="Late")
-write.csv(stats.table,file="tables/Table-Level2-Cvt-earlylatestats.txt",row.names=TRUE)
+                label="Late",
+                sigfig=2)
+write.csv(stats.table,file="tables/SupTable-Level2-Cvt-earlylatestats.txt",row.names=TRUE)
 kable(stats.table)
 earlylate.stats.table <- stats.table
 ```
@@ -176,7 +180,7 @@ stats.table <- makestatstable(level2tab.stats,
                                        logrsquared = TRUE,
                               average.per.chemical = TRUE
                                        )
-write.csv(stats.table,file="tables/Table-Level2-AUCstats.txt",row.names=TRUE)
+write.csv(stats.table,file="tables/SupTable-Level2-AUCstats.txt",row.names=TRUE)
 kable(stats.table)
 AUC.stats.table <- stats.table
 ```
@@ -195,7 +199,7 @@ stats.table <- makestatstable(level2tab.stats,
                                        logrsquared = TRUE,
                               average.per.chemical = TRUE
                                        )
-write.csv(stats.table,file="tables/Table-Level2-Cmaxstats.txt",row.names=TRUE)
+write.csv(stats.table,file="tables/SupTable-Level2-Cmaxstats.txt",row.names=TRUE)
 kable(stats.table)
 Cmax.stats.table <- stats.table
 ```
@@ -210,4 +214,9 @@ save(rmsle.stats.table,
      intersect.chems,
      invitro.chems, 
      file="data/level2stats.RData")
+save(invitro.chems,
+     intersect.chems,
+     max.chems,
+     noinvitro.chems,
+     file="data/chemicallists.RData")
 ```
