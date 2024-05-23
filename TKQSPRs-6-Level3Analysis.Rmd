@@ -152,9 +152,14 @@ level3tab$Vd.RPE <- (level3tab$Vd.pred - level3tab$Vd.obs)/level3tab$Vd.obs
 level3tab$Cl.obs <- level3tab$Vd.obs * log(2) / level3tab$thalf.obs
 level3tab$Cl.pred <- level3tab$Vd.pred * log(2) / level3tab$thalf.pred
 level3tab$Cl.RPE <- (level3tab$Cl.pred - level3tab$Cl.obs)/level3tab$Cl.obs
-
-kable(Cmax.stats.table)
-kable(AUC.stats.table)
+```
+```{r auccmax_table, eval=TRUE}
+AUCCmax.table <- rbind(Cmax.stats.table["RMSLE In Vitro",],
+                       AUC.stats.table["RMSLE In Vitro",])
+rownames(AUCCmax.table) <- c("Cmax RMSLE","AUC RMSLE")
+kable(AUCCmax.table)
+write.csv(AUCCmax.table, 
+          file="tables/Table5-AUCCmax-stats.txt")
 ```
 # Get rid of Vd predictions from HTTK not made by QSPR:
 ```{r remove_placeholder_vd, eval = TRUE}
@@ -174,7 +179,8 @@ halflife.stats.table <- makestatstable(level3tab,
                                        logrsquared = FALSE
                                        )
 kable(halflife.stats.table)
-write.csv(halflife.stats.table,file="tables/SupTable-halflife-stats.txt",row.names=FALSE)
+write.csv(halflife.stats.table,
+          file="tables/SupTable-halflife-stats.txt")
 ```
 
 ```{r vdist_stats, eval=TRUE}
@@ -190,7 +196,8 @@ vd.stats.table <- makestatstable(level3tab,
                                        logrsquared = TRUE
                                        )
 kable(vd.stats.table)
-write.csv(vd.stats.table,file="tables/SupTable-VD-stats.txt",row.names=FALSE)
+write.csv(vd.stats.table,
+          file="tables/SupTable-VD-stats.txt")
 ```
 
 ```{r total_clearnace_stats, eval=TRUE}
@@ -205,7 +212,8 @@ cl.stats.table <- makestatstable(level3tab,
                                        logrsquared = TRUE
                                        )
 kable(cl.stats.table)
-write.csv(cl.stats.table,file="tables/SupTable-Cl-stats.txt",row.names=FALSE)
+write.csv(cl.stats.table,
+          file="tables/SupTable-Cl-stats.txt")
 ```
 
 # Compiled Stats Table for main manuscript:
@@ -225,7 +233,8 @@ rownames(level3stats.table) <- c(
 )
 level3stats.table<-apply(level3stats.table,c(1,2),function(x) strsplit(x, " ")[[1]][1])
 kable(level3stats.table)
-write.csv(level3stats.table,file="tables/Table-Level3-stats.txt",row.names=FALSE)
+write.csv(level3stats.table,
+          file="tables/Table6-halflifeVdCltot-stats.txt")
 ```
 
 # Half-life scatter plot:
@@ -250,7 +259,7 @@ FigLev3a <- ggplot(data=level3tab) +
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=10))
 print(FigLev3a)
-ggsave(paste("figs/FigLev3a_thalf_obsVpred_",output.prefix,".tiff",sep=""), width=6, height=8, dpi=300)
+ggsave(paste("figs/SupFigLev3a_thalf_obsVpred_",output.prefix,".tiff",sep=""), width=6, height=8, dpi=300)
 ```
 
 ```{r make_level3_halflife_box_plot, eval = TRUE}
@@ -269,7 +278,7 @@ FigLev3b <- ggplot(data=level3tab, aes(x=QSPR, y=thalf.RPE)) +
   theme( text  = element_text(size=20))   +
   theme(axis.text.x = element_text(angle = 60, vjust = 0.75, hjust=0.75))
 print(FigLev3b) 
-ggsave(paste("figs/FigLev3b_thalf_boxplot_",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
+ggsave(paste("figs/SupFigLev3b_thalf_boxplot_",output.prefix,".tiff",sep=""), width=6, height=4, dpi=300)
 ```
 
 ```{r make_level3_vd_scatter_plot, eval = TRUE}
@@ -292,7 +301,7 @@ FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS")))) 
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=10))
 print(FigLev3c)
-ggsave(paste("figs/FigLev3c_Vd_obsVpred_",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/SupFigLev3c_Vd_obsVpred_",output.prefix,".tiff",sep=""), 
        width=6, height=8, dpi=300)
 ```
 
@@ -314,7 +323,7 @@ FigLev3d <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS"))),
   theme( text  = element_text(size=20))+
   theme(axis.text.x = element_text(angle = 60, vjust = 0.75, hjust=0.75))
 print(FigLev3d)  
-ggsave(paste("figs/FigLev3d_Vd_boxplot_",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/SupFigLev3d_Vd_boxplot_",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```                 
 
@@ -338,7 +347,7 @@ FigLev3e <- ggplot(data=level3tab) +
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=10))
 print(FigLev3e)
-ggsave(paste("figs/FigLev3e_Cltot_obsVpred_",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/SupFigLev3e_Cltot_obsVpred_",output.prefix,".tiff",sep=""), 
        width=6, height=8, dpi=300)
 ```
 
@@ -360,7 +369,7 @@ FigLev3f <- ggplot(data=level3tab,
   theme( text  = element_text(size=19))+
   theme(axis.text.x = element_text(angle = 60, vjust = 0.75, hjust=0.75))
 print(FigLev3f)
-ggsave(paste("figs/FigLev3f_Cltot_boxplot_",output.prefix,".tiff",sep=""), 
+ggsave(paste("SupFigLev3f_Cltot_boxplot_",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ``` 
 
@@ -370,7 +379,8 @@ for (this.col in 1:dim(lev3suptable)[2])
   if (is.numeric(lev3suptable[1,this.col]))
     lev3suptable[,this.col] <- signif(lev3suptable[,this.col],3)
   
-write.csv(lev3suptable,row.names=FALSE,file="tables/SupTable-Level3.txt")
+write.csv(lev3suptable,
+          file="tables/SupTable-Level3.txt")
 
 ```
 
