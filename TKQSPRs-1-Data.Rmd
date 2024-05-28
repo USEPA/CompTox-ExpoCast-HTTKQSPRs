@@ -1,0 +1,385 @@
+---
+title: "TK QSPRs: Loading Data Files"
+author: "John Wambaugh and Nisha Sipes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QSPR Bakeoff}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+First we clear the memory to make sure there are no holdovers from previous R runs
+```{r clear_mermor, eval=TRUE}
+rm(list=ls()) 
+```
+
+To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
+```{r load_packages, eval = TRUE}
+library(readxl)
+library(ggplot2)
+library(httk)
+library(scales)
+library(gplots)
+library(RColorBrewer)
+library(DescTools)
+library(gridExtra)
+library(reshape2)
+```
+
+Load custom code 
+```{r load_code, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+source("clear_httk.R")
+source("tkstats.R")
+```
+
+
+Set the time stamp:
+```{r time_stamp, eval = TRUE}
+# Time_Days stamp:
+output.prefix <- "May2024"
+```
+
+
+
+# Load in vivo concentration vs. time data
+```{r load_cvt_data, eval = TRUE}
+test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
+series_res_set <- read.csv("CvTdb/CvTdb_fullData_20230906.csv")
+series_res_set$Species <- series_res_set$subjects.species_harmonized
+series_res_set$Media <- series_res_set$series.conc_medium_normalized
+series_res_set$Time_Days <- series_res_set$conc_time_values.time_h / 24 # days
+series_res_set$Conc_mgpL <- series_res_set$conc_time_values.conc # mg/L
+series_res_set$Dose <- series_res_set$studies.dose_level_normalized_corrected # mg/kg
+series_res_set$Route <- series_res_set$studies.administration_route_normalized
+series_res_set$calc_loq <- series_res_set$series.loq_normalized # mg/L
+series_res_set$DTXSID <- series_res_set$series.analyte_dtxsid
+for (this.chem in unique(series_res_set$DTXSID))
+{
+  this.compound <- test.chems.dashboard[test.chems.dashboard$DTXSID %in% this.chem,
+                                         "PREFERRED_NAME"]
+  series_res_set[series_res_set$DTXSID %in% this.chem, "Compound"] <-
+    this.compound
+}
+series_res_set$CAS <- series_res_set$series.test_substance_casrn
+series_res_set$Reference <- series_res_set$documents_extraction.pmid
+series_res_set[is.na(series_res_set$Reference), "Reference"] <-
+  "NTP"
+series_res_set$Source <- series_res_set$Reference
+```
+
+```{r baddose, eval=TRUE}
+# Looks like a problem with the extraction here:
+series_res_set <- subset(series_res_set, !(DTXSID %in% c("DTXSID3032179")))
+```
+
+```{r organize_eval_chems, eval = TRUE}
+# A list of the chemicals in the evaluation:
+# There are 101 chemicals with CvT data for which the collaborators have been asked
+# to make predictions
+eval.cas <- unique(series_res_set$CAS)
+length(eval.cas)
+
+# We have both human and rat:
+series_res_set$Species <- tolower(series_res_set$Species)
+unique(series_res_set$Species)
+
+# Although CvTdb has expanded, keep focus on human and rat:
+series_res_set <- subset(series_res_set, tolower(Species) %in%
+                           c("rat", "human"))
+unique(series_res_set$Species)
+
+# We habe both blood and plasma:
+series_res_set$Media <- tolower(series_res_set$Media)
+unique(series_res_set$Media)
+
+# Significant figures:
+series_res_set$Time_Days <- suppressWarnings(signif(
+  as.numeric(series_res_set$Time_Days),2))
+series_res_set$Conc_mgpL <- suppressWarnings(signif(
+  as.numeric(series_res_set$Conc_mgpL),4))
+
+CvT.data <- series_res_set
+CvT.chems <- unique(CvT.data$DTXSID)
+length(CvT.chems)
+
+CvT.data[,"Dose"] <- signif(as.numeric(CvT.data[,"Dose"]), 3)
+CvT.data[,"Time_Days"] <- signif(as.numeric(CvT.data[,"Time_Days"]), 3)
+
+CvT.data <- subset(CvT.data,Time_Days>0)
+
+write.csv(CvT.data,row.names=FALSE,file="tables/SupTable-CvTData.txt")
+```
+
+# Calculate a limit of quantification (90% of lowest observation)
+```{r calc_loq, eval = TRUE}
+for (this.study in unique(CvT.data$Source))
+{
+  this.subset1 <- subset(CvT.data,Source==this.study)
+  for (this.chem in unique(this.subset1$DTXSID))
+  {
+    this.subset2 <- subset(this.subset1,
+                           DTXSID==this.chem)
+    for (this.media in unique(this.subset2$Media))
+    {
+      this.subset3 <- subset(this.subset2,Media==this.media & !is.na(Conc_mgpL))
+      this.subset3 <- subset(this.subset3,Conc_mgpL>0)
+      if (any(!is.na(this.subset3$calc_loq)))
+      {
+        this.loq <- min(this.subset3$calc_loq,na.rm=TRUE)
+      } else {
+        this.loq <- suppressWarnings(min(this.subset3$Conc_mgpL,na.rm=TRUE))
+        this.loq <- this.loq*0.9
+      }
+      CvT.data[
+        CvT.data$Source %in% this.study & 
+        CvT.data$DTXSID %in% this.chem & 
+        CvT.data$Media %in% this.media &
+        is.na(CvT.data$calc_loq),
+        "calc_loq"] <- this.loq
+    }
+  }
+}
+CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
+length(unique(CvT.data$DTXSID))
+```
+
+
+# Load empirical fits to Cvt data:
+```{r load_empirical_fits, eval = TRUE}
+fittable <- read.csv("CvTdb/CvTdb_fullCoefsAIC_2023.10.30.csv")
+fittable$DTXSID <- fittable$Chemical
+length(unique(fittable$DTXSID))
+fittable$Model <- fittable$model
+fittable[fittable$Model=="model_1comp","Model"] <- "1Comp"
+fittable[fittable$Model=="model_2comp","Model"] <- "2Comp"
+CASinfo <- CvT.data[,c("DTXSID","CAS")]
+CASinfo <- subset(CASinfo,!duplicated(CASinfo))
+fittable <- merge(fittable,CASinfo,by="DTXSID")
+
+# Calculate halflife for one compartment:
+fittable[is.na(fittable$V1),"halflife"] <- signif(log(2)/
+  fittable[is.na(fittable$V1),"kelim"],3)
+
+# Calculate halflife for two compartment:
+fittable[!is.na(fittable$V1),"alphaplusbeta"] <- 
+  fittable[!is.na(fittable$V1),"kelim"] +
+  fittable[!is.na(fittable$V1),"k12"] + 
+  fittable[!is.na(fittable$V1),"k21"]
+fittable[!is.na(fittable$V1),"alphatimesbeta"] <- 
+  fittable[!is.na(fittable$V1),"kelim"] * 
+  fittable[!is.na(fittable$V1),"k21"]
+fittable$beta <- 
+  (fittable$alphaplusbeta - sqrt(fittable$alphaplusbeta^2 -
+                                   4*fittable$alphatimesbeta)) / 2 
+fittable[!is.na(fittable$V1),"halflife"] <- signif(log(2)/
+  fittable[!is.na(fittable$V1),"beta"],3)
+
+# Calculate Vdist for two-compartment model:
+fittable[!is.na(fittable$V1),"Vdist"] <-
+  fittable[!is.na(fittable$V1),"Vdist"] * (1 + 
+  fittable[!is.na(fittable$V1),"k12"] /
+  fittable[!is.na(fittable$V1),"k21"])
+  
+
+# Although CvTdb has expanded, keep focus on human and rat:
+fittable <- subset(fittable, tolower(Species) %in%
+                           c("rat", "human"))
+unique(fittable$Species)
+
+for (this.chem in unique(fittable$DTXSID))
+  for (this.species in unique(fittable$Species))
+  {
+    this.subset <- subset(CvT.data, 
+                          DTXSID %in% this.chem &
+                          Species %in% this.species)
+    these.refs <- paste(unique(sort(this.subset$Reference)),
+                        collapse=", ")
+    fittable[fittable$DTXSID %in% this.chem &
+                     fittable$Species %in% this.species,
+                   "Reference"] <- these.refs
+  }
+fittable$k12 <- fittable$k12*24 # 1/day
+fittable$k21 <- fittable$k21*24 # 1/day
+fittable$kelim <- fittable$kelim*24 # 1/day
+fittable$kgutabs <- fittable$kgutabs*24 # 1/day
+fittable$halflife <- fittable$halflife*24 # 1/day
+fittable$Time_Days.Units <- "days"
+length(unique(fittable$DTXSID))
+```
+# Load predictions made with fits
+```{r load_fit_preds, eval = FALSE}
+fit.preds <- as.data.frame(read_excel("CvTdb/Predictions_CvTwinningModel_20240109.xlsx"))
+
+fit.preds <- merge(fit.preds,
+      test.chems.dashboard[,c("DTXSID","CASRN","PREFERRED_NAME")],
+      by.x="Chemical",
+      by.y="DTXSID")
+colnames(fit.preds)[colnames(fit.preds)=="CASRN"] <- "CAS"
+```
+
+#How many chemicals have 1 or 2 compartment fits:
+```{r count_empirical, eval = TRUE}
+cat(paste(length(unique(fittable$Chemical))),
+                 "chemicals with empirical Cvt fits.\n")
+```
+
+
+# Set the signfifant digits to something reasonable:
+```{r subset_cvt_data, eval = TRUE}
+CvT.data$Conc_mgpL <- signif(CvT.data$Conc_mgpL,3)
+CvT.data$Time_Days <- signif(CvT.data$Time_Days,3)
+CvT.data$calc_loq <- signif(CvT.data$calc_loq,3)
+
+for (this.col in colnames(fittable)[c(6:15,18,20)])
+  fittable[,this.col] <- signif(fittable[,this.col], 3)
+```
+
+# Write out TK parameter estimates:
+```{r load_physchem, eval = TRUE}
+dim(fittable)[1]
+length(unique(fittable$DTXSID))
+
+fittable <- merge(fittable,
+                  test.chems.dashboard[,c("DTXSID","PREFERRED_NAME","CASRN")],
+                  by="DTXSID",
+                  all.x=TRUE)
+fittable <- fittable[,c(1,25:26,24,2:3,5:23)]
+write.csv(fittable,file="tables/SupTable-TKFits.txt",row.names=FALSE)
+```
+# Load phys-chem information:
+```{r load_physchem, eval = TRUE}
+CvT.chems <-read_excel("CvTdb/eval-chems3.xls")
+for (this.col in 6:18) CvT.chems[,this.col] <- suppressWarnings(signif(
+  as.numeric(unlist(CvT.chems[,this.col])),3))
+CvT.chems <- CvT.chems[,c(
+  "DTXSID",
+  "PREFERRED_NAME",
+  "CASRN",
+  "AVERAGE_MASS",                                                    
+  "BOILING_POINT_DEGC_OPERA_PRED",                                   
+  "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",
+  "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED",
+  "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED",
+  "MELTING_POINT_DEGC_OPERA_PRED",                                   
+  "VAPOR_PRESSURE_MMHG_OPERA_PRED",
+  "WATER_SOLUBILITY_MOL/L_OPERA_PRED"
+  )]
+
+```
+
+
+# Throw out the CvT data for chemicals that could not be described by empirical PK models
+```{r subset_cvt_data, eval = TRUE}
+length(unique(fittable$DTXSID))
+# Don't want data where the flat model wins:
+fittable.noflat <- subset(fittable, !(Model%in% c("model_flat")))
+print(paste("There were",
+            length(unique(fittable$DTXSID)) -
+                     length(unique(fittable.noflat$DTXSID)),
+            "chemicals where we did not get an empirical fit (flat model selected)."))
+write.csv(subset(fittable, !(DTXSID%in%fittable.noflat$DTXSID))[,
+          c("DTXSID","CAS","Model","AIC","Species","method")], 
+          row.names=FALSE,
+          file="tables/SupTable-NoEmpiricalFitChems.txt")
+fittable <- fittable.noflat
+
+length(unique(fittable$DTXSID))
+# Count chemicals where we don't have a usable empirical fit (No Vdist or V1):
+# essentially we only had oral data,
+fittable.usable <- subset(fittable, 
+                                 !is.na(Vdist) | !is.na(V1))
+print(paste("There were",
+            length(unique(fittable$DTXSID)) -
+                     length(unique(fittable.usable$DTXSID)),
+            "chemicals where we only had oral data (no empirical fit suitable for prediction)."))
+length(unique(fittable$DTXSID))
+
+print(length(unique(CvT.data$DTXSID)))
+CvT.data <- subset(CvT.data,DTXSID %in% fittable$DTXSID)
+print(length(unique(CvT.data$DTXSID)))
+
+print(length(unique(CvT.chems$DTXSID)))
+CvT.chems<- subset(CvT.chems,DTXSID %in% fittable$DTXSID)
+print(length(unique(CvT.chems$DTXSID)))
+```
+
+
+
+Create a default table of in vitro measured values:
+```{r default_table, eval = TRUE}
+
+reset_httk()
+httk.data <- subset(chem.physical_and_invitro.data,DTXSID%in%CvT.chems$DTXSID)
+httk.data <- httk.data[,c(
+  "Compound",
+  "DTXSID",
+  "CAS",
+  "Human.Clint",
+  "Human.Clint.pValue",
+  "Human.Funbound.plasma")]
+
+
+# Set insignificant trends to zero:
+httk.data[httk.data$Human.Clint.pvalue < 0.05,"Human.Clint"] <- 0
+colnames(httk.data)  
+
+# Use medians from distributions:
+httk.data$Human.Clint <- unlist(lapply(strsplit(httk.data$Human.Clint,","),function(x) as.numeric(x[1])))
+
+# Make sure everything is numeric:
+httk.data$Human.Funbound.plasma <- 
+  unlist(lapply(strsplit(httk.data$Human.Funbound.plasma,","),
+  function(x) as.numeric(x[1])))
+
+# Treat fup = 0 as non-measurment:
+httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma == 0] <- NA
+httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma==0.005] <- NA
+
+# Which chemicals would we normally use with HTTK PBTK:
+httk.both <- httk.data[,"CAS"][(apply(httk.data,1,function(x) 
+  !is.na(x["Human.Clint"]) & !is.na(x["Human.Funbound.plasma"])))]
+```
+
+Add HTTK measured data to CvT.chems table:
+```{r default_table, eval = TRUE}
+CvT.chems <- merge(CvT.chems,
+  httk.data[,c("DTXSID","Human.Clint","Human.Funbound.plasma")],
+  all.x=TRUE,
+  by="DTXSID")
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Clint"] <- "Human.Clint.httk"
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- "Human.Fup.httk"
+```
+
+Generate results for text:
+```{r default_table, eval = TRUE}
+median.clint <- median(CvT.chems$Human.Clint.httk,na.rm=TRUE)
+twofold.clint <- CvT.chems$Human.Clint.httk[!is.na(CvT.chems$Human.Clint.httk)]
+twofold.clint <- twofold.clint < 2*twofold.clint &
+                 twofold.clint > 0.5*twofold.clint
+
+cat(paste(sum(CvT.chems$Human.Clint.httk>100,na.rm=TRUE),
+          "chemicals had Clint > 10^3 and",
+          signif(sum(twofold.clint)/length(twofold.clint)*100,2),
+          "percent were within two-fold of the median."))
+```
+
+```{r write_out_data, eval= TRUE}
+invitro <- httk.data
+save(invitro,file="data/httkinvitro.RData")
+save(CvT.chems,file="data/Cvt-chems.RData")
+save(CvT.data,file="data/Cvt-data.RData")
+save(fittable,file="data/fittable.RData")
+save(httk.both ,file="data/httk-goodchems.RData")
+```
