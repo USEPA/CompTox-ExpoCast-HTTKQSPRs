@@ -1,6 +1,6 @@
 # Supplemental Material
 
-## Collaborative Evaluation of In silico Predictions for High Throughput Toxicokinetics
+## Collaborative Evaluation of In Silico Predictions for High Throughput Toxicokinetics
 
 ### Abstract
 
