@@ -1,5 +1,5 @@
 ---
-title: "TK QSPR Bakeoff"
+title: "TK QSPRs: Make Level 2 Plots"
 author: "John Wambaugh and Nisha Sipes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
