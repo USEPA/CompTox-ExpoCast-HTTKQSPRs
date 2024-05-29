@@ -69,7 +69,7 @@ Predictors evaluated:
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
 * HTTK PBTK with y-randomized in vitro measured values
-* Empirical one- and two-comaprtment fits to CvT data
+* Empirical one- and two-compartment fits to CvT data
 
 # Calculate relative prediction error (RPE):  
 RPE = (pred - obs)/ obs

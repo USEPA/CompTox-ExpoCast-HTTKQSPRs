@@ -81,7 +81,7 @@ Predictors evaluated:
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
 * HTTK PBTK with y-randomized in vitro measured values
-* Empirical one- and two-comaprtment fits to CvT data
+* Empirical one- and two-compartment fits to CvT data
 
 ## Collect the Concentration vs. time (level 2) predictions from each model:
 ```{r cvt_onering, eval = TRUE}

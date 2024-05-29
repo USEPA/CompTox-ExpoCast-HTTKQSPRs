@@ -63,7 +63,7 @@ predictions too.
 Level I included the predictions made with the in vitro measured values, but this 
 is a subset of the total chemicals. Should probably run all statistics both
 for all chemicals and just the subset to make sure that the QSPRs aren't 
-affected by weird chemcials with no in vitro measured values. But I haven't 
+affected by weird chemicals with no in vitro measured values. But I haven't 
 done this yet.
 
 Predictors evaluated:
@@ -73,7 +73,7 @@ Predictors evaluated:
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
 * HTTK PBTK with y-randomized in vitro measured values
-* Empirical one- and two-comaprtment fits to CvT data
+* Empirical one- and two-compartment fits to CvT data
 
 
 We load the TK stats (Level III) at this point because it makes sense to do
