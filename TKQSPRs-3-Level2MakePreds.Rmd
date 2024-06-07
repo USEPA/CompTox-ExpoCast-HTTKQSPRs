@@ -11,6 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/tkqsars/")
 ```
 
 ## R Markdown
@@ -85,21 +86,22 @@ There are chemicals where the in vivo data don't permit empirical fits, drop
 those from the level II/III evaluation:
 ```{r separate_out_badfits, eval=TRUE}
 CvT.chems.nofits <- CvT.chems[
-  !(CvT.chems$CASRN%in%fittable$CAS) |
-  CvT.chems$CASRN %in%subset(fittable,Model=="Flat")$CAS |
-  CvT.chems$CASRN %in%subset(fittable,Model=="None")$CAS
+  !(CvT.chems$CAS%in%fittable$CAS) |
+  CvT.chems$CAS %in%subset(fittable,Model=="Flat")$CAS |
+  CvT.chems$CAS %in%subset(fittable,Model=="None")$CAS
   , ]
                                 
 
 write.csv(CvT.chems.nofits[,c(
   "DTXSID",
   "PREFERRED_NAME",                               
-  "CASRN")], row.names=FALSE,file="tables/SupTable-NoEmpiricalFitChems.txt")
+  "CAS")], row.names=FALSE,file="tables/SupTable-NoEmpiricalFitChems.txt")
 
-CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CASRN))
+CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CAS))
 cat(paste(length(unique(CvT.data$DTXSID)),
           "chemicals with good invivoPKfit fits of CvT data.\n"))
-cat(paste(dim(subset(fittable,!is.na(Vdist) | !is.na(V1)))[1],
+cat(paste(dim(subset(fittable,!is.na(Vdist) #| !is.na(V1)
+                     ))[1],
           "chemicals where volume of distribution could be estimated (iv data available), allowing us to make empirical predictions.\n"))
 ```
 ## Get rid of chemical predictions that are possibly just training set lookups:
@@ -232,7 +234,7 @@ make_cvt_comparisons <- function(this.label, clint.col, fup.col,
     data.list=list(
       Compound="PREFERRED_NAME",
       DTXSID="DTXSID",
-      CAS="CASRN",
+      CAS="CAS",
       Funbound.plasma=fup.col,
       Clint=clint.col),
     species="Human",
@@ -507,7 +509,8 @@ The performance of actual 1 compartment model fits provides an upper limit
 of how good we can get (thanks Rusty)
 ```{r cvt_compare_fits, eval = TRUE}
 this.label <- "In Vivo Fits"
-fit.chems <- subset(fittable, !is.na(Vdist) | !is.na(V1))$DTXSID
+fit.chems <- subset(fittable, !is.na(Vdist) #| !is.na(V1)
+                    )$DTXSID
 out <- makeCvTpredsfromfits(
   subset(CvT.data, DTXSID %in% fit.chems),
   subset(fittable, DTXSID %in% fit.chems),

@@ -11,6 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/tkqsars/")
 ```
 
 ## R Markdown
@@ -39,7 +40,6 @@ library(reshape2)
 
 Load custom code 
 ```{r load_code, eval = TRUE}
-setwd("C:/Users/jwambaug/git/tkqsars/")
 source("clear_httk.R")
 source("tkstats.R")
 ```
@@ -56,15 +56,29 @@ output.prefix <- "May2024"
 # Load in vivo concentration vs. time data
 ```{r load_cvt_data, eval = TRUE}
 test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
+DASHBOARDCAS.COL <- "CASRN"
+test.chems.dashboard[,"CAS"] <- test.chems.dashboard[, DASHBOARDCAS.COL]
+
+CVTSPECIES.COL <- "subjects.species_harmonized"
+CVTMEDIA.COL <- "series.conc_medium_normalized"
+CVTTIME.COL <- "conc_time_values.time_hr"
+CVTCONC.COL <- "conc_time_values.conc"
+CVTDOSE.COL <- "studies.dose_level_normalized_corrected"
+CVTROUTE.COL <- "studies.administration_route_normalized"
+CVTLOQ.COL <- "series.loq_normalized"
+CVTDTXSID.COL <- "series.analyte_dtxsid"
+CVTCAS.COL <- "series.test_substance_casrn"
+CVTREFERENCE.COL <- "documents_extraction.pmid"
+
 series_res_set <- read.csv("CvTdb/CvTdb_fullData_20230906.csv")
-series_res_set$Species <- series_res_set$subjects.species_harmonized
-series_res_set$Media <- series_res_set$series.conc_medium_normalized
-series_res_set$Time_Days <- series_res_set$conc_time_values.time_h / 24 # days
-series_res_set$Conc_mgpL <- series_res_set$conc_time_values.conc # mg/L
-series_res_set$Dose <- series_res_set$studies.dose_level_normalized_corrected # mg/kg
-series_res_set$Route <- series_res_set$studies.administration_route_normalized
-series_res_set$calc_loq <- series_res_set$series.loq_normalized # mg/L
-series_res_set$DTXSID <- series_res_set$series.analyte_dtxsid
+series_res_set$Species <- series_res_set[,CVTSPECIES.COL]
+series_res_set$Media <- series_res_set[,CVTMEDIA.COL]
+series_res_set$Time_Days <- series_res_set[,CVTTIME.COL] / 24 # days
+series_res_set$Conc_mgpL <- series_res_set[,CVTCONC.COL] # mg/L
+series_res_set$Dose <- series_res_set[,CVTDOSE.COL] # mg/kg
+series_res_set$Route <- series_res_set[,CVTROUTE.COL]
+series_res_set$calc_loq <- series_res_set[,CVTLOQ.COL] # mg/L
+series_res_set$DTXSID <- series_res_set[,CVTDTXSID.COL]
 for (this.chem in unique(series_res_set$DTXSID))
 {
   this.compound <- test.chems.dashboard[test.chems.dashboard$DTXSID %in% this.chem,
@@ -72,8 +86,8 @@ for (this.chem in unique(series_res_set$DTXSID))
   series_res_set[series_res_set$DTXSID %in% this.chem, "Compound"] <-
     this.compound
 }
-series_res_set$CAS <- series_res_set$series.test_substance_casrn
-series_res_set$Reference <- series_res_set$documents_extraction.pmid
+series_res_set$CAS <- series_res_set[,CVTCAS.COL]
+series_res_set$Reference <- series_res_set[,CVTREFERENCE.COL]
 series_res_set[is.na(series_res_set$Reference), "Reference"] <-
   "NTP"
 series_res_set$Source <- series_res_set$Reference
@@ -158,10 +172,24 @@ length(unique(CvT.data$DTXSID))
 
 # Load empirical fits to Cvt data:
 ```{r load_empirical_fits, eval = TRUE}
-fittable <- read.csv("CvTdb/CvTdb_fullCoefsAIC_2023.10.30.csv")
-fittable$DTXSID <- fittable$Chemical
+fittable <- as.data.frame(read_excel("CvTdb/evalTKstats_bakeoff.xlsx"))
+
+KELIM.COL <- "kelim.tkstats"
+HALFLIFE.COL <- "halflife.tkstats"
+MODEL.COL <- "model"
+VDIST.COL <- "Vss.tkstats"
+V1.COL <- "V1.tkstats"  
+K12.COL <- "k12.tkstats"
+K21.COL <- "k21.tkstats"
+KGUTABS.COL <- "kgutabs.tkstats"
+FGUTABS.COL <- "Fgutabs.tkstats"
+TIMEUNITS.COL <- "Time.Units"
+DTXSID.COL <- "Chemical"
+SIGFIGS <- 4
+
+fittable[,"DTXSID"] <- fittable[,DTXSID.COL]
 length(unique(fittable$DTXSID))
-fittable$Model <- fittable$model
+fittable[,"Model"] <- fittable[,MODEL.COL]
 fittable[fittable$Model=="model_1comp","Model"] <- "1Comp"
 fittable[fittable$Model=="model_2comp","Model"] <- "2Comp"
 CASinfo <- CvT.data[,c("DTXSID","CAS")]
@@ -169,29 +197,30 @@ CASinfo <- subset(CASinfo,!duplicated(CASinfo))
 fittable <- merge(fittable,CASinfo,by="DTXSID")
 
 # Calculate halflife for one compartment:
-fittable[is.na(fittable$V1),"halflife"] <- signif(log(2)/
-  fittable[is.na(fittable$V1),"kelim"],3)
+#fittable[is.na(fittable$V1),"halflife"] <- signif(log(2)/
+#  fittable[is.na(fittable$V1),"kelim"],3)
 
 # Calculate halflife for two compartment:
-fittable[!is.na(fittable$V1),"alphaplusbeta"] <- 
-  fittable[!is.na(fittable$V1),"kelim"] +
-  fittable[!is.na(fittable$V1),"k12"] + 
-  fittable[!is.na(fittable$V1),"k21"]
-fittable[!is.na(fittable$V1),"alphatimesbeta"] <- 
-  fittable[!is.na(fittable$V1),"kelim"] * 
-  fittable[!is.na(fittable$V1),"k21"]
-fittable$beta <- 
-  (fittable$alphaplusbeta - sqrt(fittable$alphaplusbeta^2 -
-                                   4*fittable$alphatimesbeta)) / 2 
-fittable[!is.na(fittable$V1),"halflife"] <- signif(log(2)/
-  fittable[!is.na(fittable$V1),"beta"],3)
+#fittable[!is.na(fittable$V1),"alphaplusbeta"] <- 
+#  fittable[!is.na(fittable$V1),"kelim"] +
+#  fittable[!is.na(fittable$V1),"k12"] + 
+#  fittable[!is.na(fittable$V1),"k21"]
+#fittable[!is.na(fittable$V1),"alphatimesbeta"] <- 
+#  fittable[!is.na(fittable$V1),"kelim"] * 
+#  fittable[!is.na(fittable$V1),"k21"]
+#fittable$beta <- 
+#  (fittable$alphaplusbeta - sqrt(fittable$alphaplusbeta^2 -
+#                                   4*fittable$alphatimesbeta)) / 2 
+#fittable[!is.na(fittable$V1),"halflife"] <- signif(log(2)/
+#  fittable[!is.na(fittable$V1),"beta"],3)
 
 # Calculate Vdist for two-compartment model:
-fittable[!is.na(fittable$V1),"Vdist"] <-
-  fittable[!is.na(fittable$V1),"Vdist"] * (1 + 
-  fittable[!is.na(fittable$V1),"k12"] /
-  fittable[!is.na(fittable$V1),"k21"])
-  
+#fittable[!is.na(fittable$V1),"Vdist"] <-
+#  fittable[!is.na(fittable$V1),"Vdist"] * (1 + 
+#  fittable[!is.na(fittable$V1),"k12"] /
+#  fittable[!is.na(fittable$V1),"k21"])
+
+fittable[,"Vdist"] <- signif(as.numeric(fittable[,VDIST.COL]), SIGFIGS)  
 
 # Although CvTdb has expanded, keep focus on human and rat:
 fittable <- subset(fittable, tolower(Species) %in%
@@ -210,25 +239,23 @@ for (this.chem in unique(fittable$DTXSID))
                      fittable$Species %in% this.species,
                    "Reference"] <- these.refs
   }
-fittable$k12 <- fittable$k12*24 # 1/day
-fittable$k21 <- fittable$k21*24 # 1/day
-fittable$kelim <- fittable$kelim*24 # 1/day
-fittable$kgutabs <- fittable$kgutabs*24 # 1/day
-fittable$halflife <- fittable$halflife*24 # 1/day
-fittable$Time_Days.Units <- "days"
+
+for (this.col in c(K12.COL, K21.COL, KELIM.COL, KGUTABS.COL))
+{
+  fittable[,this.col] <- signif(as.numeric(fittable[,this.col])*24, SIGFIGS) # 1/day
+}
+fittable[,HALFLIFE.COL] <- signif(as.numeric(fittable[,HALFLIFE.COL])/24, SIGFIGS) # day
+fittable[,TIMEUNITS.COL] <- "days"
+fittable[,"halflife"] <- fittable[,HALFLIFE.COL]
+fittable[,"kelim"] <- fittable[,KELIM.COL]
+fittable[,"V1"] <- fittable[,V1.COL]
+fittable[,"k12"] <- fittable[,K12.COL]
+fittable[,"k21"] <- fittable[,K21.COL]
+fittable[,"Fgutabs"] <- fittable[,FGUTABS.COL]
+fittable[,"kgutabs"] <- fittable[,KGUTABS.COL]
+
 length(unique(fittable$DTXSID))
 ```
-# Load predictions made with fits
-```{r load_fit_preds, eval = FALSE}
-fit.preds <- as.data.frame(read_excel("CvTdb/Predictions_CvTwinningModel_20240109.xlsx"))
-
-fit.preds <- merge(fit.preds,
-      test.chems.dashboard[,c("DTXSID","CASRN","PREFERRED_NAME")],
-      by.x="Chemical",
-      by.y="DTXSID")
-colnames(fit.preds)[colnames(fit.preds)=="CASRN"] <- "CAS"
-```
-
 #How many chemicals have 1 or 2 compartment fits:
 ```{r count_empirical, eval = TRUE}
 cat(paste(length(unique(fittable$Chemical))),
@@ -242,8 +269,8 @@ CvT.data$Conc_mgpL <- signif(CvT.data$Conc_mgpL,3)
 CvT.data$Time_Days <- signif(CvT.data$Time_Days,3)
 CvT.data$calc_loq <- signif(CvT.data$calc_loq,3)
 
-for (this.col in colnames(fittable)[c(6:15,18,20)])
-  fittable[,this.col] <- signif(fittable[,this.col], 3)
+#for (this.col in colnames(fittable)[c(6:15,18,20)])
+#  fittable[,this.col] <- signif(fittable[,this.col], 3)
 ```
 
 # Write out TK parameter estimates:
@@ -252,21 +279,43 @@ dim(fittable)[1]
 length(unique(fittable$DTXSID))
 
 fittable <- merge(fittable,
-                  test.chems.dashboard[,c("DTXSID","PREFERRED_NAME","CASRN")],
+                  test.chems.dashboard[,c("DTXSID","PREFERRED_NAME"#,"CAS"
+                                          )],
                   by="DTXSID",
                   all.x=TRUE)
-fittable <- fittable[,c(1,25:26,24,2:3,5:23)]
+fittable <- fittable[, c("DTXSID",
+                         "PREFERRED_NAME",
+                         "CAS",
+                         "Model",
+                         "Species",
+                         "Reference",
+                         "Vdist",
+                         "halflife",
+                         "kelim",
+                         "V1",
+                         "k12",
+                         "k21",
+                         "kgutabs",
+                         "Fgutabs",
+                          TIMEUNITS.COL
+                          )]
+
+fittable <- subset(fittable, !duplicated(fittable))
+              
 write.csv(fittable,file="tables/SupTable-TKFits.txt",row.names=FALSE)
 ```
 # Load phys-chem information:
 ```{r load_physchem, eval = TRUE}
 CvT.chems <-read_excel("CvTdb/eval-chems3.xls")
+CHEMLISTCAS.COL <- "CASRN"
+CvT.chems[,"CAS"] <- CvT.chems[,CHEMLISTCAS.COL]
+
 for (this.col in 6:18) CvT.chems[,this.col] <- suppressWarnings(signif(
   as.numeric(unlist(CvT.chems[,this.col])),3))
 CvT.chems <- CvT.chems[,c(
   "DTXSID",
   "PREFERRED_NAME",
-  "CASRN",
+  "CAS",
   "AVERAGE_MASS",                                                    
   "BOILING_POINT_DEGC_OPERA_PRED",                                   
   "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",
@@ -290,7 +339,11 @@ print(paste("There were",
                      length(unique(fittable.noflat$DTXSID)),
             "chemicals where we did not get an empirical fit (flat model selected)."))
 write.csv(subset(fittable, !(DTXSID%in%fittable.noflat$DTXSID))[,
-          c("DTXSID","CAS","Model","AIC","Species","method")], 
+          c("DTXSID","CAS","Model",
+            #"AIC",
+            "Species"#,
+            #"method"
+            )], 
           row.names=FALSE,
           file="tables/SupTable-NoEmpiricalFitChems.txt")
 fittable <- fittable.noflat
@@ -299,7 +352,8 @@ length(unique(fittable$DTXSID))
 # Count chemicals where we don't have a usable empirical fit (No Vdist or V1):
 # essentially we only had oral data,
 fittable.usable <- subset(fittable, 
-                                 !is.na(Vdist) | !is.na(V1))
+                                 !is.na(Vdist)# | !is.na(V1)
+                          )
 print(paste("There were",
             length(unique(fittable$DTXSID)) -
                      length(unique(fittable.usable$DTXSID)),
