@@ -527,6 +527,522 @@ level2tab.aafe.late[[this.label]] <- out$aafe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
+## Level Four Analysis, an introduction
+
+We finally now want to see how changing particular values for fittable to
+the consensus predicted values changes the values.
+
+```{r new_fittables, eval = TRUE}
+library(tidyverse)
+# This is for new fittables where some of the values in fittable are replaced by
+# HTPBTK-Consensus predictions found in level3tab$`HTPBTK-Consensus`
+# Get names for fittable
+fit_names <- names(fittable)
+# For Vdist
+fittable_Vd <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+                          by = c(
+                            "DTXSID",
+                            "PREFERRED_NAME" = "Compound",
+                            "CAS",
+                            "Species"
+                          )) %>%
+  mutate(Vdist = ifelse(!is.na(Vdist), Vd.pred, Vdist)) %>%
+  select(all_of(fit_names))
+  
+# For kelim
+fittable_kelim <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+                          by = c(
+                            "DTXSID",
+                            "PREFERRED_NAME" = "Compound",
+                            "CAS",
+                            "Species"
+                          )) %>%
+  mutate(kelim = cl.pred/Vdist) %>%
+  select(all_of(fit_names))
+
+# For Fgutabs
+fittable_Fgutabs <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+                          by = c(
+                            "DTXSID",
+                            "PREFERRED_NAME" = "Compound",
+                            "CAS",
+                            "Species"
+                          )) %>%
+  mutate(Fgutabs = 1) %>%
+  select(all_of(fit_names))
+
+
+```
+
+```{r new_fittable_stats, eval = TRUE}
+this.label <- "In Vivo-HTTK_Vdist"
+fit.chems <- subset(fittable_Vd, !is.na(Vdist) #| !is.na(V1)
+                    )$DTXSID
+out <- makeCvTpredsfromfits(
+  subset(CvT.data, DTXSID %in% fit.chems),
+  subset(fittable_Vd, DTXSID %in% fit.chems),
+  label = this.label)
+
+level2tab.cvt[[this.label]] <- out$cvt
+level2tab.stats[[this.label]] <- out$stats
+level2tab.rmsle[[this.label]] <- out$rmsle
+level2tab.aafe[[this.label]] <- out$aafe
+level2tab.rmsle.early[[this.label]] <- out$rmsle.early
+level2tab.aafe.early[[this.label]] <- out$aafe.early
+level2tab.rmsle.late[[this.label]] <- out$rmsle.late
+level2tab.aafe.late[[this.label]] <- out$aafe.late
+level3tab[[this.label]] <- out$level3tab
+
+# kelim based on predicted half-life
+this.label <- "In Vivo-HTTK_kelim"
+fit.chems <- subset(fittable_kelim, !is.na(Vdist) #| !is.na(V1)
+                    )$DTXSID
+out <- makeCvTpredsfromfits(
+  subset(CvT.data, DTXSID %in% fit.chems),
+  subset(fittable_kelim, DTXSID %in% fit.chems),
+  label = this.label)
+
+level2tab.cvt[[this.label]] <- out$cvt
+level2tab.stats[[this.label]] <- out$stats
+level2tab.rmsle[[this.label]] <- out$rmsle
+level2tab.aafe[[this.label]] <- out$aafe
+level2tab.rmsle.early[[this.label]] <- out$rmsle.early
+level2tab.aafe.early[[this.label]] <- out$aafe.early
+level2tab.rmsle.late[[this.label]] <- out$rmsle.late
+level2tab.aafe.late[[this.label]] <- out$aafe.late
+level3tab[[this.label]] <- out$level3tab
+
+
+# Fgutabs
+this.label <- "In Vivo-HTTK_Fgutabs"
+fit.chems <- subset(fittable_Fgutabs, !is.na(Vdist) #| !is.na(V1)
+                    )$DTXSID
+out <- makeCvTpredsfromfits(
+  subset(CvT.data, DTXSID %in% fit.chems),
+  subset(fittable_Fgutabs, DTXSID %in% fit.chems),
+  label = this.label)
+
+level2tab.cvt[[this.label]] <- out$cvt
+level2tab.stats[[this.label]] <- out$stats
+level2tab.rmsle[[this.label]] <- out$rmsle
+level2tab.aafe[[this.label]] <- out$aafe
+level2tab.rmsle.early[[this.label]] <- out$rmsle.early
+level2tab.aafe.early[[this.label]] <- out$aafe.early
+level2tab.rmsle.late[[this.label]] <- out$rmsle.late
+level2tab.aafe.late[[this.label]] <- out$aafe.late
+level3tab[[this.label]] <- out$level3tab
+```
+
+To get a better sense of this, why don't we plot it!
+
+```{r RMSLE_plots}
+
+lv4_df <- data.frame(
+  QSPR = c(rep("HTPBTK-Consensus",
+               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+           rep("In Vivo",
+               length(unlist(level2tab.rmsle$`In Vivo Fits`))),
+           rep("In Vivo-HTTK_Vdist",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`))),
+           rep("In Vivo-HTTK_Fgutabs",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`))),
+           rep("In Vivo-HTTK_kelim",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`)))),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+             names(unlist(level2tab.rmsle$`In Vivo Fits`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`))),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+            unlist(level2tab.rmsle$`In Vivo Fits`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`))
+)
+
+
+ggplot(data = lv4_df %>%
+         mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
+                                               "In Vivo-HTTK_Fgutabs",
+                                               "In Vivo",
+                                               "In Vivo-HTTK_kelim",
+                                               "HTPBTK-Consensus"
+                                               ))),
+       aes(x = QSPR,
+           y = RMSLE)) +
+  ggbeeswarm::geom_beeswarm(size = 0.8) +
+  geom_line(aes(group = DTXSID), alpha = 0.25) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 8))
+
+ggsave(filename = "figs/Level4_prelim_kelimVdistFgutabs_2024July9.png",
+       height = 5,
+       width = 8)
+
+ggplot(data = lv4_df %>%
+         mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
+                                               "In Vivo",
+                                               "In Vivo-HTTK_Fgutabs",
+                                               "In Vivo-HTTK_kelim",
+                                               "HTPBTK-Consensus"
+                                               ))),
+       aes(x = QSPR,
+           y = DTXSID,
+           fill = RMSLE)) +
+  geom_tile() +
+  coord_fixed(ratio = 0.5) +
+  scale_fill_viridis_c() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 8, hjust = 1, angle = 45),
+        axis.text.y = element_blank())
+
+
+# The order is fine... but it would be nice to cluster these automatically
+# Need wide format for that
+lv4_mat <- lv4_df %>%
+  pivot_wider(names_from = QSPR,
+              values_from = RMSLE) %>% 
+  janitor::clean_names() %>%
+  column_to_rownames(var = "dtxsid") %>%
+  na.omit() %>%
+  as.matrix()
+
+lv4_dist <- dist(lv4_mat)
+
+ComplexHeatmap::Heatmap(lv4_mat, name = "RMSLE",
+                        show_row_names = FALSE,
+                        show_column_dend = FALSE)
+
+
+
+```
+
+Next what I want to do is test how quickly the RMSLE changes. I will
+start at the In Vivo value and head towards the Consensus value in 10% increments.
+
+
+
+```{r sensitivity_analysis, eval = TRUE}
+# For Vdist
+fittable_Vdist <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+                          by = c(
+                            "DTXSID",
+                            "PREFERRED_NAME" = "Compound",
+                            "CAS",
+                            "Species"
+                          )) %>%
+  mutate(param_range = (Vd.pred - Vdist)/10,
+         Vd_10p = Vdist + param_range*1,
+         Vd_20p = Vdist + param_range*2,
+         Vd_30p = Vdist + param_range*3,
+         Vd_40p = Vdist + param_range*4,
+         Vd_50p = Vdist + param_range*5,
+         Vd_60p = Vdist + param_range*6,
+         Vd_70p = Vdist + param_range*7,
+         Vd_80p = Vdist + param_range*8,
+         Vd_90p = Vdist + param_range*9,
+         )
+
+for (this_pct in seq(10, 90, by = 10)) {
+  cat(paste0(this_pct, "\n"))
+  this.label <- paste0("In Vivo-HTTK_Vdist", this_pct)
+  this_col <- paste0("Vd_", this_pct, "p")
+  this_fittable <- fittable_Vdist %>%
+             mutate(Vdist = !!sym(this_col)) %>%
+             select(fit_names)
+  fit.chems <- subset(fittable_Vdist, !is.na(Vdist) #| !is.na(V1)
+  )$DTXSID
+  out <- makeCvTpredsfromfits(
+    subset(CvT.data, DTXSID %in% fit.chems),
+    subset(this_fittable,
+           DTXSID %in% fit.chems),
+    label = this.label)
+  
+  level2tab.cvt[[this.label]] <- out$cvt
+  level2tab.stats[[this.label]] <- out$stats
+  level2tab.rmsle[[this.label]] <- out$rmsle
+  level2tab.aafe[[this.label]] <- out$aafe
+  level2tab.rmsle.early[[this.label]] <- out$rmsle.early
+  level2tab.aafe.early[[this.label]] <- out$aafe.early
+  level2tab.rmsle.late[[this.label]] <- out$rmsle.late
+  level2tab.aafe.late[[this.label]] <- out$aafe.late
+  level3tab[[this.label]] <- out$level3tab
+}
+
+
+lv4_df2 <- data.frame(
+  QSPR = c(rep("HTPBTK-Consensus",
+               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+           rep("In Vivo-HTTK_Vdist10",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist10`))),
+           rep("In Vivo-HTTK_Vdist20",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist20`))),
+           rep("In Vivo-HTTK_Vdist30",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist30`))),
+           rep("In Vivo-HTTK_Vdist40",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist40`))),
+           rep("In Vivo-HTTK_Vdist50",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist50`))),
+           rep("In Vivo-HTTK_Vdist60",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist60`))),
+           rep("In Vivo-HTTK_Vdist70",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist70`))),
+           rep("In Vivo-HTTK_Vdist80",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist80`))),
+           rep("In Vivo-HTTK_Vdist90",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist90`))),
+           rep("In Vivo-HTTK_Vdist",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`))),
+           rep("In Vivo",
+               length(unlist(level2tab.rmsle$`In Vivo Fits`)))),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist10`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist20`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist30`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist40`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist50`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist60`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist70`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist80`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist90`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`)),
+             names(unlist(level2tab.rmsle$`In Vivo Fits`))),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist10`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist20`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist30`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist40`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist50`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist60`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist70`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist80`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist90`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`),
+            unlist(level2tab.rmsle$`In Vivo Fits`))
+)
+
+
+ggplot(data = lv4_df2 %>%
+         mutate(QSPR = factor(QSPR,
+                              levels = c(
+                                "HTPBTK-Consensus",
+                                "In Vivo",
+                                "In Vivo-HTTK_Vdist10",
+                                "In Vivo-HTTK_Vdist20",
+                                "In Vivo-HTTK_Vdist30",
+                                "In Vivo-HTTK_Vdist40",
+                                "In Vivo-HTTK_Vdist50",
+                                "In Vivo-HTTK_Vdist60",
+                                "In Vivo-HTTK_Vdist70",
+                                "In Vivo-HTTK_Vdist80",
+                                "In Vivo-HTTK_Vdist90",
+                                "In Vivo-HTTK_Vdist"
+                              ))),
+       aes(x = QSPR,
+           y = RMSLE)) +
+  ggbeeswarm::geom_beeswarm(size = 0.8) +
+  geom_line(aes(group = DTXSID), alpha = 0.25) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 8, hjust = 1, angle = 40))
+
+
+lv4_df2 %>%
+  pivot_wider(names_from = QSPR,
+              values_from = RMSLE) %>% 
+  na.omit() %>%
+  filter(`In Vivo` < `In Vivo-HTTK_Vdist`) %>%
+  pivot_longer(cols = !DTXSID, names_to = "QSPR",
+               values_to = "RMSLE") %>%
+  mutate(QSPR = factor(QSPR,
+                       levels = c(
+                         "HTPBTK-Consensus",
+                         "In Vivo",
+                         "In Vivo-HTTK_Vdist10",
+                         "In Vivo-HTTK_Vdist20",
+                         "In Vivo-HTTK_Vdist30",
+                         "In Vivo-HTTK_Vdist40",
+                         "In Vivo-HTTK_Vdist50",
+                         "In Vivo-HTTK_Vdist60",
+                         "In Vivo-HTTK_Vdist70",
+                         "In Vivo-HTTK_Vdist80",
+                         "In Vivo-HTTK_Vdist90",
+                         "In Vivo-HTTK_Vdist"
+                       ))) %>%
+  ggplot(aes(x = QSPR,
+           y = RMSLE)) +
+  geom_point(size = 0.8) +
+  geom_line(aes(group = DTXSID), alpha = 0.25) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 8, hjust = 1, angle = 40))
+
+
+```
+
+```{r, eval = TRUE}
+# For kelim
+
+fittable_kelim <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+                          by = c(
+                            "DTXSID",
+                            "PREFERRED_NAME" = "Compound",
+                            "CAS",
+                            "Species"
+                          )) %>%
+  mutate(param_range = ((cl.pred/Vdist) - kelim)/10,
+         kelim_10p = kelim + param_range*1,
+         kelim_20p = kelim + param_range*2,
+         kelim_30p = kelim + param_range*3,
+         kelim_40p = kelim + param_range*4,
+         kelim_50p = kelim + param_range*5,
+         kelim_60p = kelim + param_range*6,
+         kelim_70p = kelim + param_range*7,
+         kelim_80p = kelim + param_range*8,
+         kelim_90p = kelim + param_range*9,
+         )
+
+for (this_pct in seq(10, 90, by = 10)) {
+  cat(paste0(this_pct, "\n"))
+  this.label <- paste0("In Vivo-HTTK_kelim", this_pct)
+  this_col <- paste0("kelim_", this_pct, "p")
+  this_fittable <- fittable_kelim %>%
+             mutate(kelim = !!sym(this_col)) %>%
+             select(fit_names)
+  fit.chems <- subset(fittable_kelim, !is.na(Vdist) #| !is.na(V1)
+  )$DTXSID
+  out <- makeCvTpredsfromfits(
+    subset(CvT.data, DTXSID %in% fit.chems),
+    subset(this_fittable,
+           DTXSID %in% fit.chems),
+    label = this.label)
+  
+  level2tab.cvt[[this.label]] <- out$cvt
+  level2tab.stats[[this.label]] <- out$stats
+  level2tab.rmsle[[this.label]] <- out$rmsle
+  level2tab.aafe[[this.label]] <- out$aafe
+  level2tab.rmsle.early[[this.label]] <- out$rmsle.early
+  level2tab.aafe.early[[this.label]] <- out$aafe.early
+  level2tab.rmsle.late[[this.label]] <- out$rmsle.late
+  level2tab.aafe.late[[this.label]] <- out$aafe.late
+  level3tab[[this.label]] <- out$level3tab
+}
+
+
+lv4_df3 <- data.frame(
+  QSPR = c(rep("HTPBTK-Consensus",
+               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+           rep("In Vivo-HTTK_kelim10",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim10`))),
+           rep("In Vivo-HTTK_kelim20",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim20`))),
+           rep("In Vivo-HTTK_kelim30",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim30`))),
+           rep("In Vivo-HTTK_kelim40",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim40`))),
+           rep("In Vivo-HTTK_kelim50",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim50`))),
+           rep("In Vivo-HTTK_kelim60",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim60`))),
+           rep("In Vivo-HTTK_kelim70",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim70`))),
+           rep("In Vivo-HTTK_kelim80",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim80`))),
+           rep("In Vivo-HTTK_kelim90",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim90`))),
+           rep("In Vivo-HTTK_kelim",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`))),
+           rep("In Vivo",
+               length(unlist(level2tab.rmsle$`In Vivo Fits`)))),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim10`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim20`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim30`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim40`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim50`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim60`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim70`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim80`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim90`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`)),
+             names(unlist(level2tab.rmsle$`In Vivo Fits`))),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim10`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim20`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim30`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim40`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim50`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim60`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim70`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim80`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim90`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`),
+            unlist(level2tab.rmsle$`In Vivo Fits`))
+)
+
+
+ggplot(data = lv4_df3 %>%
+         mutate(QSPR = factor(QSPR,
+                              levels = c(
+                                "HTPBTK-Consensus",
+                                "In Vivo",
+                                "In Vivo-HTTK_kelim10",
+                                "In Vivo-HTTK_kelim20",
+                                "In Vivo-HTTK_kelim30",
+                                "In Vivo-HTTK_kelim40",
+                                "In Vivo-HTTK_kelim50",
+                                "In Vivo-HTTK_kelim60",
+                                "In Vivo-HTTK_kelim70",
+                                "In Vivo-HTTK_kelim80",
+                                "In Vivo-HTTK_kelim90",
+                                "In Vivo-HTTK_kelim"
+                              ))),
+       aes(x = QSPR,
+           y = RMSLE)) +
+  ggbeeswarm::geom_beeswarm(size = 0.8) +
+  geom_line(aes(group = DTXSID), alpha = 0.25) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 8, hjust = 1, angle = 40))
+
+
+lv4_df3 %>%
+  pivot_wider(names_from = QSPR,
+              values_from = RMSLE) %>% 
+  na.omit() %>%
+  filter(`In Vivo` < `In Vivo-HTTK_kelim`) %>%
+  pivot_longer(cols = !DTXSID, names_to = "QSPR",
+               values_to = "RMSLE") %>%
+  inner_join(fittable_kelim %>% distinct(DTXSID, CAS, 
+                                         Species,
+                                         Reference, param_range)) %>%
+  mutate(QSPR = factor(QSPR,
+                       levels = c(
+                         "HTPBTK-Consensus",
+                         "In Vivo",
+                         "In Vivo-HTTK_kelim10",
+                         "In Vivo-HTTK_kelim20",
+                         "In Vivo-HTTK_kelim30",
+                         "In Vivo-HTTK_kelim40",
+                         "In Vivo-HTTK_kelim50",
+                         "In Vivo-HTTK_kelim60",
+                         "In Vivo-HTTK_kelim70",
+                         "In Vivo-HTTK_kelim80",
+                         "In Vivo-HTTK_kelim90",
+                         "In Vivo-HTTK_kelim"
+                       ))) %>%
+  ggplot(aes(x = QSPR,
+           y = RMSLE)) +
+  geom_point(mapping = aes(color = log10(param_range)), size = 0.8) +
+  geom_line(aes(group = DTXSID), alpha = 0.25) +
+  scale_color_viridis_c(option = "magma", end = 0.8) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 8, hjust = 1, angle = 40))
+
+ggsave(filename = "figs/kelim_sensitivity_worseOff.png",
+       height = 8,
+       width = 8)
+```
+
+
+
 ```{r save_level2_tables, eval = TRUE}
 save(
   level2tab.cvt,

@@ -531,6 +531,7 @@ maketkstatpreds <- function(
           Vd.pred = vd.pred,
           thalf.obs=thalf.obs,
           thalf.pred = thalf.pred,
+          cl.pred = cl.pred,
           stringsAsFactors=F)
   #      new.tab <- merge(new.tab,this.subset2[,
   #        c("CAS","Reference")],by="CAS")
