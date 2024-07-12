@@ -696,6 +696,10 @@ ggplot(data = lv4_df %>%
   theme(axis.text.x = element_text(size = 8, hjust = 1, angle = 45),
         axis.text.y = element_blank())
 
+```
+
+
+```{r clustering_analysis, eval=TRUE}
 
 # The order is fine... but it would be nice to cluster these automatically
 # Need wide format for that
@@ -709,10 +713,35 @@ lv4_mat <- lv4_df %>%
 
 lv4_dist <- dist(lv4_mat)
 
-ComplexHeatmap::Heatmap(lv4_mat, name = "RMSLE",
-                        show_row_names = FALSE,
-                        show_column_dend = FALSE)
+ht <- ComplexHeatmap::Heatmap(lv4_mat, name = "RMSLE",
+                        show_row_names = TRUE,
+                        show_column_dend = FALSE,
+                        row_names_gp = grid::gpar(fontsize = 7),
+                        row_km = 5)
 
+ht <- ComplexHeatmap::draw(ht)
+
+ComplexHeatmap::row_dend(ht) -> dendrow
+ComplexHeatmap::row_order(ht) -> clustrow
+
+
+cluster_df <- lapply(clustrow, function(x) rownames(lv4_mat[x,])) %>%
+  stack() %>%
+  rename(DTXSID = "values", Clust = "ind")
+
+
+cluster_df <- inner_join(cluster_df, fittable)
+
+cluster_df %>%
+  select(DTXSID, Clust) %>%
+  inner_join(level3tab$`HTPBTK-Consensus` %>% select(-Compound)) %>%
+  pivot_longer(cols = Vd.obs:cl.pred, 
+               names_to = "Measurement", values_to = "Values") %>%
+  ggplot(aes(x = Measurement, y = log10(Values))) +
+  geom_point() +
+  facet_grid(cols = vars(Clust)) +
+  theme_bw() +
+  theme(axis.text = element_text(hjust = 1, angle = 50))
 
 
 ```
@@ -878,7 +907,7 @@ lv4_df2 %>%
 
 ```
 
-```{r, eval = TRUE}
+```{r kelim_sensitivity, eval = TRUE}
 # For kelim
 
 fittable_kelim <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
@@ -1033,14 +1062,188 @@ lv4_df3 %>%
   geom_point(mapping = aes(color = log10(param_range)), size = 0.8) +
   geom_line(aes(group = DTXSID), alpha = 0.25) +
   scale_color_viridis_c(option = "magma", end = 0.8) +
+  labs(title = "kelim Sensitivity Test") +
   theme_bw() +
-  theme(axis.text = element_text(size = 8, hjust = 1, angle = 40))
+  theme(axis.text = element_text(size = 8, hjust = 1, angle = 40),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
 
 ggsave(filename = "figs/kelim_sensitivity_worseOff.png",
        height = 8,
        width = 8)
 ```
 
+
+Next we do the Fgutabs sensitivity analysis. 
+For this analysis, instead of making it a percent difference from the
+In Vivo values, I just assume values from 0-1 at ten percent intervals, 
+and the In Vivo value is in there. What is interesting is that there is some
+chemicals where there is an improvement in RMSLE with lower _Fgutabs_.
+
+```{r Fgutabs_sensitivity}
+# For Fgutabs
+
+fittable_Fgutabs <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+                          by = c(
+                            "DTXSID",
+                            "PREFERRED_NAME" = "Compound",
+                            "CAS",
+                            "Species"
+                          )) %>%
+  mutate(Fgutabs_10p = 0.1,
+         Fgutabs_20p = 0.2,
+         Fgutabs_30p = 0.3,
+         Fgutabs_40p = 0.4,
+         Fgutabs_50p = 0.5,
+         Fgutabs_60p = 0.6,
+         Fgutabs_70p = 0.7,
+         Fgutabs_80p = 0.8,
+         Fgutabs_90p = 0.9,
+         param_diff = 1-Fgutabs)
+
+for (this_pct in seq(10, 90, by = 10)) {
+  cat(paste0(this_pct, "\n"))
+  this.label <- paste0("In Vivo-HTTK_Fgutabs", this_pct)
+  this_col <- paste0("Fgutabs_", this_pct, "p")
+  this_fittable <- fittable_Fgutabs %>%
+             mutate(Fgutabs = !!sym(this_col)) %>%
+             select(fit_names)
+  fit.chems <- subset(fittable_Fgutabs, !is.na(Vdist) #| !is.na(V1)
+  )$DTXSID
+  out <- makeCvTpredsfromfits(
+    subset(CvT.data, DTXSID %in% fit.chems),
+    subset(this_fittable,
+           DTXSID %in% fit.chems),
+    label = this.label)
+  
+  level2tab.cvt[[this.label]] <- out$cvt
+  level2tab.stats[[this.label]] <- out$stats
+  level2tab.rmsle[[this.label]] <- out$rmsle
+  level2tab.aafe[[this.label]] <- out$aafe
+  level2tab.rmsle.early[[this.label]] <- out$rmsle.early
+  level2tab.aafe.early[[this.label]] <- out$aafe.early
+  level2tab.rmsle.late[[this.label]] <- out$rmsle.late
+  level2tab.aafe.late[[this.label]] <- out$aafe.late
+  level3tab[[this.label]] <- out$level3tab
+}
+
+
+lv4_df3 <- data.frame(
+  QSPR = c(rep("HTPBTK-Consensus",
+               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+           rep("In Vivo-HTTK_Fgutabs10",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs10`))),
+           rep("In Vivo-HTTK_Fgutabs20",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs20`))),
+           rep("In Vivo-HTTK_Fgutabs30",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs30`))),
+           rep("In Vivo-HTTK_Fgutabs40",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs40`))),
+           rep("In Vivo-HTTK_Fgutabs50",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs50`))),
+           rep("In Vivo-HTTK_Fgutabs60",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs60`))),
+           rep("In Vivo-HTTK_Fgutabs70",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs70`))),
+           rep("In Vivo-HTTK_Fgutabs80",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs80`))),
+           rep("In Vivo-HTTK_Fgutabs90",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs90`))),
+           rep("In Vivo-HTTK_Fgutabs",
+               length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`))),
+           rep("In Vivo",
+               length(unlist(level2tab.rmsle$`In Vivo Fits`)))),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs10`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs20`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs30`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs40`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs50`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs60`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs70`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs80`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs90`)),
+             names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`)),
+             names(unlist(level2tab.rmsle$`In Vivo Fits`))),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs10`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs20`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs30`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs40`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs50`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs60`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs70`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs80`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs90`),
+            unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`),
+            unlist(level2tab.rmsle$`In Vivo Fits`))
+)
+
+
+ggplot(data = lv4_df3 %>%
+         mutate(QSPR = factor(QSPR,
+                              levels = c(
+                                "HTPBTK-Consensus",
+                                "In Vivo",
+                                "In Vivo-HTTK_Fgutabs10",
+                                "In Vivo-HTTK_Fgutabs20",
+                                "In Vivo-HTTK_Fgutabs30",
+                                "In Vivo-HTTK_Fgutabs40",
+                                "In Vivo-HTTK_Fgutabs50",
+                                "In Vivo-HTTK_Fgutabs60",
+                                "In Vivo-HTTK_Fgutabs70",
+                                "In Vivo-HTTK_Fgutabs80",
+                                "In Vivo-HTTK_Fgutabs90",
+                                "In Vivo-HTTK_Fgutabs"
+                              ))),
+       aes(x = QSPR,
+           y = RMSLE)) +
+  ggbeeswarm::geom_beeswarm(size = 0.8) +
+  geom_line(aes(group = DTXSID), alpha = 0.25) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 8, hjust = 1, angle = 40))
+
+
+lv4_df3 %>%
+  pivot_wider(names_from = QSPR,
+              values_from = RMSLE) %>% 
+  na.omit() %>%
+  filter(`In Vivo` < `In Vivo-HTTK_Fgutabs`) %>%
+  pivot_longer(cols = !DTXSID, names_to = "QSPR",
+               values_to = "RMSLE") %>%
+  inner_join(fittable_Fgutabs %>% distinct(DTXSID, CAS, 
+                                         Species,
+                                         Reference,
+                                         param_diff)) %>%
+  mutate(QSPR = factor(QSPR,
+                       levels = c(
+                         "In Vivo-HTTK_Fgutabs10",
+                         "In Vivo-HTTK_Fgutabs20",
+                         "In Vivo-HTTK_Fgutabs30",
+                         "In Vivo-HTTK_Fgutabs40",
+                         "In Vivo-HTTK_Fgutabs50",
+                         "In Vivo-HTTK_Fgutabs60",
+                         "In Vivo-HTTK_Fgutabs70",
+                         "In Vivo-HTTK_Fgutabs80",
+                         "In Vivo-HTTK_Fgutabs90",
+                         "In Vivo-HTTK_Fgutabs",
+                         "In Vivo",
+                         "HTPBTK-Consensus"
+                       ))) %>%
+  ggplot(aes(x = QSPR,
+           y = RMSLE)) +
+  geom_point(aes(color = param_diff), size = 0.8) +
+  geom_line(aes(group = DTXSID), alpha = 0.25) +
+  scale_color_steps(low = "black", high = "red3") +
+  labs(title = "Fgutabs Sensitivity Test") +
+  theme_bw() +
+  theme(axis.text = element_text(size = 8, hjust = 1, angle = 40),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
+
+ggsave(filename = "figs/fgutabs_sensitivity_worseOff.png",
+       height = 8,
+       width = 8)
+
+```
 
 
 ```{r save_level2_tables, eval = TRUE}
