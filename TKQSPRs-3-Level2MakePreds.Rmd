@@ -698,6 +698,11 @@ ggplot(data = lv4_df %>%
 
 ```
 
+Next I want to cluster these such that they will group together based on 
+the RMSLE when Fgutabs, kelim, or Vdist values from Consensus 
+are substituted into the In Vivo parameters. Here I chose a k-means of 5,
+which gives one cluster (4) that are greatly affected by kelim substitution,
+and another cluster (5) that are fairly improved in the consensus model.
 
 ```{r clustering_analysis, eval=TRUE}
 
