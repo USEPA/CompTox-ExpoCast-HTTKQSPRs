@@ -1075,9 +1075,11 @@ ggsave(filename = "figs/kelim_sensitivity_worseOff.png",
 
 Next we do the Fgutabs sensitivity analysis. 
 For this analysis, instead of making it a percent difference from the
-In Vivo values, I just assume values from 0-1 at ten percent intervals, 
-and the In Vivo value is in there. What is interesting is that there is some
-chemicals where there is an improvement in RMSLE with lower _Fgutabs_.
+In Vivo values, I just assume values from 0.1-0.9 at ten percent intervals, 
+and the In Vivo value is somewhere in that range.
+What is interesting is that there is some
+chemicals where there is an improvement in RMSLE with lower _Fgutabs_
+that is not the Consensus Value.
 
 ```{r Fgutabs_sensitivity}
 # For Fgutabs
