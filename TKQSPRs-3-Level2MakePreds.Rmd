@@ -42,7 +42,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "May2024"
+output.prefix <- format(Sys.Date(), "%B%Y")
 ```
 
 ```{r load_data, eval= TRUE}
@@ -716,7 +716,6 @@ lv4_mat <- lv4_df %>%
   na.omit() %>%
   as.matrix()
 
-lv4_dist <- dist(lv4_mat)
 
 ht <- ComplexHeatmap::Heatmap(lv4_mat, name = "RMSLE",
                         show_row_names = TRUE,
@@ -729,6 +728,12 @@ ht <- ComplexHeatmap::draw(ht)
 ComplexHeatmap::row_dend(ht) -> dendrow
 ComplexHeatmap::row_order(ht) -> clustrow
 
+png("figs/QSARtests_heatmap_Lvl4.png",
+    units = "in",
+    height = 8,
+    width = 8, res = 200)
+ht
+dev.off()
 
 cluster_df <- lapply(clustrow, function(x) rownames(lv4_mat[x,])) %>%
   stack() %>%
@@ -748,6 +753,98 @@ cluster_df %>%
   theme_bw() +
   theme(axis.text = element_text(hjust = 1, angle = 50))
 
+
+# Read in the lists
+
+ccd_lists <- read_csv(paste0(Sys.getenv("OD_DIR"),
+                             "Downloads/CCD-Batch-Search_2024-07-11_02_19_19.csv" ))
+
+
+ccd_lists %>%
+  mutate(across(`40CFR1164`:SFEIWATER, function(x) {
+    ifelse(x == "Y", 1, 0)
+  })) %>%
+  select(DTXSID, `40CFR1164`:SFEIWATER) -> ccd_lists
+
+ccd_lists <- ccd_lists %>% column_to_rownames("DTXSID") %>% as.matrix()
+
+ccd_lists <- ccd_lists[, apply(ccd_lists, 2, sum)>0]
+
+
+
+png("figs/CCD_lists_heatmap_Lvl4.png",
+    units = "in",
+    height = 8,
+    width = 14, res = 200)
+ComplexHeatmap::Heatmap(ccd_lists,
+                        row_order = unlist(clustrow),
+                        km = 5,
+                        clustering_method_columns = "complete",
+                        column_names_gp = grid::gpar(fontsize = 2),
+                        show_row_names = FALSE,
+                        col = c("grey10","green4"))
+
+
+dev.off()
+
+chem_props <- inner_join(cluster_df %>% distinct(Clust, DTXSID),
+                         chem.physical_and_invitro.data)
+
+
+chem_props %>% group_by(Clust) %>%
+  summarize(mean(as.numeric(Human.Clint), na.rm = TRUE),
+            sd(as.numeric(Human.Clint), na.rm = TRUE))
+
+this_list <- list()
+for (i in 1:73) {
+  this_list <- bind_rows(this_list, parameterize_gas_pbtk(dtxsid = pull(chem_props,
+                                                      DTXSID)[i]) %>%
+    as.data.frame())
+}
+
+rownames(this_list) <- pull(chem_props, DTXSID)
+this_list
+
+
+chem_props_scaled <- chem_props %>%
+  distinct(DTXSID, logHenry, logP,
+           logPwa,
+           logWSol,
+           MP,
+           MW,
+           pKa_Accept,
+           pKa_Donor) %>%
+  mutate(across(logHenry:pKa_Donor, as.numeric)) %>%
+  column_to_rownames("DTXSID") %>%
+  as.matrix()
+
+apply(chem_props_scaled, MARGIN = 2, scale) %>%
+  ComplexHeatmap::Heatmap(row_order = unlist(clustrow),
+                          cluster_columns = FALSE,
+                          row_split = enframe(clustrow) %>%
+                            unnest(value) %>% pull(name),
+                          row_gap = unit(4, "mm"))
+
+apply(this_list %>% select(where(is.numeric)) %>% as.matrix(),
+      MARGIN = 2, scale) %>%
+  ComplexHeatmap::Heatmap(row_order = unlist(clustrow),
+                          cluster_columns = FALSE,
+                          row_split = enframe(clustrow) %>%
+                            unnest(value) %>% pull(name),
+                          row_gap = unit(4, "mm"))
+
+cluster_df %>% inner_join(fittable_kelim %>%
+                            rename("kelim_consensus" = "kelim")) %>%
+  mutate(kelim_diff = abs(kelim_consensus - kelim)) %>% 
+  arrange(kelim_diff) %>% 
+  pull(DTXSID) -> kelim_diff_order
+
+ComplexHeatmap::Heatmap(lv4_mat, name = "RMSLE",
+                        show_row_names = TRUE,
+                        show_column_dend = FALSE,
+                        row_names_gp = grid::gpar(fontsize = 7),
+                        row_order = match(unique(kelim_diff_order)
+                                          , rownames(lv4_mat)))
 
 ```
 
