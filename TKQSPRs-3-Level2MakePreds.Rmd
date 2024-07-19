@@ -1434,6 +1434,104 @@ ggsave(filename = "figs/fgutabs_sensitivity_worseOff.png",
 
 ```
 
+This test of reverse substitution changes _fup_ and _CLint_ to conform
+to the in vivo predicted kelim.
+
+
+```{r reverse_substitution}
+this.label <- "HTTK-In Vivo kelim_fup"
+
+CvT.chems.nona.kelim <- kelim_substitution(data = CvT.chems.nona,
+                                           invivo = fittable,
+                                           Vd_data = level3tab$`HTPBTK-Consensus`,
+                                           clint_column = "Human.Clint.Max",
+                                           fup_column = "Human.Fup.Mean")
+
+
+out <- make_cvt_comparisons(this.label, 
+                            clint.col = "Human.Clint.Max", 
+                            fup.col = "invivoAdjusted.Fup",
+                            CvT.data, 
+                            CvT.chems.nona.kelim, 
+                            fittable)
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level3tab[[this.label]] <- out$level3tab
+
+this.label <- "HTTK-In Vivo kelim_Clint"
+out <- make_cvt_comparisons(this.label, 
+                            clint.col = "invivoAdjusted.Clint", 
+                            fup.col = "Human.Fup.Mean",
+                            CvT.data, 
+                            CvT.chems.nona.kelim, 
+                            fittable)
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level3tab[[this.label]] <- out$level3tab
+
+
+level2_tab <- data.frame(
+  QSPR = c(rep("HTPBTK-Consensus",
+               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+           rep("In Vivo",
+               length(unlist(level2tab.rmsle$`In Vivo Fits`))),
+           rep("HTTK-In Vivo_kelim_Clint",
+               length(unlist(level2tab.rmsle$`HTTK-In Vivo kelim_Clint`))),
+           rep("HTTK-In Vivo_kelim_fup",
+               length(unlist(level2tab.rmsle$`HTTK-In Vivo kelim_fup`)))),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+             names(unlist(level2tab.rmsle$`In Vivo Fits`)),
+             names(unlist(level2tab.rmsle$`HTTK-In Vivo kelim_Clint`)),
+             names(unlist(level2tab.rmsle$`HTTK-In Vivo kelim_fup`))),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+            unlist(level2tab.rmsle$`In Vivo Fits`),
+            unlist(level2tab.rmsle$`HTTK-In Vivo kelim_Clint`),
+            unlist(level2tab.rmsle$`HTTK-In Vivo kelim_fup`))
+)
+
+# Which chemicals are in all 4 categories
+level2_tab %>%
+  pivot_wider(names_from = QSPR,
+              values_from = RMSLE) %>%
+  na.omit() %>%
+  pull(DTXSID) -> common_ids
+
+
+ggplot(level2_tab %>% filter(DTXSID %in% common_ids),
+       aes(x = factor(QSPR,
+                      levels = c("HTTK-In Vivo_kelim_Clint",
+                                 "HTTK-In Vivo_kelim_fup",
+                                 "HTPBTK-Consensus",
+                                 "In Vivo")),
+           y = RMSLE)) +
+  ggbeeswarm::geom_beeswarm() +
+  geom_line(aes(group = DTXSID),
+            color = "grey40",
+            alpha = 0.3) +
+  labs(title = "Reverse Substition of In Vivo kelim",
+       x = "QSPR") +
+  theme_bw()
+
+
+ggsave("figs/revsub_invivo_kelim.png",
+       height = 4,
+       width = 6)
+
+```
+
+
 
 ```{r save_level2_tables, eval = TRUE}
 save(
