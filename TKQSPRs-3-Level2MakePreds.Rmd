@@ -529,11 +529,15 @@ level3tab[[this.label]] <- out$level3tab
 
 ## Level Four Analysis, an introduction
 
-We finally now want to see how changing particular values for fittable to
-the consensus predicted values changes the values.
+We finally now want to see how changing particular values for `fittable` to
+the consensus predicted values changes the values. 
+Another aspect of this is testing the sensitivity of certain values changing,
+and describing any comparisons between chemicals that are more or less
+sensitive to this value change.
 
 ```{r new_fittables, eval = TRUE}
 library(tidyverse)
+library(reticulate)
 # This is for new fittables where some of the values in fittable are replaced by
 # HTPBTK-Consensus predictions found in level3tab$`HTPBTK-Consensus`
 # Get names for fittable
@@ -705,7 +709,7 @@ which gives one cluster (4) that are greatly affected by kelim substitution,
 and another cluster (5) that are fairly improved in the consensus model.
 
 ```{r clustering_analysis, eval=TRUE}
-
+library(ComplexHeatmap)
 # The order is fine... but it would be nice to cluster these automatically
 # Need wide format for that
 lv4_mat <- lv4_df %>%
@@ -720,12 +724,13 @@ lv4_mat <- lv4_df %>%
 ht <- ComplexHeatmap::Heatmap(lv4_mat, name = "RMSLE",
                         show_row_names = TRUE,
                         show_column_dend = FALSE,
-                        row_names_gp = grid::gpar(fontsize = 7),
-                        row_km = 5)
+                        row_names_gp = grid::gpar(fontsize = 6),
+                        row_km = 5,
+                        width = unit(1, "in"))
 
-ht <- ComplexHeatmap::draw(ht)
+ComplexHeatmap::draw(ht)
 
-ComplexHeatmap::row_dend(ht) -> dendrow
+
 ComplexHeatmap::row_order(ht) -> clustrow
 
 png("figs/QSARtests_heatmap_Lvl4.png",
@@ -756,7 +761,7 @@ cluster_df %>%
 
 # Read in the lists
 
-ccd_lists <- read_csv(paste0(Sys.getenv("OD_DIR"),
+ccd_lists <- read_csv(paste0(Sys.getenv("OD_DIR"), "Profile/",
                              "Downloads/CCD-Batch-Search_2024-07-11_02_19_19.csv" ))
 
 
@@ -768,24 +773,35 @@ ccd_lists %>%
 
 ccd_lists <- ccd_lists %>% column_to_rownames("DTXSID") %>% as.matrix()
 
+# Get rid of those lists with no chemicals present
 ccd_lists <- ccd_lists[, apply(ccd_lists, 2, sum)>0]
 
+# Get rid of those lists with every chemical present (no cluster specificity)
+ccd_lists <- ccd_lists[, apply(ccd_lists, 2, sum)<nrow(ccd_lists)]
+
+ccd_lists <- ccd_lists[rownames(lv4_mat), ] # Reorders rows to be consistent with main heatmap
 
 
 png("figs/CCD_lists_heatmap_Lvl4.png",
     units = "in",
     height = 8,
     width = 14, res = 200)
-ComplexHeatmap::Heatmap(ccd_lists,
-                        row_order = unlist(clustrow),
-                        km = 5,
+ht_lp <- ComplexHeatmap::Heatmap(ccd_lists,
+                        name = "Presence in list",
                         clustering_method_columns = "complete",
-                        column_names_gp = grid::gpar(fontsize = 2),
-                        show_row_names = FALSE,
-                        col = c("grey10","green4"))
-
+                        show_column_names = FALSE,
+                        row_names_gp = grid::gpar(fontsize = 6),
+                        show_row_names = TRUE,
+                        col = c("grey10","green4"),
+                        width = unit(4, "in"))
+draw(ht_lp)
 
 dev.off()
+
+# Make an intermediate list of heatmaps, will add to this
+ht_list <- ht+ht_lp
+draw(ht_list)
+
 
 chem_props <- inner_join(cluster_df %>% distinct(Clust, DTXSID),
                          chem.physical_and_invitro.data)
@@ -818,35 +834,104 @@ chem_props_scaled <- chem_props %>%
   column_to_rownames("DTXSID") %>%
   as.matrix()
 
-apply(chem_props_scaled, MARGIN = 2, scale) %>%
-  ComplexHeatmap::Heatmap(row_order = unlist(clustrow),
-                          cluster_columns = FALSE,
-                          row_split = enframe(clustrow) %>%
-                            unnest(value) %>% pull(name),
-                          row_gap = unit(4, "mm"))
+temp_rn <- rownames(chem_props_scaled)
+chem_props_scaled <- apply(chem_props_scaled, MARGIN = 2, scale)
+rownames(chem_props_scaled) <- temp_rn
+chem_props_scaled <- chem_props_scaled[rownames(lv4_mat), ]
 
-apply(this_list %>% select(where(is.numeric)) %>% as.matrix(),
-      MARGIN = 2, scale) %>%
-  ComplexHeatmap::Heatmap(row_order = unlist(clustrow),
-                          cluster_columns = FALSE,
-                          row_split = enframe(clustrow) %>%
-                            unnest(value) %>% pull(name),
-                          row_gap = unit(4, "mm"))
+ht_chemP <- Heatmap(chem_props_scaled,
+                    name = "Property Z-score",
+                    cluster_columns = TRUE,
+                    clustering_method_columns = "single",
+                    row_names_gp = grid::gpar(fontsize = 6),
+                    show_row_names = TRUE,
+                    width = unit(2, "in"))
 
-cluster_df %>% inner_join(fittable_kelim %>%
-                            rename("kelim_consensus" = "kelim")) %>%
-  mutate(kelim_diff = abs(kelim_consensus - kelim)) %>% 
-  arrange(kelim_diff) %>% 
-  pull(DTXSID) -> kelim_diff_order
-
-ComplexHeatmap::Heatmap(lv4_mat, name = "RMSLE",
-                        show_row_names = TRUE,
-                        show_column_dend = FALSE,
-                        row_names_gp = grid::gpar(fontsize = 7),
-                        row_order = match(unique(kelim_diff_order)
-                                          , rownames(lv4_mat)))
+ht_list <- ht + ht_lp + ht_chemP
+draw(ht_list)
 
 ```
+
+As part of the clustering analysis, I also want to do a similarity analysis.
+For this I will be using python and using the SMILES data.
+
+```{r load_smiles}
+my_smiles <- read_csv(paste0(Sys.getenv("OD_DIR"), "Profile/Downloads/",
+                             "CCD-Batch-Search_2024-07-16_08_42_30.csv"))
+
+
+my_smiles %>% select(DTXSID, SMILES) -> my_smiles
+
+
+SMILElist <- unique(my_smiles$SMILES)
+use_virtualenv("r-reticulate")
+mykit <- import("rdkit")
+
+```
+
+```{python}
+import rdkit
+
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit import DataStructs
+SMILElist = r.SMILElist
+fpgen = AllChem.GetRDKitFPGenerator()
+SMILElist = [Chem.MolFromSmiles(x) for x in SMILElist]
+fps = [fpgen.GetFingerprint(x) for x in SMILElist]
+DataStructs.TanimotoSimilarity(fps[0],fps[72])
+
+import numpy as np
+n = len(fps)
+this_matrix = np.zeros((n,n))
+for i in range(0,n):
+  for j in range(0,n):
+    this_matrix[i,j] = DataStructs.TanimotoSimilarity(fps[i],fps[j])
+```
+
+
+```{r tanimoto_distance_matrix}
+
+tani_matrix <- py_to_r(py$this_matrix)
+
+rownames(tani_matrix) <- my_smiles$DTXSID
+colnames(tani_matrix) <- my_smiles$DTXSID
+tani_matrix <- tani_matrix[rownames(lv4_mat),
+                           rownames(lv4_mat)]
+
+ht3 <- Heatmap(matrix = tani_matrix,
+               column_order = cluster_df$DTXSID,
+               row_order = cluster_df$DTXSID,
+               cluster_columns = FALSE,
+               cluster_rows = FALSE,
+               name = "Tanimoto distance",
+               col = circlize::colorRamp2(c(0, 0.7, 1),
+                                          c("grey80", 
+                                            "grey40",
+                                            "grey5")),
+               show_row_names = TRUE,
+               row_names_gp = grid::gpar(fontsize = 6),
+               column_names_gp = grid::gpar(fontsize = 6),
+               width = unit(5, "in"))
+
+
+ComplexHeatmap::draw(ht3)
+
+htlist <- ht + ht_lp + ht_chemP + ht3
+drawn_hts <- draw(htlist)
+
+png(filename = "figs/Clustered_PropertyHeatmaps_Level4.png",
+    height = 8,
+    width = 18,
+    unit = "in",
+    res = 150)
+drawn_hts
+dev.off()
+
+
+
+```
+
 
 Next what I want to do is test how quickly the RMSLE changes. I will
 start at the In Vivo value and head towards the Consensus value in 10% increments.
