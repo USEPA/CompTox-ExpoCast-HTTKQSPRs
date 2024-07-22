@@ -537,7 +537,7 @@ sensitive to this value change.
 
 ```{r new_fittables, eval = TRUE}
 library(tidyverse)
-library(reticulate)
+
 # This is for new fittables where some of the values in fittable are replaced by
 # HTPBTK-Consensus predictions found in level3tab$`HTPBTK-Consensus`
 # Get names for fittable
@@ -710,6 +710,7 @@ and another cluster (5) that are fairly improved in the consensus model.
 
 ```{r clustering_analysis, eval=TRUE}
 library(ComplexHeatmap)
+set.seed(2024) # Want to be consistent here
 # The order is fine... but it would be nice to cluster these automatically
 # Need wide format for that
 lv4_mat <- lv4_df %>%
@@ -856,6 +857,7 @@ As part of the clustering analysis, I also want to do a similarity analysis.
 For this I will be using python and using the SMILES data.
 
 ```{r load_smiles}
+library(reticulate)
 my_smiles <- read_csv(paste0(Sys.getenv("OD_DIR"), "Profile/Downloads/",
                              "CCD-Batch-Search_2024-07-16_08_42_30.csv"))
 
