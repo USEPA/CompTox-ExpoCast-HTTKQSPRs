@@ -48,7 +48,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
-output.prefix <- "May2024"
+output.prefix <- "July2024"
 ```
 
 
@@ -296,10 +296,12 @@ write.csv(subset(fittable, !(DTXSID%in%fittable.noflat$DTXSID))[,
 fittable <- fittable.noflat
 
 length(unique(fittable$DTXSID))
+
 # Count chemicals where we don't have a usable empirical fit (No Vdist or V1):
 # essentially we only had oral data,
 fittable.usable <- subset(fittable, 
                                  !is.na(Vdist) | !is.na(V1))
+
 print(paste("There were",
             length(unique(fittable$DTXSID)) -
                      length(unique(fittable.usable$DTXSID)),

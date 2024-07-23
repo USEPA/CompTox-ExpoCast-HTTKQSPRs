@@ -11,6 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/tkqsars/")
 ```
 
 ## R Markdown
@@ -40,7 +41,6 @@ library(knitr)
 
 Load custom code 
 ```{r load_code, eval = TRUE}
-setwd("C:/Users/jwambaug/git/tkqsars/")
 source("clear_httk.R")
 source("tkstats.R")
 ```
@@ -49,14 +49,13 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "May2024"
+output.prefix <- "July2024"
 ```
 
 ```{r load_data, eval= TRUE}
 load(file="data/httkinvitro.RData")
 load(file="data/Cvt-chems.RData")
 load(file="data/Cvt-data.RData")
-load(file="data/fittable.RData")
 ```
 
 
@@ -172,14 +171,17 @@ ivbp <- subset(ivbp,DTXSID%in%CvT.chems$DTXSID)
 # Domain of applicability:
 ivbp[tolower(ivbp[,"AD"])=="out ad","IVBP Final Pred Log Clint_mL/h/10^6 hep"] <- NA
 
+# log to arithmetic:
+ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"] <- 
+  10^as.numeric(ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"])
+
+# h to min:
+ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"] <- 
+  ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"]/60
+
 # mL to uL:
 ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"] <- 
-  as.numeric(ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"]) * 1000
-
-# Get ird of negatives:
-ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"] <-
-  sapply(ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"], function(x)
-    ifelse(!is.na(x),ifelse(x<0,0,x),NA))
+  ivbp[,"IVBP Final Pred Log Clint_mL/h/10^6 hep"] * 1000
 
 CvT.chems <- merge(CvT.chems,
   ivbp[,c("DTXSID","IVBP Final Pred Log Clint_mL/h/10^6 hep")],
@@ -268,7 +270,7 @@ level1tab <- CvT.chems
 level1tab1 <- level1tab[,c(
   "DTXSID",
   "PREFERRED_NAME",
-  "CASRN",
+  "CAS",
   "Human.Clint.httk","Human.Fup.httk",
   "Human.Clint.SPlus","Human.Fup.SPlus")]
 level1tab1$QSPR <- "SPlus"
@@ -277,31 +279,42 @@ colnames(level1tab1)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
 level1tab2 <- level1tab[,c(
   "DTXSID",
   "PREFERRED_NAME",
-  "CASRN","Human.Clint.httk","Human.Fup.httk",
-  "Human.Clint.Dawson","Human.Fup.Dawson")]
+  "CAS",
+  "Human.Clint.httk",
+  "Human.Fup.httk",
+  "Human.Clint.Dawson",
+  "Human.Fup.Dawson")]
 level1tab2$QSPR <- "Dawson"
 colnames(level1tab2)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
 
 level1tab3 <- level1tab[,c(
   "DTXSID",
   "PREFERRED_NAME",
-  "CASRN","Human.Clint.httk","Human.Fup.httk",
-  "Human.Clint.Pradeep","Human.Fup.Pradeep")]
+  "CAS",
+  "Human.Clint.httk",
+  "Human.Fup.httk",
+  "Human.Clint.Pradeep",
+  "Human.Fup.Pradeep")]
 level1tab3$QSPR <- "Pradeep"
 colnames(level1tab3)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
 
 level1tab4 <- level1tab[,c(
   "DTXSID",
   "PREFERRED_NAME",
-  "CASRN","Human.Clint.httk","Human.Fup.httk",
-  "Human.Clint.OPERA","Human.Fup.OPERA")]
+  "CAS",
+  "Human.Clint.httk",
+  "Human.Fup.httk",
+  "Human.Clint.OPERA",
+  "Human.Fup.OPERA")]
 level1tab4$QSPR <- "OPERA"
 colnames(level1tab4)[6:7] <- c("Human.Clint.pred","Human.Fup.pred")
 
 level1tab5 <- level1tab[,c(
   "DTXSID",
   "PREFERRED_NAME",
-  "CASRN","Human.Clint.httk","Human.Fup.httk",
+  "CAS",
+  "Human.Clint.httk",
+  "Human.Fup.httk",
   "Human.Clint.IVBP")]
 # There are no Fup preds for IVBP:
 level1tab5 <- cbind(level1tab5,NA)

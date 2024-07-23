@@ -41,7 +41,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "May2024"
+output.prefix <- "July2024"
 ```
 
 ```{r load_data, eval= TRUE}
@@ -73,7 +73,7 @@ Predictors evaluated:
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
 * HTTK PBTK with y-randomized in vitro measured values
-* Empirical one- and two-comaprtment fits to CvT data
+* Empirical one- and two-compartment fits to CvT data
 
 
 We load the TK stats (Level III) at this point because it makes sense to do
@@ -89,7 +89,6 @@ CvT.chems.nofits <- CvT.chems[
   CvT.chems$CASRN %in%subset(fittable,Model=="Flat")$CAS |
   CvT.chems$CASRN %in%subset(fittable,Model=="None")$CAS
   , ]
-                                
 
 write.csv(CvT.chems.nofits[,c(
   "DTXSID",

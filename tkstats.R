@@ -1,7 +1,7 @@
 # This function does the level II concentration comparisons:
 makeCvTpreds <- function(CvT.data,label,model.args)
 {
-  nonvol.chems <- suppressWarnings(get_cheminfo(model="pbtk"))
+  nonvol.chems <- NULL # suppressWarnings(get_cheminfo(model="pbtk"))
   vol.chems <- suppressWarnings(get_cheminfo(model="gas_pbtk"))
   
   cvt.table <- NULL
