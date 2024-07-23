@@ -48,7 +48,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
-output.prefix <- "May2024"
+output.prefix <- format(Sys.Date(), "%B%Y")
 ```
 
 
