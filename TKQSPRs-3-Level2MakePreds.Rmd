@@ -1533,6 +1533,19 @@ ggsave("figs/revsub_invivo_kelim.png",
        height = 4,
        width = 6)
 
+
+# kelim values for each cluster
+cluster_df %>% 
+  ggplot(aes(x = Clust, y = log2(kelim))) + 
+  geom_boxplot() + theme_bw() + 
+  geom_hline(yintercept = log2(26.62), linetype = "dashed") + 
+  labs(title = "Elimination Constants for each cluster",
+       subtitle = "(compared to median)")
+
+
+ggsave("figs/cluster_kelim.png",
+       height = 5, width = 4)
+
 ```
 
 
