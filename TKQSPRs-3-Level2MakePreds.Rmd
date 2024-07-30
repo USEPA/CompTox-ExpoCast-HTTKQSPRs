@@ -698,7 +698,7 @@ ggplot(data = lv4_df %>%
 
 ggsave(filename = "figs/Level4_prelim_kelimVdistFgutabs_boxplot_2024July30.png",
        height = 5,
-       width = 5)
+       width = 7)
 
 ggplot(data = lv4_df %>%
          mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
