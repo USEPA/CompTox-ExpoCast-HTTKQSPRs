@@ -668,8 +668,8 @@ lv4_df <- data.frame(
 ggplot(data = lv4_df %>%
          mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
                                                "In Vivo-HTTK_Fgutabs",
-                                               "In Vivo",
                                                "In Vivo-HTTK_kelim",
+                                               "In Vivo",
                                                "HTPBTK-Consensus"
                                                ))),
        aes(x = QSPR,
@@ -682,6 +682,23 @@ ggplot(data = lv4_df %>%
 ggsave(filename = "figs/Level4_prelim_kelimVdistFgutabs_2024July9.png",
        height = 5,
        width = 8)
+
+ggplot(data = lv4_df %>%
+         mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
+                                               "In Vivo-HTTK_Fgutabs",
+                                               "In Vivo-HTTK_kelim",
+                                               "In Vivo",
+                                               "HTPBTK-Consensus"
+                                               ))),
+       aes(x = QSPR,
+           y = RMSLE)) +
+  geom_boxplot(width = 0.5) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 8))
+
+ggsave(filename = "figs/Level4_prelim_kelimVdistFgutabs_boxplot_2024July30.png",
+       height = 5,
+       width = 5)
 
 ggplot(data = lv4_df %>%
          mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
