@@ -33,6 +33,8 @@ makeCvTpreds <- function(CvT.data,label,model.args)
           {
             this.subset4 <- subset(this.subset3,Dose==this.dose)
             obs.times <- signif(sort(unique(this.subset4$Time_Days)),4)
+# HTTK doesn't handle obervations at time zero:
+            obs.times[obs.times == 0] <- signif(obs.times[2]/2,4)
 
             if (this.model=="solve_pbtk")
             {
@@ -86,6 +88,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
             {
               this.subset5 <- subset(this.subset4,signif(Time_Days,4)==this.time)
   #            print(this.subset5)
+              if (length(pred[pred[,"time"] == this.time,"Cven"])==0) browser()
               new.row <- data.frame(
                 Compound=this.compound,
                 DTXSID=this.dtxsid,
@@ -514,12 +517,12 @@ maketkstatpreds <- function(
           default.to.human=TRUE,
           suppress.messages=TRUE))
         thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"]))
-        cl.pred <- signif(1/suppressWarnings(calc_css( # 1 / Css = Cltot
+        cl.pred <- try(signif(1/suppressWarnings(calc_css( # 1 / Css = Cltot
           chem.cas=this.cas,
           species=this.species,
           default.to.human=TRUE,
-          model="pbtk",
-          suppress.messages=TRUE)$avg),3)
+          model="gas_pbtk",
+          suppress.messages=TRUE)$avg),3))
         ke.pred <- cl.pred/vd.pred 
         thalf.pred <- signif(log(2)/ke.pred,3)
         new.tab <- data.frame(

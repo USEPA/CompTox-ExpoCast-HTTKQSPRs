@@ -200,7 +200,7 @@ write.csv(vd.stats.table,
           file="tables/SupTable-VD-stats.txt")
 ```
 
-```{r total_clearnace_stats, eval=TRUE}
+```{r total_clearance_stats, eval=TRUE}
 cl.stats.table <- makestatstable(level3tab,
                                        obs.col="Cl.obs",
                                        pred.col="Cl.pred",
