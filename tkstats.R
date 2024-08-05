@@ -514,12 +514,11 @@ maketkstatpreds <- function(
           default.to.human=TRUE,
           suppress.messages=TRUE))
         thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"]))
-        cl.pred <- signif(1/suppressWarnings(calc_css( # 1 / Css = Cltot
+        cl.pred <- 1/suppressWarnings(calc_total_clearance(
           chem.cas=this.cas,
           species=this.species,
           default.to.human=TRUE,
-          model="pbtk",
-          suppress.messages=TRUE)$avg),3)
+          suppress.messages=TRUE))
         ke.pred <- cl.pred/vd.pred 
         thalf.pred <- signif(log(2)/ke.pred,3)
         new.tab <- data.frame(

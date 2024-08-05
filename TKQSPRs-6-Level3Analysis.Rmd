@@ -11,7 +11,6 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/tkqsars/")
 ```
 
 ## R Markdown
@@ -42,6 +41,7 @@ load("data/chemicallists.RData")
 
 Load custom code 
 ```{r load_code, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
 source("tkstats.R")
 ```
 
