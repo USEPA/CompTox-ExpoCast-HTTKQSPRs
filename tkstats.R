@@ -530,6 +530,7 @@ maketkstatpreds <- function(
           Vd.pred = vd.pred,
           thalf.obs=thalf.obs,
           thalf.pred = thalf.pred,
+          cl.pred = cl.pred,
           stringsAsFactors=F)
   #      new.tab <- merge(new.tab,this.subset2[,
   #        c("CAS","Reference")],by="CAS")
@@ -710,4 +711,80 @@ makestatstable2 <- function(this.table,
         sep="")
     }
   return(this.table)
+}
+
+
+kelim_substitution <- function(data,
+                               invivo,
+                               Vd_data,
+                               clint_column,
+                               fup_column) {
+  
+  stopifnot(is.data.frame(data),
+            is.data.frame(invivo),
+            is.data.frame(Vd_data),
+            is.character(clint_column),
+            is.character(fup_column))
+  
+  if (!all(c("CAS", clint_column, fup_column) %in% names(data))) {
+    stop("Error: CAS or specified clint/fup columns not in data.frame")
+  }
+  if (!all(c("CAS", "kelim") %in% names(invivo))) {
+    stop("Error: CAS or kelim columns not in fit table")
+  }
+  if (!all(c("CAS", "Vd.pred") %in% names(Vd_data))) {
+    stop("Error: CAS or Vd.pred columns not in Vd_data")
+  }
+  
+  # Inner join by CAS number to add kelim column for ease of calculation
+  data <- merge(data, invivo[c("CAS", "kelim")])
+  data <- merge(data, Vd_data[c("CAS", "Vd.pred")])
+  data$`invivoAdjusted.Fup` <- NA
+  data$`invivoAdjusted.Clint` <- NA
+  
+  for (y in seq_len(nrow(data))) {
+    
+    this_data <- data[y, ]
+    this_cas <- this_data[["CAS"]]
+    # Message to see which chemical the process is on.
+    print(this_cas)
+    
+    this_paramset <- suppressWarnings(httk::parameterize_pbtk(chem.cas = this_cas))
+    Qgfr <- this_paramset[["Qgfrc"]]
+    Qli <- this_paramset[["Qliverf"]]
+    Rb2p <- this_paramset[["Rblood2plasma"]]
+    Vdist <- this_data["Vd.pred"]
+    kelim <- this_data["kelim"]
+    
+    # Summarizing some variables (left hand terms)
+    lht <- kelim * Vdist - Qgfr
+    
+    # here we calculate and create two independent columns for 
+    # adjusted CLint and fup
+    fup_data <- this_data[fup_column]
+    clint = 1/(fup_data * (lht - (1/(Qli * Rb2p))))
+    clint <- signif(clint, 4)
+    
+    clint_data <- this_data[fup_column]
+    fup = 1/(clint_data * (lht - (1/(Qli * Rb2p))))
+    fup <- signif(fup, 4)
+    
+    # Before writing, there needs to be checks for negative values
+    # I will set either to NA if below zero (or if fup > 1 set to 1)
+    clint <- ifelse(clint < 0, NA, clint)
+    fup <- ifelse(fup < 0, NA, fup)
+    fup <- ifelse(fup > 1, 1, fup)
+    
+    
+    data[y, "invivoAdjusted.Fup"] <- fup
+    data[y, "invivoAdjusted.Clint"] <- clint
+    # When using these values, always use *_column for the other value in
+    # subsequent analyses
+    
+  }
+  
+  
+  return(data)
+  
+  
 }

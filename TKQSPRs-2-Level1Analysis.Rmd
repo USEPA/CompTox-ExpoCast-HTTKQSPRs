@@ -247,7 +247,7 @@ for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <-
     cexCol=1,
     trace="none",
     col=mypalette)
-  png(paste("figs/Fig1-physchemandpredictors-heatmap-",
+  png(paste("figs/Fig2-physchemandpredictors-heatmap-",
            output.prefix,
            ".tiff",sep=""),
           width=800, height=750)
@@ -264,7 +264,7 @@ for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <-
   
 cat("Figure Caption\n")
 cat("Each row corresponds to one of the",
-    dim(CvT.chems.scale)[1]
+    dim(CvT.chems.scale)[1],
     "chemicals.")
 ```
 
@@ -573,7 +573,7 @@ FigLev1a <- ggplot(data=level1tab) +
   theme_bw()+
   theme( text  = element_text(size=18))
 print(FigLev1a)
-ggsave(paste("figs/Fig2-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 

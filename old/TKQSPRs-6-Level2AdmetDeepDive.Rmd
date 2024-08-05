@@ -1,0 +1,200 @@
+---
+title: "TK QSPR Bakeoff"
+author: "John Wambaugh and Nisha Sipes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QSPR Bakeoff}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+First we clear the memory to make sure there are no holdovers from previous R runs
+```{r clear_mermor, eval=TRUE}
+rm(list=ls()) 
+```
+
+To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
+```{r load_packages, eval = TRUE}
+library(readxl)
+library(ggplot2)
+library(httk)
+library(scales)
+library(gplots)
+library(RColorBrewer)
+library(DescTools)
+library(gridExtra)
+library(reshape2)
+library(randomForest)
+```
+
+Load custom code 
+```{r load_code, eval = TRUE}
+setwd("C:/Users/jwambaug/git/tkqsars/")
+source("clear_httk.R")
+source("tkstats.R")
+
+# Function for formating tick labels:
+scientific_10 <- function(x) {                                  
+  out <- gsub("1e", "10^", scientific_format()(x))              
+  out <- gsub("\\+","",out)                                     
+  out <- gsub("10\\^01","10",out)                               
+  out <- parse(text=gsub("10\\^00","1",out))                    
+}  
+```
+
+
+Set the time stamp:
+```{r time_stamp, eval = TRUE}
+# Time stamp:
+output.prefix <- "Jan2024"
+```
+
+```{r load_data, eval= TRUE}
+load("data/httkinvitro.RData")
+load("data/Cvt-chems-level2.RData")
+load("data/operatrainingchems.RData")
+load("data/fittable.RData")
+load("data/level2preds.RData")
+load("data/httk-goodchems.RData")
+```
+
+# Level II Predictions -- CvT data
+## Make Predictions
+
+At level II we are comparing predictions made using QSPR values with actual
+tissue concentration vs. time data. Most of the QSPR values are used with the
+HTTK PBTK model to make predictions. I hope to get ADmet predictor PBTK
+predictions too.
+
+Level I included the predictions made with the in vitro measured values, but this 
+is a subset of the total chemicals. Should probably run all statistics both
+for all chemicals and just the subset to make sure that the QSPRs aren't 
+affected by weird chemcials with no in vitro measured values. But I haven't 
+done this yet.
+
+Predictors evaluated:
+* HTTK PBTK with in vitro measured values
+* HTTK PBTK with ADmet
+* HTTK PBTK with Pradeep
+* HTTK PBTK with Dawson
+* HTTK PBTK with OPERA
+* HTTK PBTK with y-randomized in vitro measured values
+* Empirical one- and two-comaprtment fits to CvT data
+
+## Load metabolism data (chemical-enzyme mapping):
+```{r load_chemcyps, eval = TRUE}
+pharm <- read.csv("jm0613471_si_002.txt",sep="\t")
+pharm <- subset(pharm,DTXSID!="-")
+pest <- read_excel("Abass2012.xlsx")
+pharm <- pharm[,c("Compound","PREFERRED_NAME","DTXSID","CASRN","ISOFORM","Author")]
+pest <- pest[,c("Pesticide","PREFERRED_NAME","DTXSID","CASRN","Enzyme","Reference")]
+colnames(pest) <- colnames(pharm)
+cyps <- rbind(pharm,pest)
+
+```
+
+```{r model_admet_difference, eval = TRUE}
+for (this.chem in unique(rownames(qsprbychem.table2)))
+{
+  DTXSID <- level2tab[level2tab$Compound==this.chem,"DTXSID"][1]
+  CvT.chems.nona[CvT.chems.nona$DTXSID == DTXSID, "ADMetDiff"] <-
+    qsprbychem.table2[this.chem,"ADmet"] - 
+    qsprbychem.table2[this.chem,"InVitro"]
+}
+thresh <- 0.2
+admetdiff <- subset(CvT.chems.nona,!is.na(ADMetDiff))
+  admetdiff[admetdiff$ADMetDiff > thresh, "ADMetDiffCat"]<-3
+  admetdiff[admetdiff$ADMetDiff < (-thresh), "ADMetDiffCat"]<-1
+  admetdiff[admetdiff$ADMetDiff > (-thresh) &
+    admetdiff$ADMetDiff < thresh, "ADMetDiffCat"]<-2
+
+# Add 1 vs. 2 comp:
+admetdiff <- merge(admetdiff,fittable[,c("CAS","Model")],by.x="CASRN",by.y="CAS")
+  
+# Add enzymes:
+for (this.chem in admetdiff$DTXSID)
+  if (this.chem %in% cyps$DTXSID)
+  {
+    this.subset <- subset(cyps,DTXSID==this.chem)
+    for (this.cyp in this.subset$ISOFORM)
+    {
+      admetdiff[admetdiff$DTXSID==this.chem,paste("CYP",this.cyp,sep="")] <- "1"
+    }
+  }
+for (this.col in c("CYP2C9",
+                     "CYP2C19",                                      
+                     "CYP3A4",
+                     "CYP2D6",                                       
+                     "CYP2B6",
+                     "CYP1A2",
+                     "CYP1A1")) 
+  admetdiff[is.na(admetdiff[,this.col]),this.col] <- 0
+
+dat <- admetdiff[,c("AVERAGE_MASS",                                 
+ "BOILING_POINT_DEGC_OPERA_PRED",
+ "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",            
+ "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED",
+ "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED",
+ "MELTING_POINT_DEGC_OPERA_PRED",
+ "VAPOR_PRESSURE_MMHG_OPERA_PRED",
+ "WATER_SOLUBILITY_MOL/L_OPERA_PRED",
+ "Human.Clint.httk",                             
+ "Human.Fup.httk",
+ "Human.Clint.SPlus",                            
+ "Human.Fup.SPlus",
+ "ADMetDiff",                                    
+ "Model",                                        
+ "CYP2C9",
+ "CYP2C19",                                      
+ "CYP3A4",
+ "CYP2D6",                                       
+ "CYP2B6",
+ "CYP1A2",
+ "CYP1A1")]
+
+# Turn into factor:
+for (this.col in c("Model",                                        
+ "CYP2C9",
+ "CYP2C19",                                      
+ "CYP3A4",
+ "CYP2D6",                                       
+ "CYP2B6",
+ "CYP1A2",
+ "CYP1A1")) dat[,this.col] <- as.factor(dat[,this.col])
+  
+# Add contrast between ADmet and HTTK 
+dat$Clint.Ratio <- dat$Human.Clint.SPlus/dat$Human.Clint.httk
+dat$Clint.Ratio[is.nan(dat$Clint.Ratio)] <- 1
+dat$Clint.Ratio[!is.finite(dat$Clint.Ratio)] <- 10000
+
+dat$Fup.Ratio <- dat$Human.Fup.SPlus/dat$Human.Fup.httk
+dat$Fup.Ratio[is.nan(dat$Fup.Ratio)] <- 1
+
+# transform to more uniform scale:
+dat[,3] <- log10(dat[,3])
+
+colnames(dat)[1] <- "Molecular_Weight"
+colnames(dat)[2] <- "Boiling_Point"
+colnames(dat)[3] <- "Henrys_Law_Constant"
+colnames(dat)[4] <- "LogKow"
+colnames(dat)[5] <- "LogKoa"
+colnames(dat)[6] <- "Melting_Point"
+colnames(dat)[7] <- "Vapor_Pressure"
+colnames(dat)[8] <- "Water_Solubility"
+#dat$ADMetDiff <-as.factor(dat$ADMetDiff)
+this.rf <- randomForest(data=dat,ADMetDiff ~ .,sample=c(10,10,10),ntree=5000)
+print(this.rf)
+varImpPlot(this.rf)
+plot(dat[,2],dat[,13])
+```

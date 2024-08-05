@@ -1,1 +1,4 @@
 "DTXSID","CAS","Model","Species"
+"DTXSID3031862","307-24-4","model_flat","rat"
+"DTXSID80108992","45298-90-6","model_flat","rat"
+"DTXSID8031865","335-67-1","model_flat","rat"
