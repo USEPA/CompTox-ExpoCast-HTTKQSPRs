@@ -11,6 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/CompTox-ExpoCast-HTTKQSPRs/")
 ```
 
 ## R Markdown
@@ -89,11 +90,6 @@ CvT.chems.nofits <- CvT.chems[
   CvT.chems$CASRN %in%subset(fittable,Model=="Flat")$CAS |
   CvT.chems$CASRN %in%subset(fittable,Model=="None")$CAS
   , ]
-
-write.csv(CvT.chems.nofits[,c(
-  "DTXSID",
-  "PREFERRED_NAME",                               
-  "CASRN")], row.names=FALSE,file="tables/SupTable-NoEmpiricalFitChems.txt")
 
 CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CASRN))
 cat(paste(length(unique(CvT.data$DTXSID)),
@@ -269,6 +265,29 @@ Make predictions of CvT using in vitro measured data. Rather than use default
 HTTK (which also pulls in things like blood to plasma ratio) we'll wipe out 
 everything and then add just Clint and Fup each time:
 ```{r cvt_compare_invitro, eval = TRUE}
+cat("Results: QSPR Predictions\n")
+cat(paste("Additionally, HTTK in vitro data were not available for all the chemicals with CvT data, so evaluations aimed at characterizing the predictivity of in vitro HTTK only relied on",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk) &
+              !is.na(CvT.chems.nona$Human.Clint.httk)),
+              "chemicals.\n"))
+cat("\n")
+cat("Results: Level 2 Analysis\n")
+cat(paste("While there were",
+          sum(!is.na(CvT.chems.nona$Human.Clint.httk)),
+          "chemicals with measured Clint and",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk)),
+          "chemicals with measured fup, for a total of",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk) |
+              !is.na(CvT.chems.nona$Human.Clint.httk)),
+          "unique chemicals, there were only",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk) &
+              !is.na(CvT.chems.nona$Human.Clint.httk)),
+          "with both measured values available. In vitro-parameterized HTPBTK was only evaluated for this set of",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk) &
+              !is.na(CvT.chems.nona$Human.Clint.httk)),
+          "chemicals.\n"))
+cat("\n")
+
 this.label <- "HTPBTK-InVitro" 
 out <- make_cvt_comparisons(this.label, 
                             "Human.Clint.httk", 
@@ -506,10 +525,10 @@ The performance of actual 1 compartment model fits provides an upper limit
 of how good we can get (thanks Rusty)
 ```{r cvt_compare_fits, eval = TRUE}
 this.label <- "In Vivo Fits"
-fit.chems <- subset(fittable, !is.na(Vdist) | !is.na(V1))$DTXSID
+fit.chems <- subset(fittable, !is.na(Vdist) | !is.na(V1))
 out <- makeCvTpredsfromfits(
-  subset(CvT.data, DTXSID %in% fit.chems),
-  subset(fittable, DTXSID %in% fit.chems),
+  subset(CvT.data, DTXSID %in% fit.chems$DTXSID),
+  fit.chems,
   label = this.label)
 
 level2tab.cvt[[this.label]] <- out$cvt

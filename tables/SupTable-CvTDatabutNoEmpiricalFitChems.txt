@@ -1,0 +1,7 @@
+"DTXSID","Compound","CAS"
+"DTXSID3061635","C.I. Solvent Red 1","1229-55-6"
+"DTXSID4022527","Propylparaben","94-13-3"
+"DTXSID6021117","Phenazone","60-80-0"
+"DTXSID1034187","Tamoxifen","10540-29-1"
+"DTXSID2021103","Pentachloroanisole","1825-21-4"
+"DTXSID7030066","2,3,4,7,8-Pentachlorodibenzofuran","57117-31-4"

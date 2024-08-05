@@ -11,7 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/tkqsars/")
+knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/CompTox-ExpoCast-HTTKQSPRs/")
 ```
 
 ## R Markdown
@@ -75,13 +75,14 @@ IVBP (?)
 
 Get the in vitro measured values:
 In Vitro Measured:
-```{r add_invitro, eval = TRUE}
+```{r text_for_manuscript, eval = TRUE}
 cat(paste("Evaluation data for Clint for",
       sum(sapply(invitro$Human.Clint,function(x) !is.na(x))),
-      "chemicals and Fup for",
+      "chemicals and fup for",
       sum(sapply(invitro$Human.Funbound.plasma,function(x) !is.na(x))),
       ".\n"
       ))
+cat("\n")
 reset_httk()
 tot.zero <- sum(sapply(get_cheminfo(info="Clint",
                                     median.only = TRUE,
@@ -91,18 +92,20 @@ tot.clint <- sum(sapply(get_cheminfo(info="Clint",
                                      median.only = TRUE,
                                      suppress.messages=TRUE),
                         function(x) !is.na(x)))
+cat("\n")
+cat("Discussion\n")
 cat(paste(sum(invitro$Human.Clint%in% 0),
           "out of",
           sum(!is.na(invitro$Human.Clint)),
-          "chemicals with CvT data have no measured in vitro clearance compared with",
+          "chemicals with in vitro HTTK Clint measured data have no observed clearance (that is, they are metabolically stable) compared with",
           tot.zero,
           "out of",
           tot.clint,
           "measured Clint values (",
           signif(tot.zero/tot.clint*100,2),
-          "percent).\n"
+          "percent) in the httk data set as whole.\n"
           ))
-
+cat("\n")
 ```
 
 AdMet Predictor:
@@ -235,8 +238,6 @@ for (this.col in seq(12,22,2)) CvT.chems.scale[,this.col] <-
 for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <- 
     (CvT.chems.scale[,this.col] - fup.mean) / fup.sd
 
-
-  
     mypalette<-brewer.pal(11,"RdYlBu")
   heatmap.2(as.matrix(CvT.chems.scale[,4:(dim(CvT.chems.scale)[2])]),
     lwid=c(0.4,1),
@@ -257,15 +258,20 @@ for (this.col in seq(13,21,2)) CvT.chems.scale[,this.col] <-
     labRow = FALSE,
     cexCol=1.5,
     trace="none",
-    dendrogram = "none",
+ #   dendrogram = "none",
     col=mypalette)
   dev.off()
+  
+cat("Figure Caption\n")
+cat("Each row corresponds to one of the",
+    dim(CvT.chems.scale)[1]
+    "chemicals.")
 ```
 
 Divide into individual tables:
 ```{r divide_tables, eval = TRUE}
 level1tab <- CvT.chems
-
+colnames(level1tab)[colnames(level1tab) == "CASRN"] <- "CAS"
 
 level1tab1 <- level1tab[,c(
   "DTXSID",
@@ -431,6 +437,21 @@ for (this.col in colnames(possible.training.chems))
 kable(possible.training.chems)
 write.csv(possible.training.chems,row.names=FALSE,
           file="tables/SupTable-PossibleTrainingChems.txt")
+
+cat("Results: QSPR Predictions\n")
+cat(paste("A total of",
+    dim(possible.training.chems)[1],
+    "QSPR predictions were removed for possibly being in the training set (see Supplement Materials Table SupTable-PossibleTrainingChems.txt).\n"))
+cat("\n")
+cat(paste("A total of",
+          dim(subset(possible.training.chems,QSPR=="OPERA"))[1],
+          "predictions, all made by OPERA, were removed for possibly being in the training set (see Supplement Materials Table SupTable-PossibleTrainingChems.txt).\n"))
+cat("\n")
+cat("Results: Level 1 Analysis\n")
+cat("Note that there were",
+    dim(possible.training.chems)[1],
+    "potential training chemicals that were removed from all analyses because they had been predicted too accurately.\n")
+cat("\n")
 ```
 
 ```{r fold_error_differences, eval = TRUE}

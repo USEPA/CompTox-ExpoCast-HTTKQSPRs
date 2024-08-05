@@ -1,1 +1,1 @@
-"DTXSID","PREFERRED_NAME","CASRN"
+"DTXSID","CAS","Model","Species"

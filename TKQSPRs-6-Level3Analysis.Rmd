@@ -11,6 +11,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/CompTox-ExpoCast-HTTKQSPRs/")
 ```
 
 ## R Markdown
@@ -41,7 +42,6 @@ load("data/chemicallists.RData")
 
 Load custom code 
 ```{r load_code, eval = TRUE}
-setwd("C:/Users/jwambaug/git/tkqsars/")
 source("tkstats.R")
 ```
 
@@ -81,7 +81,7 @@ output.prefix <- "July2024"
 #
 #The human half-life QSPRs are detailed in these publications:
 #
-#1.	IFS-QSPR Human HLB and HLT predictions:
+#1.	IFS-QSAR Human HLB and HLT predictions:
 #Arnot, J. A.; Brown, T. N.; Wania, F., Estimating screening-level organic 
 #chemical half-lives in humans. Environ. Sci. Technol. 2014, 48, 723-730.
 #2.	QSPRINS Human HLB and HLT predictions:
@@ -115,7 +115,7 @@ level3tab.arnot1$Vd.pred <- NA
 level3tab.arnot1$thalf.pred <- NA
 level3tab.arnot2 <- level3tab.arnot1
 level3tab.arnot1$QSPR <- "QSARINS"
-level3tab.arnot2$QSPR <- "IFS-QAPR"
+level3tab.arnot2$QSPR <- "IFS-QSAR"
 for (this.dtxsid in level3.arnot$test_substance_dtxsid)
   if (this.dtxsid %in% level3tab.arnot1$DTXSID)
 {
@@ -163,7 +163,7 @@ write.csv(AUCCmax.table,
 ```
 # Get rid of Vd predictions from HTTK not made by QSPR:
 ```{r remove_placeholder_vd, eval = TRUE}
-level3tab[level3tab$QSPR %in% c("QSARINS", "IFS-QAPR"),"Vd.pred"] <- NA
+level3tab[level3tab$QSPR %in% c("QSARINS", "IFS-QSAR"),"Vd.pred"] <- NA
 ```
 
 ```{r halflife_stats, eval = TRUE}
@@ -200,7 +200,7 @@ write.csv(vd.stats.table,
           file="tables/SupTable-VD-stats.txt")
 ```
 
-```{r total_clearnace_stats, eval=TRUE}
+```{r total_clearance_stats, eval=TRUE}
 cl.stats.table <- makestatstable(level3tab,
                                        obs.col="Cl.obs",
                                        pred.col="Cl.pred",
@@ -215,22 +215,46 @@ kable(cl.stats.table)
 write.csv(cl.stats.table,
           file="tables/SupTable-Cl-stats.txt")
 ```
+```{r steadystate_conc_stats, eval=TRUE}
+level3tab$Css.obs <- signif(1/level3tab$Cl.obs,4)
+level3tab$Css.pred <- signif(1/level3tab$Cl.pred,4)
+
+css.stats.table <- makestatstable(level3tab,
+                                       obs.col="Css.obs",
+                                       pred.col="Css.pred",
+                                       chem.lists=list(
+                                         "In Vitro" = invitro.chems,
+                                         "QSPR Intersection" = intersect.chems,
+                                         "Maximal" = unique(level3tab$DTXSID)
+                                         ),
+                                       logrsquared = TRUE
+                                       )
+kable(css.stats.table)
+write.csv(css.stats.table,
+          file="tables/SupTable-Cl-stats.txt")
+```
 
 # Compiled Stats Table for main manuscript:
 ```{r make_manuscritplevel3_table, eval =TRUE}
 level3stats.table <- rbind(
-  halflife.stats.table[c("RMSLE In Vitro","RSquared In Vitro"),],
-  cl.stats.table[c("RMSLE In Vitro","RSquared In Vitro"),],
-  vd.stats.table[c("RMSLE In Vitro","RSquared In Vitro"),]
+  halflife.stats.table[c("RMSLE In Vitro","RMSLE QSPR Intersection"),],
+  cl.stats.table[c("RMSLE In Vitro","RMSLE QSPR Intersection"),],
+  vd.stats.table[c("RMSLE In Vitro","RMSLE QSPR Intersection"),],
+  css.stats.table[c("RMSLE In Vitro","RMSLE QSPR Intersection"),]
   )
 rownames(level3stats.table) <- c(
-  "Half-Life RMSLE",
-  "Half-Life RSquared",
-  "Cltot RMSLE",
-  "CLtot RSquared",
-  "Vd RMSLE",
-  "Vd RSquared"
-)
+  "Half-Life RMSLE (In Vitro HTTK)",
+  "Half-Life RMSLE (QSPR Intersection)",
+  #  "Half-Life RSquared",
+  "Cltot RMSLE (In Vitro HTTK)",
+  "CLtot RMSLE (QSPR Intersection)",
+  #  "CLtot RSquared",
+  "Vd RMSLE (In Vitro HTTK)",
+  "Vd RMSLE (QSPR Intersection)",
+  #  "Vd RSquared"
+  "Css RMSLE (In Vitro HTTK)",
+  "Css RMSLE (QSPR Intersection)"
+  )
 level3stats.table<-apply(level3stats.table,c(1,2),function(x) strsplit(x, " ")[[1]][1])
 kable(level3stats.table)
 write.csv(level3stats.table,
@@ -282,7 +306,7 @@ ggsave(paste("figs/SupFigLev3b_thalf_boxplot_",output.prefix,".tiff",sep=""), wi
 ```
 
 ```{r make_level3_vd_scatter_plot, eval = TRUE}
-FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS")))) +
+FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSAR","QSPRINS")))) +
   geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,shape=QSPR,color=QSPR))+
   scale_x_log10(label=scientific_10)+
   scale_y_log10(label=scientific_10)+
@@ -307,7 +331,7 @@ ggsave(paste("figs/SupFigLev3c_Vd_obsVpred_",output.prefix,".tiff",sep=""),
 
 ```{r make_level3_vd_box_plot, eval = TRUE}
 
-FigLev3d <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSPR","QSPRINS"))), 
+FigLev3d <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSAR","QSPRINS"))), 
   aes(x=QSPR, y=Vd.RPE)) + 
 #  geom_hline(yintercept=1,linetype = "dashed",color="blue")+
 #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
