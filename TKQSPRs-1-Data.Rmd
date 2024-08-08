@@ -40,7 +40,6 @@ library(reshape2)
 
 Load custom code 
 ```{r load_code, eval = TRUE}
-setwd("C:/Users/jwambaug/git/tkqsars/")
 source("clear_httk.R")
 source("tkstats.R")
 ```

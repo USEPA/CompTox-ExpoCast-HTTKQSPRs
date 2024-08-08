@@ -61,17 +61,15 @@ load(file="data/Cvt-data.RData")
 
 #Level I Predictions -- in vitro TK parameters:
 
-
-
 At level I we are comparing QSPR's with the in vitro measured values.
-We don't have those values for all the chemicals, so we only are comnparing on
+We don't have those values for all the chemicals, so we only are comparing on
 a subset.
 
-ADmet Sipes et al. (2017)
+ADMET (Sipes et al., 2017)
 Pradeep et al. (2020)
 Dawson et al. (2021)
-OPERA (in prep.?)
-IVBP (?)
+OPERA (in prep.)
+IVBP (Chirico et al., 2021)
 
 Get the in vitro measured values:
 In Vitro Measured:
@@ -108,7 +106,7 @@ cat(paste(sum(invitro$Human.Clint%in% 0),
 cat("\n")
 ```
 
-AdMet Predictor:
+ADMET Predictor:
 ```{r add_admet, eval = TRUE}
 # Simulations Plus (Sipes 2017):
 clear_httk()
@@ -118,8 +116,8 @@ CvT.chems <- merge(CvT.chems,
   admet[,c("DTXSID","Human.Clint","Human.Funbound.plasma")],
   all.x=TRUE,
   by="DTXSID")
-colnames(CvT.chems)[colnames(CvT.chems)=="Human.Clint"] <- "Human.Clint.SPlus"
-colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- "Human.Fup.SPlus"
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Clint"] <- "Human.Clint.ADMET"
+colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- "Human.Fup.ADMET"
 ```
 
 Dawson 2021:
@@ -278,8 +276,8 @@ level1tab1 <- level1tab[,c(
   "PREFERRED_NAME",
   "CAS",
   "Human.Clint.httk","Human.Fup.httk",
-  "Human.Clint.SPlus","Human.Fup.SPlus")]
-level1tab1$QSPR <- "SPlus"
+  "Human.Clint.ADMET","Human.Fup.ADMET")]
+level1tab1$QSPR <- "ADMET"
 colnames(level1tab1)[6:7] <- c("Human.Clint.pred","Human.Fup.pred") 
 
 level1tab2 <- level1tab[,c(
@@ -385,6 +383,14 @@ for (this.row in 1:dim(level1tab)[1])
 }
 ```
 
+```{r set_order_shapes}
+level1tab$QSPR <- factor(level1tab$QSPR, levels=c("ADMET", "Dawson", "OPERA", 
+                                                     "Pradeep", 
+                                                     "IVBP"))
+ggshapes <- c(21, 22, 23, 24, 25)
+ggcolors <- c("Red","Orange","Green","Blue","Purple")
+```
+
 # Count the number of predictions
 ```{r number_predictions, eval = TRUE}
 pred.counts <- data.frame()
@@ -395,8 +401,10 @@ for (this.qspr in unique(level1tab$QSPR))
   pred.counts[this.qspr,"Fup"] <-
     sum(!is.na(subset(level1tab, QSPR==this.qspr)$Human.Fup.pred))
 }
+
 kable(pred.counts)
-write.csv(pred.counts,row.names = FALSE,
+
+write.csv(pred.counts,
           file="tables/SupTable-QSPRPredCounts.txt")
 ```
 
@@ -521,8 +529,8 @@ hist(subset(level1tab,QSPR=="Dawson")$Human.Clint.RPE,
      main="Dawson",xlab="Clint RPE")
 hist(subset(level1tab,QSPR=="Pradeep")$Human.Clint.RPE,
      main="Pradeep",xlab="Clint RPE")
-hist(subset(level1tab,QSPR=="SPlus")$Human.Clint.RPE,
-     main="SPlus",xlab="Clint RPE")
+hist(subset(level1tab,QSPR=="ADMET")$Human.Clint.RPE,
+     main="ADMET",xlab="Clint RPE")
 hist(subset(level1tab,QSPR=="OPERA")$Human.Clint.RPE,
      main="OPERA",xlab="Clint RPE")
 
@@ -530,8 +538,8 @@ hist(subset(level1tab,QSPR=="Dawson")$Human.Fup.RPE,
      main="Dawson",xlab="Fup RPE")
 hist(subset(level1tab,QSPR=="Pradeep")$Human.Fup.RPE,
      main="Pradeep",xlab="Fup RPE")
-hist(subset(level1tab,QSPR=="SPlus")$Human.Fup.RPE,
-     main="SPlus",xlab="Fup RPE")
+hist(subset(level1tab,QSPR=="ADMET")$Human.Fup.RPE,
+     main="ADMET",xlab="Fup RPE")
 hist(subset(level1tab,QSPR=="OPERA")$Human.Fup.RPE,
      main="OPERA",xlab="Fup RPE")
 ```
@@ -553,7 +561,11 @@ FigLev1a <- ggplot(data=level1tab) +
              aes(x=Human.Clint.pred+10^-4,
                  y=Human.Clint.httk+10^-4,
                  shape=QSPR,
+                 fill=QSPR,
                  color=QSPR))+
+  scale_shape_manual(values = ggshapes)+
+  scale_color_manual(values = ggcolors)+
+  scale_fill_manual(values = ggcolors)+
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10)+
   geom_abline(intercept = log10(10^(1/2)), 
@@ -583,7 +595,11 @@ ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""),
 ## Tiff image for manuscript (facet to see the individual predictions over Clint value)
 FigLev1a_facet <- ggplot(data=level1tab) +
   geom_point(size=2,aes(x=Human.Clint.pred+10^-1,
-                        y=Human.Clint.httk+10^-1,shape=QSPR,color=QSPR))+
+                        y=Human.Clint.httk+10^-1,
+                        shape=QSPR,fill=QSPR,color=QSPR))+
+  scale_shape_manual(values = ggshapes)+
+  scale_color_manual(values = ggcolors)+
+  scale_fill_manual(values = ggcolors)+
   scale_x_log10(breaks=c(1,10^2),label=scientific_10,limits=c(30^-1,3000)) +
   #scale_y_log10(label=scientific_10)+
   scale_y_log10(breaks=c(10^-1,1,10,10^2),
@@ -708,7 +724,10 @@ FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
              alpha=0.5,
              aes(x=Human.Fup.pred+10^-4,
                  y=Human.Fup.httk+10^-4,
-                 shape=QSPR,color=QSPR))+
+                 shape=QSPR,fill=QSPR,color=QSPR))+
+  scale_shape_manual(values = ggshapes)+
+  scale_color_manual(values = ggcolors)+
+  scale_fill_manual(values = ggcolors)+
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10)+
   geom_abline(intercept = log10(10^(1/2)), 
@@ -737,9 +756,14 @@ FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
   geom_point(size=2,
              aes(x=Human.Fup.pred+10^-4,
                  y=Human.Fup.httk+10^-4,
-                 shape=QSPR, color=QSPR))+
+                 shape=QSPR, 
+                 fill=QSPR,
+                 color=QSPR))+
   scale_x_log10(breaks=c(10^-8,10^-6,10^-4,10^-2,1),label=scientific_10)+
   scale_y_log10(breaks=c(10^-8,10^-6,10^-4,10^-2,1),label=scientific_10)+
+  scale_shape_manual(values = ggshapes)+
+  scale_color_manual(values = ggcolors)+
+  scale_fill_manual(values = ggcolors)+
   geom_abline(intercept = 0, slope = 1,
               linetype="solid", colour="black", linewidth=0.2) +
   geom_abline(intercept = 1, slope = 1,

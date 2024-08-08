@@ -1,8 +1,63 @@
+logit <- function(x)
+{
+  return(sapply(x, function(x) log(x/(1-x))))
+}
+invlogit <- function(x)
+{
+  return(sapply(x, function(x) exp(x)/(exp(x)+1)))
+}
+
+make_cvt_comparisons <- function(this.label, clint.col, fup.col,
+                                 CvT.data, CvT.chems.nona, fittable)
+{
+  clear_httk()
+  chem.physical_and_invitro.data <<- add_chemtable(
+    CvT.chems.nona,
+    current.table=chem.physical_and_invitro.data,
+    data.list=list(
+      Compound="PREFERRED_NAME",
+      DTXSID="DTXSID",
+      CAS="CASRN",
+      Funbound.plasma=fup.col,
+      Clint=clint.col),
+    species="Human",
+    reference=this.label,
+    overwrite=TRUE)
+  
+  print(paste("Case", this.label,
+              "has sufficient parameters for",
+              length(unique(c(
+                get_cheminfo(model="pbtk", class.exclude=FALSE, suppress.messages=TRUE),
+                get_cheminfo(model="gas_pbtk", class.exclude=FALSE, suppress.messages=TRUE)))),
+              "chemicals for PBTK"))
+
+  level2tab.list <- makeCvTpreds(CvT.data,
+                                 this.label,
+                                 list(Caco2.options=list(
+                                   keepit100=TRUE)
+                                 ))                                       
+  
+  level3tab <- maketkstatpreds(CvT.data, fittable, this.label)
+  
+  return(list(level2tab.cvt = level2tab.list$cvt,
+              level2tab.stats = level2tab.list$stats,
+              level2tab.rmsle = level2tab.list$rmsle,
+              level2tab.aafe = level2tab.list$aafe,
+              level2tab.rmsle.early = level2tab.list$rmsle.early,
+              level2tab.aafe.early = level2tab.list$aafe.early,
+              level2tab.rmsle.late = level2tab.list$rmsle.late,
+              level2tab.aafe.late = level2tab.list$aafe.late,
+              level3tab = level3tab))
+}
+
 # This function does the level II concentration comparisons:
 makeCvTpreds <- function(CvT.data,label,model.args)
 {
-  nonvol.chems <- NULL # suppressWarnings(get_cheminfo(model="pbtk"))
-  vol.chems <- suppressWarnings(get_cheminfo(model="gas_pbtk"))
+  cat("Running makeCvTpreds...\n")
+  nonvol.chems <- suppressWarnings(get_cheminfo(model="pbtk", 
+                                                class.exclude=FALSE))
+  vol.chems <- suppressWarnings(get_cheminfo(model="gas_pbtk",
+                                             class.exclude=FALSE))
   
   cvt.table <- NULL
   stats.table <- NULL
@@ -33,6 +88,8 @@ makeCvTpreds <- function(CvT.data,label,model.args)
           {
             this.subset4 <- subset(this.subset3,Dose==this.dose)
             obs.times <- signif(sort(unique(this.subset4$Time_Days)),4)
+# HTTK doesn't handle obervations at time zero:
+            obs.times[obs.times == 0] <- signif(obs.times[2]/2,4)
 
             if (this.model=="solve_pbtk")
             {
@@ -48,8 +105,10 @@ makeCvTpreds <- function(CvT.data,label,model.args)
                                                  args=c(list(
                                                    chem.cas=this.cas,
                                                    species=this.species,
-                                                   default.to.human=TRUE),
+                                                   default.to.human=TRUE,
+                                                   class.exclude=FALSE),
                                                    model.args)))
+           #   if (this.cas %in% c("335-67-1", "3871-99-6")) browser()
             }
             if ("Caco2.options" %in% names(model.args))
             {
@@ -67,6 +126,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
                      iv.dose=(this.route=="iv"),
                      dose=this.dose,
                      default.to.human=TRUE,
+                     class.exclude=FALSE,
                      suppress.messages=TRUE,
                      input.units='mg/kg',
                      output.units = "mg/L",
@@ -86,6 +146,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
             {
               this.subset5 <- subset(this.subset4,signif(Time_Days,4)==this.time)
   #            print(this.subset5)
+              if (length(pred[pred[,"time"] == this.time,"Cven"])==0) browser()
               new.row <- data.frame(
                 Compound=this.compound,
                 DTXSID=this.dtxsid,
@@ -152,6 +213,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
 
 calc_cvt_stats <- function(cvt.table, stats.table)
 {
+  cat("Running calc_cvt_stats...\n")
   # Set a minimal value for predictions and observations using limit of quantification (LOQ)
   # We treat all "low" values as the same, where we define low with loq:
   for (this.col in c("Conc.pred","Conc.obs"))
@@ -361,6 +423,7 @@ makeCvTpredsfromfits <- function(
   fittable,
   label = "FitsToData") # How the predictions should be labeled
 {
+  cat("Running makeCvTpredsfromfits...\n")
   cvt.table <- NULL
   stats.table <- NULL
   for (this.cas in unique(CvT.data$CAS))
@@ -493,11 +556,13 @@ maketkstatpreds <- function(
   cvtfits,
   label)
 {
+  cat("Running maketkstatpreds...\n")
   chems.good.1comp <- suppressWarnings(get_cheminfo(model="1compartment"))
   out.table <- NULL
   for (this.cas in unique(CvT.data$CAS))
     if (this.cas %in% cvtfits$CAS)
   {
+    print(paste(label,": ",this.cas,sep=""))  
     if (this.cas %in% chems.good.1comp)
     {
       this.subset1 <- subset(CvT.data,CAS==this.cas)
@@ -514,11 +579,14 @@ maketkstatpreds <- function(
           default.to.human=TRUE,
           suppress.messages=TRUE))
         thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"]))
-        cl.pred <- 1/suppressWarnings(calc_total_clearance(
+        kelim.obs <- unlist(as.numeric(this.subset2[,"kelim"]))
+        cl.obs <- signif(vd.obs*kelim.obs,3)
+        cl.pred <- try(signif(1/suppressWarnings(calc_css( # 1 / Css = Cltot
           chem.cas=this.cas,
           species=this.species,
           default.to.human=TRUE,
-          suppress.messages=TRUE))
+          model="gas_pbtk",
+          suppress.messages=TRUE)$avg),3))
         ke.pred <- cl.pred/vd.pred 
         thalf.pred <- signif(log(2)/ke.pred,3)
         new.tab <- data.frame(
@@ -528,9 +596,10 @@ maketkstatpreds <- function(
           Species=this.species,
           Vd.obs=vd.obs,
           Vd.pred = vd.pred,
+          cl.obs = cl.obs,
+          cl.pred = cl.pred,
           thalf.obs=thalf.obs,
           thalf.pred = thalf.pred,
-          cl.pred = cl.pred,
           stringsAsFactors=F)
   #      new.tab <- merge(new.tab,this.subset2[,
   #        c("CAS","Reference")],by="CAS")
@@ -711,80 +780,4 @@ makestatstable2 <- function(this.table,
         sep="")
     }
   return(this.table)
-}
-
-
-kelim_substitution <- function(data,
-                               invivo,
-                               Vd_data,
-                               clint_column,
-                               fup_column) {
-  
-  stopifnot(is.data.frame(data),
-            is.data.frame(invivo),
-            is.data.frame(Vd_data),
-            is.character(clint_column),
-            is.character(fup_column))
-  
-  if (!all(c("CAS", clint_column, fup_column) %in% names(data))) {
-    stop("Error: CAS or specified clint/fup columns not in data.frame")
-  }
-  if (!all(c("CAS", "kelim") %in% names(invivo))) {
-    stop("Error: CAS or kelim columns not in fit table")
-  }
-  if (!all(c("CAS", "Vd.pred") %in% names(Vd_data))) {
-    stop("Error: CAS or Vd.pred columns not in Vd_data")
-  }
-  
-  # Inner join by CAS number to add kelim column for ease of calculation
-  data <- merge(data, invivo[c("CAS", "kelim")])
-  data <- merge(data, Vd_data[c("CAS", "Vd.pred")])
-  data$`invivoAdjusted.Fup` <- NA
-  data$`invivoAdjusted.Clint` <- NA
-  
-  for (y in seq_len(nrow(data))) {
-    
-    this_data <- data[y, ]
-    this_cas <- this_data[["CAS"]]
-    # Message to see which chemical the process is on.
-    print(this_cas)
-    
-    this_paramset <- suppressWarnings(httk::parameterize_pbtk(chem.cas = this_cas))
-    Qgfr <- this_paramset[["Qgfrc"]]
-    Qli <- this_paramset[["Qliverf"]]
-    Rb2p <- this_paramset[["Rblood2plasma"]]
-    Vdist <- this_data["Vd.pred"]
-    kelim <- this_data["kelim"]
-    
-    # Summarizing some variables (left hand terms)
-    lht <- kelim * Vdist - Qgfr
-    
-    # here we calculate and create two independent columns for 
-    # adjusted CLint and fup
-    fup_data <- this_data[fup_column]
-    clint = 1/(fup_data * (lht - (1/(Qli * Rb2p))))
-    clint <- signif(clint, 4)
-    
-    clint_data <- this_data[fup_column]
-    fup = 1/(clint_data * (lht - (1/(Qli * Rb2p))))
-    fup <- signif(fup, 4)
-    
-    # Before writing, there needs to be checks for negative values
-    # I will set either to NA if below zero (or if fup > 1 set to 1)
-    clint <- ifelse(clint < 0, NA, clint)
-    fup <- ifelse(fup < 0, NA, fup)
-    fup <- ifelse(fup > 1, 1, fup)
-    
-    
-    data[y, "invivoAdjusted.Fup"] <- fup
-    data[y, "invivoAdjusted.Clint"] <- clint
-    # When using these values, always use *_column for the other value in
-    # subsequent analyses
-    
-  }
-  
-  
-  return(data)
-  
-  
 }

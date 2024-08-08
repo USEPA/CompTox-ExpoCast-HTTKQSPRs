@@ -33,7 +33,6 @@ library(DescTools)
 
 Load custom code 
 ```{r load_code, eval = TRUE}
-setwd("C:/Users/jwambaug/git/tkqsars/")
 source("clear_httk.R")
 source("tkstats.R")
 ```
@@ -58,21 +57,15 @@ load(file="data/fittable.RData")
 
 At level II we are comparing predictions made using QSPR values with actual
 tissue concentration vs. time data. Most of the QSPR values are used with the
-HTTK PBTK model to make predictions. I hope to get ADmet predictor PBTK
-predictions too.
-
-Level I included the predictions made with the in vitro measured values, but this 
-is a subset of the total chemicals. Should probably run all statistics both
-for all chemicals and just the subset to make sure that the QSPRs aren't 
-affected by weird chemcials with no in vitro measured values. But I haven't 
-done this yet.
+HTTK PBTK model to make predictions. 
 
 Predictors evaluated:
 * HTTK PBTK with in vitro measured values
-* HTTK PBTK with ADmet
+* HTTK PBTK with ADMET
 * HTTK PBTK with Pradeep
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
+* HTTK PBTK with Consensus QSPR
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-compartment fits to CvT data
 
@@ -129,14 +122,7 @@ CvT.chems.nobad$Human.Clint.Max<- signif(apply(
   CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE)), 4)
 CvT.chems.nobad$Human.Clint.Mean<- signif(apply(
   CvT.chems.nobad[,clint.cols],1,function(x) mean(x,na.rm=TRUE)), 4)
-logit <- function(x)
-{
-  return(sapply(x, function(x) log(x/(1-x))))
-}
-invlogit <- function(x)
-{
-  return(sapply(x, function(x) exp(x)/(exp(x)+1)))
-}
+
 for (this.col in c("Human.Clint.Max","Human.Clint.Mean"))
 {
   CvT.chems.nobad[is.infinite(CvT.chems.nobad[,this.col]),
@@ -210,57 +196,17 @@ for (i in 1:NUM.YRANDOM) # Ten sets of parameters
     invitro.meas[yrandom.ids, "Human.Funbound.plasma"]
 }
 ```
-
-# Set up function to make predictions
-```{r standard_comparison_function, eval=TRUE}
-level2tab.cvt <- level2tab.stats <- level2tab.rmsle <- level2tab.aafe <-
-  level2tab.rmsle.early <-level2tab.aafe.early <- level2tab.rmsle.late <- 
-  level2tab.aafe.late <- level3tab <- list()
-
-make_cvt_comparisons <- function(this.label, clint.col, fup.col,
-                                 CvT.data, CvT.chems.nona, fittable)
-{
-  clear_httk()
-  chem.physical_and_invitro.data <<- add_chemtable(
-    CvT.chems.nona,
-    current.table=chem.physical_and_invitro.data,
-    data.list=list(
-      Compound="PREFERRED_NAME",
-      DTXSID="DTXSID",
-      CAS="CASRN",
-      Funbound.plasma=fup.col,
-      Clint=clint.col),
-    species="Human",
-    reference=this.label,
-    overwrite=TRUE)
-  
-  print(paste("Case", this.label,
-              "has sufficient parameters for",
-              length(unique(c(
-    get_cheminfo(model="pbtk", class.exclude=FALSE, suppress.messages=TRUE),
-    get_cheminfo(model="gas_pbtk", class.exclude=FALSE, suppress.messages=TRUE)))),
-              "chemicals for PBTK"))
-
-  level2tab.list <- makeCvTpreds(CvT.data,
-                                       this.label,
-                                       list(Caco2.options=list(
-                                         keepit100=TRUE)
-                                       ))                                       
-
-  level3tab <- maketkstatpreds(CvT.data, fittable, this.label)
-
-  return(list(level2tab.cvt = level2tab.list$cvt,
-              level2tab.stats = level2tab.list$stats,
-              level2tab.rmsle = level2tab.list$rmsle,
-              level2tab.aafe = level2tab.list$aafe,
-              level2tab.rmsle.early = level2tab.list$rmsle.early,
-              level2tab.aafe.early = level2tab.list$aafe.early,
-              level2tab.rmsle.late = level2tab.list$rmsle.late,
-              level2tab.aafe.late = level2tab.list$aafe.late,
-              level3tab = level3tab))
-}
+```{r initialize_lists}
+level2tab.cvt <- 
+level2tab.stats <-
+level2tab.rmsle <-
+level2tab.aafe <- 
+level2tab.rmsle.early <-
+level2tab.aafe.early <-
+level2tab.rmsle.late <-
+level2tab.aafe.late <-
+level3tab <- list()
 ```
-
 Make predictions of CvT using in vitro measured data. Rather than use default
 HTTK (which also pulls in things like blood to plasma ratio) we'll wipe out 
 everything and then add just Clint and Fup each time:
@@ -307,10 +253,10 @@ level3tab[[this.label]] <- out$level3tab
 ```
 
 ```{r cvt_compare_admet, eval = TRUE}
-this.label <- "HTPBTK-ADmet" 
+this.label <- "HTPBTK-ADMET" 
 out <- make_cvt_comparisons(this.label, 
-                            "Human.Clint.SPlus", 
-                            "Human.Fup.SPlus",
+                            "Human.Clint.ADMET", 
+                            "Human.Fup.ADMET",
                             CvT.data, 
                             CvT.chems.nona, 
                             fittable)

@@ -56,8 +56,7 @@ output.prefix <- "July2024"
 # vs. estimates from CvT data (invivoPKfit)
 # 
 # Jon Arnot provide two models that directly predicted half-life. All the other
-# QSPR values were used with HTTK to predict half-life and Vd. Hopefully we
-# can also have Admet predict these values.
+# QSPR values were used with HTTK to predict half-life and Vd. 
 #
 # As with level II, we can only compare the HTTK+in vitro measured preditions
 # for a subset of the chemicals and to date I have lumped everything together.
@@ -67,34 +66,6 @@ output.prefix <- "July2024"
 # of Vd and thalf. The optimizer had to be able to fine a maximimum likelihood
 # estimate and it fails some of the time. The estimates we are using were made
 # with invivoPKfit and published in Sayre et al. (2020)
-
-# Jon Arnot:
-#We suggest using the QSPRs for HUMAN total elimination half-life (HLT; hours) 
-#as these are most relevant to the rodent time course data (half-lives/clearance)
-# half-life (HLB; hours) predictions for possible comparisons. For each 
-# prediction Alessandro has reported an indication of the AD (i.e. "OK" or 
-# "Warning"), there are more explicit AD details available for all models, but 
-# this provides a starting indication of expected prediction reliability.
-#
-#I have scaled the half-lives from 70 kg bw (assumed humans) to 0.25 kg bw for 
-#typical rat body weight using a  bw allometric scaling factor.
-#
-#The human half-life QSPRs are detailed in these publications:
-#
-#1.	IFS-QSAR Human HLB and HLT predictions:
-#Arnot, J. A.; Brown, T. N.; Wania, F., Estimating screening-level organic 
-#chemical half-lives in humans. Environ. Sci. Technol. 2014, 48, 723-730.
-#2.	QSPRINS Human HLB and HLT predictions:
-#Papa, E.; Sangion, A.; Arnot, J. A.; Gramatica, P., Development of human 
-#biotransformation QSPRs and application for PBT assessment refinement. Food 
-#Chem. Toxicol. 2018, 112, 535-543.
-#
-#We have also included Biotransformation HL in fish (hours) by QSPRINS, IFS and 
-#EPI suite models as well as that were used in the 
-#training/testing sets. I don''t think they are as comparable to rodent data as 
-#the human predictions, but they were developed with different training sets 
-#(and for fish, not mammals!).
-
 
 ## Collect the Concentration vs. time (level 2) predictions from each model:
 ```{r level3_onering, eval = TRUE}
@@ -165,6 +136,23 @@ write.csv(AUCCmax.table,
 ```{r remove_placeholder_vd, eval = TRUE}
 level3tab[level3tab$QSPR %in% c("QSARINS", "IFS-QSAR"),"Vd.pred"] <- NA
 ```
+
+# Standardize Plotting
+```{r set_order_shapes}
+level3tab$QSPR <- factor(level3tab$QSPR, levels=c("HTPBTK-InVitro",
+                                                  "HTPBTK-ADMET",
+                                                  "HTPBTK-Dawson", 
+                                                  "HTPBTK-OPERA", 
+                                                  "HTPBTK-Pradeep",
+                                                  "HTPBTK-Consensus",
+                                                  "HTPBTK-YRandom",
+                                                  "QSARINS",
+                                                  "IFS-QSAR"))
+ggshapes <- c(21, 21, 22, 23, 24, 22, 23, 24, 25)
+ggcolors <- c("black", "red", "orange", "green", "blue", "chartreuse4", "coral", "cyan3", "deeppink")
+ggfill <- c("white","red","orange","green","blue", "white","white","white","white")
+```
+
 
 ```{r halflife_stats, eval = TRUE}
 halflife.stats.table <- makestatstable(level3tab,
@@ -265,16 +253,22 @@ write.csv(level3stats.table,
 ```{r make_level3_halflife_scatter_plot, eval = TRUE}
 
 FigLev3a <- ggplot(data=level3tab) +
-  geom_point(size=3,aes(x=thalf.pred,y=thalf.obs,shape=QSPR,color=QSPR))+
+  geom_point(size=3,aes(x=thalf.pred,y=thalf.obs,
+                        shape=QSPR, 
+                        fill=QSPR, 
+                        color=QSPR))+
+  scale_shape_manual(values=ggshapes)+
+  scale_fill_manual(values=ggfill)+
+  scale_color_manual(values=ggcolors)+
   scale_x_log10(label=scientific_10)+
   scale_y_log10(label=scientific_10)+
-  scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
+ # scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
   geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
   geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
   xlab(bquote('Predicted'~t[half]~"(h)")) +
   ylab(bquote('Observed'~t[half]~"(h)")) +
-  scale_shape_manual(values = 0:10)+
+ # scale_shape_manual(values = 0:10)+
   theme_bw()+
   facet_wrap(~QSPR)+
   theme( text  = element_text(size=20),
@@ -307,16 +301,22 @@ ggsave(paste("figs/SupFigLev3b_thalf_boxplot_",output.prefix,".tiff",sep=""), wi
 
 ```{r make_level3_vd_scatter_plot, eval = TRUE}
 FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSAR","QSPRINS")))) +
-  geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,shape=QSPR,color=QSPR))+
+  geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,                        
+                        shape=QSPR, 
+                        fill=QSPR, 
+                        color=QSPR))+
+  scale_shape_manual(values=ggshapes)+
+  scale_fill_manual(values=ggfill)+
+  scale_color_manual(values=ggcolors)+
   scale_x_log10(label=scientific_10)+
   scale_y_log10(label=scientific_10)+
-  scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
+#  scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
   geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
   geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
   xlab(bquote('Predicted'~V[d]~"(L/kg BW)")) +
   ylab(bquote('Observed'~V[d]~"(L/kg BW)")) +
-  scale_shape_manual(values = 0:10)+
+#  scale_shape_manual(values = 0:10)+
   theme_bw()+
   facet_wrap(~QSPR)+
   theme( text  = element_text(size=20),
@@ -353,16 +353,22 @@ ggsave(paste("figs/SupFigLev3d_Vd_boxplot_",output.prefix,".tiff",sep=""),
 
 ```{r make_level3_cl_scatter_plot, eval = TRUE}
 FigLev3e <- ggplot(data=level3tab) +
-  geom_point(size=3,aes(x=Cl.pred,y=Cl.obs,shape=QSPR,color=QSPR))+
+  geom_point(size=3,aes(x=Cl.pred,y=Cl.obs,
+                        shape=QSPR, 
+                        fill=QSPR, 
+                        color=QSPR))+
+  scale_shape_manual(values=ggshapes)+
+  scale_fill_manual(values=ggfill)+
+  scale_color_manual(values=ggcolors)+
   scale_x_log10(label=scientific_10)+
   scale_y_log10(label=scientific_10)+
-  scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
+ # scale_shape_manual(values=c(15, 16, 17, 18, 25,0,1,2,5))+
   geom_abline(intercept = log10(10^(1/2)), slope = 1,linetype="dashed", colour="lightBlue") +
   geom_abline(intercept = 0, slope = 1,linetype="solid", colour="Grey") + 
   geom_abline(intercept = log10(10^(-1/2)), slope = 1,linetype="dashed", colour="lightBlue") + 
   xlab(bquote('Predicted'~Cl[tot]~"(L/h/kg BW)")) +
   ylab(bquote('Observed'~Cl[tot]~"(L/h/kg BW)")) +
-  scale_shape_manual(values = 0:10)+
+#  scale_shape_manual(values = 0:10)+
   theme_bw()+
   facet_wrap(~QSPR)+
   theme( text  = element_text(size=20),
@@ -393,7 +399,7 @@ FigLev3f <- ggplot(data=level3tab,
   theme( text  = element_text(size=19))+
   theme(axis.text.x = element_text(angle = 60, vjust = 0.75, hjust=0.75))
 print(FigLev3f)
-ggsave(paste("SupFigLev3f_Cltot_boxplot_",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/SupFigLev3f_Cltot_boxplot_",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ``` 
 

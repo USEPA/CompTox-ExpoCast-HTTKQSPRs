@@ -65,21 +65,15 @@ load("data/Cvt-chems-level1.RData")
 
 At level II we are comparing predictions made using QSPR values with actual
 tissue concentration vs. time data. Most of the QSPR values are used with the
-HTTK PBTK model to make predictions. I hope to get ADmet predictor PBTK
-predictions too.
-
-Level I included the predictions made with the in vitro measured values, but this 
-is a subset of the total chemicals. Should probably run all statistics both
-for all chemicals and just the subset to make sure that the QSPRs aren't 
-affected by weird chemcials with no in vitro measured values. But I haven't 
-done this yet.
+HTTK PBTK model to make predictions. 
 
 Predictors evaluated:
 * HTTK PBTK with in vitro measured values
-* HTTK PBTK with ADmet
+* HTTK PBTK with ADMET
 * HTTK PBTK with Pradeep
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
+* HTTK PBTK with Consensus QSPR
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-comaprtment fits to CvT data
 
@@ -322,7 +316,7 @@ FigLev2 <- ggplot(data=subset(level2tab,
     rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[c("AAFE","RMSLE"),"HTPBTK-ADmet"],
+    tableGrob(stats.table[c("AAFE","RMSLE"),"HTPBTK-ADMET"],
     rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
@@ -377,7 +371,7 @@ FigLev2 <- ggplot(data=subset(level2tab.early,
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=2.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
-    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTPBTK-ADmet"],
+    tableGrob(stats.table[c("AAFE.early","RMSLE.early"),"HTPBTK-ADMET"],
     rows=NULL, theme = ttheme_minimal(base_size = 14)),
     xmin=0,xmax=4.3+xshift,ymin=(texty-1),ymax=texty) +
   annotation_custom(
@@ -476,12 +470,34 @@ FigLev2.auc <- ggplot(data=subset(level2tab.stats,
 print(FigLev2.auc)  
 ```
 
+# Standardize Plotting
+```{r set_order_shapes}
+level2tab.stats$QSPR <- factor(level2tab.stats$QSPR, levels=c("HTPBTK-InVitro",
+                                                  "HTPBTK-ADMET",
+                                                  "HTPBTK-Dawson", 
+                                                  "HTPBTK-OPERA", 
+                                                  "HTPBTK-Pradeep",
+                                                  "HTPBTK-Consensus",
+                                                  "HTPBTK-YRandom",
+                                                  "In Vivo Fits"))
+ggshapes <- c(21, 21, 22, 23, 24, 22, 23, 24, 25)
+ggcolors <- c("black", "red", "orange", "green", "blue", "chartreuse4", "coral", "darkorange4")
+ggfill <- c("white","red","orange","green","blue", "white","white","white","white")
+```
+
+
 ```{r make_level2_auc_plot, eval = TRUE}
 FigLev2AUC_facet <- ggplot(data=subset(level2tab.stats,
                               regexpr("Caco2",QSPR)==-1)) +
   geom_point(size=2,
              alpha=0.25,
-             aes(x=AUC.pred,y=AUC.obs,shape=QSPR,color=QSPR))+
+             aes(x=AUC.pred,y=AUC.obs,
+                 shape=QSPR,
+                 fill=QSPR,
+                 color=QSPR))+
+  scale_shape_manual(values=ggshapes)+
+  scale_fill_manual(values=ggfill)+
+  scale_color_manual(values=ggcolors)+
   scale_x_log10(breaks=c(10^-5,10^-2,10),
                 label=scientific_10,
                 limits=c(10^-7,3000)) +
@@ -506,7 +522,7 @@ FigLev2AUC_facet <- ggplot(data=subset(level2tab.stats,
   ylab('Observed AUC (mg/L*h)') +
   theme_bw()+
   facet_wrap(~QSPR)+
-  scale_shape_manual(values = 0:10)+
+ # scale_shape_manual(values = 0:10)+
   theme( text  = element_text(size=20),
          legend.position = "none",
          strip.text.x = element_text(size = 8),
@@ -594,7 +610,13 @@ FigLev2Cmax_facet <- ggplot(data=subset(level2tab.stats,
                               regexpr("Caco2",QSPR)==-1)) +
   geom_point(size=2,
              alpha=0.25,
-             aes(x=Cmax.pred,y=Cmax.obs,shape=QSPR,color=QSPR))+
+             aes(x=Cmax.pred,y=Cmax.obs,                 
+                 shape=QSPR,
+                 fill=QSPR,
+                 color=QSPR))+
+  scale_shape_manual(values=ggshapes)+
+  scale_fill_manual(values=ggfill)+
+  scale_color_manual(values=ggcolors)+
   scale_x_log10(breaks=c(10^-5,10^-2,10^1),
                 label=scientific_10,
                 limits=c(10^-7,3000)) +
@@ -616,7 +638,7 @@ FigLev2Cmax_facet <- ggplot(data=subset(level2tab.stats,
               size=0.3) +
   xlab(bquote('Predicted'~C[max]~'(mg/L)')) +
   ylab(bquote('Observed'~C[max]~'(mg/L)')) +
-  scale_shape_manual(values = 0:10)+
+ # scale_shape_manual(values = 0:10)+
   theme_bw()+
   facet_wrap(~QSPR)+
   theme( text  = element_text(size=20),
@@ -820,7 +842,7 @@ qsprbychem.table3 <- dcast(qsprbychem.table,Compound~QSPR,value.var="RMSLE")
 chems <- qsprbychem.table3$Compound
 qsprbychem.table3 <- apply(qsprbychem.table3[,2:dim(qsprbychem.table3)[2]],2,function(x) signif(as.numeric(x),3))
 rownames(qsprbychem.table3) <- chems
-#colnames(qsprbychem.table2) <- c("FitsToData","ADmet","Dawson","InVitro","OPERA","Pradeep","Y-Random")
+#colnames(qsprbychem.table2) <- c("FitsToData","ADMET","Dawson","InVitro","OPERA","Pradeep","Y-Random")
 write.csv(signif(qsprbychem.table3,3),file="tables/SupTable-RMSLEbyChem.txt")
 kable(qsprbychem.table3)
 ```
