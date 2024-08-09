@@ -91,7 +91,7 @@ plotA <- ggplot(tidy_summary,
   geom_abline() +
   annotate(label = paste0("RMSE = ", signif(fup_rmse, 3)),
            geom = "text",
-           x = 10^-2, y = 0.85,
+           x = 5*10^-3, y = 0.85,
     size = 6
   ) +
   ylab(expression(paste("Rat ",
@@ -100,7 +100,10 @@ plotA <- ggplot(tidy_summary,
                         f[up]))) +
   scale_x_log10(label=scientific_10,limits=c(5*10^-4,1)) +
   scale_y_log10(label=scientific_10,limits=c(5*10^-4,1)) +
-  theme_bw()
+  theme_bw() +
+   theme( text  = element_text(size=16),
+         axis.text.x = element_text(size=10),
+         axis.text.y = element_text(size=10)
 
 plotA
 ```
@@ -139,7 +142,7 @@ plotB <- ggplot(tidy_summary,
   geom_abline() +
   annotate(label = paste0("RMSLE = ", signif(clint_rmsle, 3)),
            geom = "text",
-           x = 0.5, y = 1000,
+           x = 50*1e-3, y = 1000,
     size = 6
   ) +
   ylab(expression(paste("Rat ",
@@ -156,7 +159,10 @@ plotB <- ggplot(tidy_summary,
                         " hep.)"))) +
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10) +
-  theme_bw()
+  theme_bw() +
+   theme( text  = element_text(size=16),
+         axis.text.x = element_text(size=10),
+         axis.text.y = element_text(size=10)
 
 plotB
 ```
@@ -222,7 +228,7 @@ plotC <- ggplot(rat_df, aes(y = 10^-3 + Rat_Css, x = 10^-3 + RatHum_Css)) +
   annotate(
     label = paste0("RMSLE = ", signif(css_rmsle, 3)),
     geom = "text",
-    x = 0.5,
+    x = 50*1e-3,
     y = 10,
     size = 6
   ) +
@@ -232,7 +238,10 @@ plotC <- ggplot(rat_df, aes(y = 10^-3 + Rat_Css, x = 10^-3 + RatHum_Css)) +
                         " (mg/L) from Human "))) +
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10) +
-  theme_bw()
+  theme_bw() +
+   theme( text  = element_text(size=16),
+         axis.text.x = element_text(size=10),
+         axis.text.y = element_text(size=10)
 
 plotC
 ```
@@ -251,7 +260,7 @@ plotD <- ggplot(rat_df, aes(y = 10^-3 + Rat_Cmax, x = 10^-3 + RatHum_Cmax)) +
   annotate(
     label = paste0("RMSLE = ", signif(cmax_rmsle, 3)),
     geom = "text",
-    x = 0.5,
+    x = 50*1e-3,
     y = 10,
     size = 6
   ) +
@@ -261,7 +270,10 @@ plotD <- ggplot(rat_df, aes(y = 10^-3 + Rat_Cmax, x = 10^-3 + RatHum_Cmax)) +
                         " (mg/L) from Human "))) +
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10) +
-  theme_bw()
+  theme_bw() +
+   theme( text  = element_text(size=16),
+         axis.text.x = element_text(size=10),
+         axis.text.y = element_text(size=10)
 
 
 plotD
@@ -273,9 +285,14 @@ cowplot::plot_grid(
   labels = c("A", "B", "C", "D")
 )
 
-ggsave(filename = "figs/human_rat_eval.png",
+ggsave(filename = "figs/Fig9-human_rat_eval.png",
        height = 7,
        width = 7)
 
 ```
 
+```{r textforpaper}
+paste("There were",
+      length(unique(rat_df$DTXSID)),
+      "chemicals with in vitro measured fup and Clint for both human and rat. ")
+```

@@ -805,7 +805,7 @@ ggsave(paste("figs/SupFigLev2_RMSEbyChemLAte",output.prefix,".tiff",sep=""),
 ```
 
 ```{r RMSE_combined_plot}
-tiff(file=paste("figs/Fig5-Lev2_RMSEbyChem_all",output.prefix,".tiff",sep=""), 
+tiff(file=paste("figs/Fig6-Lev2_RMSEbyChem_all",output.prefix,".tiff",sep=""), 
      width=1200*0.5, height=1600*0.5)
 egg::ggarrange(FigLev2RMSE + 
                theme(axis.text.x = element_blank(),
@@ -860,7 +860,7 @@ kable(qsprbychem.table3)
     cexRow=1.0,
     trace="none",
     col=mypalette)
-tiff(paste("figs/Fig6-RMSE-heatmap-",
+tiff(paste("figs/Fig7-RMSE-heatmap-",
            output.prefix,
            ".tiff",sep=""),
 , width=800*3, height=750*2)
@@ -914,7 +914,7 @@ FigLev2 <- ggplot(data=level2tab) +
          axis.text.x = element_text(size=10),
          axis.text.y = element_text(size=10))
 print(FigLev2)
-ggsave(paste("figs/Fig4-Lev2_Conc_scatter",output.prefix,".tiff",sep=""), width=6, height=6, dpi=300)
+ggsave(paste("figs/Fig5-Lev2_Conc_scatter",output.prefix,".tiff",sep=""), width=6, height=6, dpi=300)
 ```
 
 #Are the Dawson chemicals where RMSLE early < httk early truly different from RMSLE late < httk late?

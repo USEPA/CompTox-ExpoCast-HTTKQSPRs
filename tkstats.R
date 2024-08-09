@@ -587,7 +587,7 @@ maketkstatpreds <- function(
           default.to.human=TRUE,
           model="gas_pbtk",
           suppress.messages=TRUE)$avg),3))
-        ke.pred <- cl.pred/vd.pred 
+        ke.pred <- signif(cl.pred/vd.pred,3) 
         thalf.pred <- signif(log(2)/ke.pred,3)
         new.tab <- data.frame(
           Compound=this.compound,

@@ -320,12 +320,13 @@ lv4_df <- data.frame(
 
 
 ggplot(data = lv4_df %>%
-         mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
+         mutate(QSPR = factor(QSPR, levels = c("In Vivo",
+                                               "In Vivo-HTTK_Vdist",
                                                "In Vivo-HTTK_Fgutabs",
                                                "In Vivo-HTTK_kelim",
-                                               "In Vivo",
                                                "HTPBTK-Consensus"
-                                               ))),
+                                               ),
+                              ordered=TRUE)),
        aes(x = QSPR,
            y = RMSLE)) +
   ggbeeswarm::geom_beeswarm(size = 0.8) +
@@ -333,36 +334,48 @@ ggplot(data = lv4_df %>%
   theme_bw() +
   theme(axis.text = element_text(size = 8))
 
-ggsave(filename = "figs/Level4_prelim_kelimVdistFgutabs_2024July9.png",
+ggsave(filename = "figs/SupFig-Level4_prelim_kelimVdistFgutabs_2024July9.png",
        height = 5,
        width = 8)
 
 ggplot(data = lv4_df %>%
-         mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
+         mutate(QSPR = factor(QSPR, levels = c("In Vivo",
+                                               "In Vivo-HTTK_Vdist",
                                                "In Vivo-HTTK_Fgutabs",
                                                "In Vivo-HTTK_kelim",
-                                               "In Vivo",
                                                "HTPBTK-Consensus"
-                                               ))),
+                                               ),
+                              ordered=TRUE)),
        aes(x = QSPR,
            y = RMSLE)) +
   geom_boxplot(width = 0.5) +
-  labs(title = "Replacing In Vivo with In Vitro")
+  ggtitle(expression("Replacing"~italic("In Vivo")~"Estimates with QSPR-Based HTTK"))+
+  scale_x_discrete(labels=c("In Vivo" = expression("All"~italic("In Vivo")),
+                             "In Vivo-HTTK_Vdist"= expression(italic("In Vivo")~"+"~"V"["dist"]),
+                             "In Vivo-HTTK_Fgutabs"= expression(italic("In Vivo")~"+"~"F"["bio"]),
+                             "In Vivo-HTTK_kelim"= expression(italic("In Vivo")~"+"~"k"["elim"]),
+                              "HTPBTK-Consensus"= "All Consensus"
+                              ))+
   theme_bw() +
-  theme(axis.text = element_text(size = 8),
-        axis.title.x = element_blank())
+   theme( text  = element_text(size=16),
+         axis.text.x = element_text(size=10),
+         axis.text.y = element_text(size=10),
+         axis.title.x = element_blank()
+   )
+        
 
-ggsave(filename = "figs/Level4_prelim_kelimVdistFgutabs_boxplot_2024July30.png",
+ggsave(filename = "figs/Fig8-Level4_prelim_kelimVdistFgutabs_boxplot_2024July30.png",
        height = 5,
        width = 7)
 
 ggplot(data = lv4_df %>%
-         mutate(QSPR = factor(QSPR, levels = c("In Vivo-HTTK_Vdist",
-                                               "In Vivo",
+         mutate(QSPR = factor(QSPR, levels = c("In Vivo",
+                                               "In Vivo-HTTK_Vdist",
                                                "In Vivo-HTTK_Fgutabs",
                                                "In Vivo-HTTK_kelim",
                                                "HTPBTK-Consensus"
-                                               ))),
+                                               ),
+                              ordered=TRUE)),
        aes(x = QSPR,
            y = DTXSID,
            fill = RMSLE)) +
@@ -407,7 +420,7 @@ ComplexHeatmap::draw(ht)
 
 ComplexHeatmap::row_order(ht) -> clustrow
 
-png("figs/QSARtests_heatmap_Lvl4.png",
+png("figs/SupFig-QSARtests_heatmap_Lvl4.png",
     units = "in",
     height = 8,
     width = 8, res = 200)
@@ -456,7 +469,7 @@ ccd_lists <- ccd_lists[, apply(ccd_lists, 2, sum)<nrow(ccd_lists)]
 ccd_lists <- ccd_lists[rownames(lv4_mat), ] # Reorders rows to be consistent with main heatmap
 
 
-png("figs/CCD_lists_heatmap_Lvl4.png",
+png("figs/SupFig-CCD_lists_heatmap_Lvl4.png",
     units = "in",
     height = 8,
     width = 14, res = 200)
@@ -601,7 +614,7 @@ ComplexHeatmap::draw(ht3)
 htlist <- ht + ht_lp + ht_chemP + ht3
 drawn_hts <- draw(htlist)
 
-png(filename = "figs/Clustered_PropertyHeatmaps_Level4.png",
+png(filename = "figs/SupFig-Clustered_PropertyHeatmaps_Level4.png",
     height = 8,
     width = 18,
     unit = "in",
@@ -934,7 +947,7 @@ lv4_df3 %>%
   theme(axis.text = element_text(size = 8, hjust = 1, angle = 40),
         plot.title = element_text(hjust = 0.5, face = "bold"))
 
-ggsave(filename = "figs/kelim_sensitivity_worseOff.png",
+ggsave(filename = "figs/SupFig-kelim_sensitivity_worseOff.png",
        height = 8,
        width = 8)
 ```
@@ -1108,7 +1121,7 @@ lv4_df3 %>%
   theme(axis.text = element_text(size = 8, hjust = 1, angle = 40),
         plot.title = element_text(hjust = 0.5, face = "bold"))
 
-ggsave(filename = "figs/fgutabs_sensitivity_worseOff.png",
+ggsave(filename = "figs/SupFig-fgutabs_sensitivity_worseOff.png",
        height = 8,
        width = 8)
 
@@ -1207,7 +1220,7 @@ ggplot(level2_tab %>% filter(DTXSID %in% common_ids),
 
 
 
-ggsave("figs/revsub_invivo_kelim.png",
+ggsave("figs/SupFig-revsub_invivo_kelim.png",
        height = 4,
        width = 6)
 
@@ -1221,7 +1234,7 @@ cluster_df %>%
        subtitle = "(compared to median)")
 
 
-ggsave("figs/cluster_kelim.png",
+ggsave("figs/SupFig-cluster_kelim.png",
        height = 5, width = 4)
 
 ```

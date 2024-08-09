@@ -684,8 +684,8 @@ write.csv(Human.fup.stats.table, file="tables/SupTable-FupStats.txt")
 #### add AAFE & RMSLE to the table
 ```{r clint_rpe_boxwhisker_stats, eval = TRUE}
 # Make sure the QSPRs are displayed in the same order as columns in stats table:
-level1tab$QSPR <- factor(level1tab$QSPR,
-                             levels=colnames(Human.Clint.stats.table))
+#level1tab$QSPR <- factor(level1tab$QSPR,
+#                             levels=colnames(Human.Clint.stats.table))
 FigLev1b.texty <- -2
 FigLev1b <- ggplot(data=level1tab, aes(x=QSPR, y=Human.Clint.RPE)) + 
   geom_boxplot(lwd=.3,  #reduce the boxplot linewidth
@@ -745,7 +745,7 @@ FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1c)
-ggsave(paste("figs/Fig3-Lev1c-Fup-obsvpred-",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/Fig4-Lev1c-Fup-obsvpred-",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
 
