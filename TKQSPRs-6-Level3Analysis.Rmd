@@ -84,9 +84,11 @@ level3.arnot <- subset(level3.arnot,administration_route_normalized=="iv")
 level3tab.arnot1 <- level3tab.old[["HTPBTK-OPERA"]]
 level3tab.arnot1$Vd.pred <- NA
 level3tab.arnot1$thalf.pred <- NA
+level3tab.arnot1$cl.pred <- NA
 level3tab.arnot2 <- level3tab.arnot1
 level3tab.arnot1$QSPR <- "QSARINS"
 level3tab.arnot2$QSPR <- "IFS-QSAR"
+
 for (this.dtxsid in level3.arnot$test_substance_dtxsid)
   if (this.dtxsid %in% level3tab.arnot1$DTXSID)
 {
@@ -98,20 +100,22 @@ for (this.dtxsid in level3.arnot$test_substance_dtxsid)
     "IFS_Hum_HLT_Hour"]) 
   }
 
-# Pull in some Vd's so we can calculated clearance:
+# Pull in the consensus Vd's so we can calculated clearance:
+consensus.results <- level3tab.old[["HTPBTK-Consensus"]]
 for (this.chem in level3tab.arnot1$DTXSID)
-  if (this.chem %in% level3tab.old[["HTPBTK-InVitro"]]$DTXSID)
+  if (this.chem %in% consensus.results$DTXSID)
 {
   level3tab.arnot1[level3tab.arnot1$DTXSID==this.chem,"Vd.pred"] <- 
-    level3tab.old[["HTPBTK-InVitro"]][level3tab.old[["HTPBTK-InVitro"]]$DTXSID==this.chem,"Vd.pred"]
+    consensus.results[consensus.results$DTXSID==this.chem,"Vd.pred"]
 }
 for (this.chem in level3tab.arnot2$DTXSID)
-    if (this.chem %in% level3tab.old[["HTPBTK-InVitro"]]$DTXSID)
+    if (this.chem %in% consensus.results$DTXSID)
 {
   level3tab.arnot2[level3tab.arnot2$DTXSID==this.chem,"Vd.pred"] <- 
-    level3tab.old[["HTPBTK-InVitro"]][level3tab.old[["HTPBTK-InVitro"]]$DTXSID==this.chem,"Vd.pred"]
+    consensus.results[consensus.results$DTXSID==this.chem,"Vd.pred"]
 }
-
+# Calculate the clearance using the consensus Vd
+level3tab.arnot1$cl.pred <- level3tab.arnot1$Vd.pred * log(2) / level3tab.arnot1$thalf.pred 
 level3tab <- rbind(level3tab, level3tab.arnot1, level3tab.arnot2)
 ```
 
