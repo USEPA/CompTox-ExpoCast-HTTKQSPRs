@@ -587,7 +587,7 @@ maketkstatpreds <- function(
           default.to.human=TRUE,                           # [Css] = mg/L / 1 mg/kg/day
           model="gas_pbtk",                                # [Cltot] = L/kg/day
           output.units="mg/L",                             # day -> hours:
-          suppress.messages=TRUE)$avg)*24,3))              # [Cltot] = L/kg/h
+          suppress.messages=TRUE)$avg)/24,3))              # [Cltot] = L/kg/h
         if (inherits(cl.pred, "try-error")) cl.pred <- NA
         ke.pred <- signif(cl.pred/vd.pred,3) # 1/h
         thalf.pred <- signif(log(2)/ke.pred,3) # h

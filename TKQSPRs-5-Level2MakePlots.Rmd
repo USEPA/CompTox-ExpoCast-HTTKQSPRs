@@ -880,24 +880,22 @@ key.par=list(cex=2))
 dev.off()  
 ```
 
-# Not sure if we can reasonably show all the predictions vs. the observations.
-# Maybe one plot per model?
-# FigLev2a <- ggplot(data=level2tab) +
-#  geom_point(size=3,alpha=0.01,aes(x=Conc.pred.trunc,y=Conc.obs.trunc,shape=QSPR,color=QSPR))+
-#  scale_x_log10(label=scientific_10) +
-#  scale_y_log10(label=scientific_10)+
-#    geom_abline(intercept = 0, slope = 1,linetype="dashed", colour="Blue") +
-#  xlab(bquote('Predicted'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
-#  ylab(bquote('Observed'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
-#  theme_bw()+
-#  theme( text  = element_text(size=20))
-# print(FigLev2a)
+# Attempt to reasonably show all the predictions vs. the observations:
 ```{r make_pred_vs_obs_plots, eval = TRUE}
+# Set the order in which the QSPRs appear:
+level2tab$QSPR <- factor(level2tab$QSPR, levels=c("HTPBTK-InVitro",
+                                                  "HTPBTK-ADMET",
+                                                  "HTPBTK-Dawson", 
+                                                  "HTPBTK-OPERA", 
+                                                  "HTPBTK-Pradeep",
+                                                  "HTPBTK-Consensus",
+                                                  "HTPBTK-YRandom",
+                                                  "In Vivo Fits"))
 FigLev2 <- ggplot(data = level2tab) +
   geom_point(size = .75,
              alpha = 0.05,
              aes(x = Conc.pred,
-                 y = Conc.obs
+                 y = Conc.obs,
                  shape = QSPR,
                  fill = QSPR,
                  color = QSPR)) +
@@ -928,8 +926,11 @@ FigLev2 <- ggplot(data = level2tab) +
                         italic("In Vivo"),
                         " (mg/L)"))) +
   facet_wrap(~QSPR)+
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))+
   theme_bw()+
-  theme(text  = element_text(size=16),
+  theme(strip.text = element_text(size=12),
+        text  = element_text(size=16),
+        legend.position = "none",
         axis.text.x = element_text(size=10),
         axis.text.y = element_text(size=10))
 print(FigLev2)
