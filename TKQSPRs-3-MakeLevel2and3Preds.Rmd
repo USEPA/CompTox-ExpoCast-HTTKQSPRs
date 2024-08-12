@@ -1,0 +1,517 @@
+---
+title: "TK QSPRs: Make CvT Predictions"
+author: "John Wambaugh and Nisha Sipes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QSPR Bakeoff}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/CompTox-ExpoCast-HTTKQSPRs/")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+First we clear the memory to make sure there are no holdovers from previous R runs
+```{r clear_mermor, eval=TRUE}
+rm(list=ls()) 
+```
+
+To use the code in this vignette, you'll first need to load a few packages (if you haven't already).
+```{r load_packages, eval = TRUE}
+library(httk)
+library(DescTools)
+```
+
+Load custom code 
+```{r load_code, eval = TRUE}
+source("clear_httk.R")
+source("tkstats.R")
+```
+
+
+Set the time stamp:
+```{r time_stamp, eval = TRUE}
+# Time stamp:
+output.prefix <- "July2024"
+```
+
+```{r load_data, eval= TRUE}
+load(file="data/httkinvitro.RData")
+load(file="data/Cvt-chems-level1.RData")
+load(file="data/operatrainingchems.RData")
+load(file="data/Cvt-data.RData")
+load(file="data/fittable.RData")
+```
+
+# Level II Predictions -- CvT data
+## Make Predictions
+
+At level II we are comparing predictions made using QSPR values with actual
+tissue concentration vs. time data. Most of the QSPR values are used with the
+HTTK PBTK model to make predictions. 
+
+Predictors evaluated:
+* HTTK PBTK with in vitro measured values
+* HTTK PBTK with ADMET
+* HTTK PBTK with Pradeep
+* HTTK PBTK with Dawson
+* HTTK PBTK with OPERA
+* HTTK PBTK with Consensus QSPR
+* HTTK PBTK with y-randomized in vitro measured values
+* Empirical one- and two-compartment fits to CvT data
+
+
+We load the TK stats (Level III) at this point because it makes sense to do
+the Level II and III calculations are the same time (rather than rewriting 
+the parameter values twice).
+TK Stats (including Vd and thalf) calculated from CvTdb:
+
+There are chemicals where the in vivo data don't permit empirical fits, drop
+those from the level II/III evaluation:
+```{r separate_out_badfits, eval=TRUE}
+CvT.chems.nofits <- CvT.chems[
+  !(CvT.chems$CASRN%in%fittable$CAS) |
+  CvT.chems$CASRN %in%subset(fittable,Model=="Flat")$CAS |
+  CvT.chems$CASRN %in%subset(fittable,Model=="None")$CAS
+  , ]
+
+CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CASRN))
+cat(paste(length(unique(CvT.data$DTXSID)),
+          "chemicals with good invivoPKfit fits of CvT data.\n"))
+cat(paste(dim(subset(fittable,!is.na(Vdist) | !is.na(V1)))[1],
+          "chemicals where volume of distribution could be estimated (iv data available), allowing us to make empirical predictions.\n"))
+```
+## Get rid of chemical predictions that are possibly just training set lookups:
+```{r remove_training_chems, eval=TRUE}
+CvT.chems.notraining <- CvT.chems
+for (this.qspr in unique(possible.training.chems$QSPR))
+{
+  this.subset <- subset(possible.training.chems, QSPR==this.qspr)
+  for (this.id in this.subset$DTXSID)
+  {
+    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
+      paste("Human.Clint",this.qspr,sep=".")]<-NA
+    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
+      paste("Human.Fup",this.qspr,sep=".")]<-NA
+  }
+}
+length(unique(CvT.chems.notraining$DTXSID))
+```
+
+# Data size
+```{r data_Size, eval=TRUE}
+CvT.chems.nobad <- CvT.chems[!(CvT.chems %in% CvT.chems.nofits)] 
+dim(CvT.data)
+length(unique(CvT.data$DTXSID))
+length(unique(CvT.chems.nobad$DTXSID))
+```
+
+```{r create_consensus_preds, eval=TRUE}
+clint.cols <- colnames(CvT.chems.nobad)[
+  regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
+CvT.chems.nobad$Human.Clint.Max<- signif(apply(
+  CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE)), 4)
+CvT.chems.nobad$Human.Clint.Mean<- signif(apply(
+  CvT.chems.nobad[,clint.cols],1,function(x) mean(x,na.rm=TRUE)), 4)
+
+for (this.col in c("Human.Clint.Max","Human.Clint.Mean"))
+{
+  CvT.chems.nobad[is.infinite(CvT.chems.nobad[,this.col]),
+                  this.col] <- NA
+  CvT.chems.nobad[is.nan(CvT.chems.nobad[,this.col]),
+                  this.col] <- NA
+}
+
+fup.cols <- colnames(CvT.chems.nobad)[
+  regexpr("Fup",colnames(CvT.chems.nobad))!=-1]
+CvT.chems.nobad$Human.Fup.Mean <- apply(
+  CvT.chems.nobad[,fup.cols],1,function(x) 
+    signif(invlogit(mean(sapply(x, function(y) 
+      logit(min(max(y,1e-8),(1-1e-8)))),na.rm=TRUE)),4))
+```
+
+
+## Make a version of the prediction matrix where we've replaced QSPR-chemical combinations with no predictions with the consensus predictions:
+### Stop doing this -- we will assign mean RMSLE to each QSPR's output, no need to predict with mean predictions
+```{r dont_remove_missing_predictions}
+CvT.chems.nona <- CvT.chems.nobad
+```
+
+## Speed up run time
+```{r speedup, eval=FALSE}
+# Test with just five chems to make code go faster:
+CvT.data <- subset(CvT.data,DTXSID %in% unique(CvT.data$DTXSID)[1:10])
+CvT.chems.nona <- subset(CvT.chems.nona,DTXSID %in% CvT.data$DTXSID)
+```
+
+## Randomize the in vitro descriptors as a sort of prediction "floor"
+```{r cvt_yrandomize_desc, eval = TRUE}
+NUM.YRANDOM <- 10
+#invitro.subset.rows <- which(!(is.na(CvT.chems.nona$Human.Clint.httk)) &
+#                         !(is.na(CvT.chems.nona$Human.Fup.httk)))
+# Just do yrandom for all chemicals:
+invitro.subset.rows <- rep(TRUE, dim(CvT.chems.nona)[1])
+
+# Get all chemials with measured HTTK:
+reset_httk()
+invitro.meas <- get_cheminfo(model="pbtk", 
+                             median.only=TRUE,
+                             info=c("DTXSID","Clint","Funbound.plasma"))
+
+set.seed(123456)
+for (i in 1:NUM.YRANDOM) # Ten sets of parameters
+{
+  yrandom.ids <- sample(1:dim(invitro.meas)[1], length(invitro.subset.rows))
+  # Make sure we don't get the right values:
+  accidentally.right <- yrandom.ids[invitro.meas[yrandom.ids,"DTXSID"] == 
+                                      CvT.chems.nona[invitro.subset.rows,
+                                                     "DTXSID"]]
+  if (length(accidentally.right)== 1)
+  {
+    yrandom.ids[accidentally.right] <- yrandom.ids[accidentally.right] + 1
+  } else {
+    first.right <-accidentally.right[1]
+    for (j in 1:(length(accidentally.right)-1))
+    {
+      yrandom.ids[accidentally.right[j]] <-
+        accidentally.right[j+1]
+    }
+    yrandom.ids[tail(accidentally.right,1)] <-
+      first.right
+  }  
+  CvT.chems.nona[invitro.subset.rows,
+                 paste("Human.Clint.YRandom",i,sep="")] <- 
+    invitro.meas[yrandom.ids, "Human.Clint"]
+  CvT.chems.nona[invitro.subset.rows,
+                 paste("Human.Fup.YRandom",i,sep="")] <- 
+    invitro.meas[yrandom.ids, "Human.Funbound.plasma"]
+}
+```
+```{r initialize_lists}
+level2tab.cvt <- 
+level2tab.stats <-
+level2tab.rmsle <-
+level2tab.aafe <- 
+level2tab.rmsle.early <-
+level2tab.aafe.early <-
+level2tab.rmsle.late <-
+level2tab.aafe.late <-
+level3tab <- list()
+```
+Make predictions of CvT using in vitro measured data. Rather than use default
+HTTK (which also pulls in things like blood to plasma ratio) we'll wipe out 
+everything and then add just Clint and Fup each time:
+```{r cvt_compare_invitro, eval = TRUE}
+cat("Results: QSPR Predictions\n")
+cat(paste("Additionally, HTTK in vitro data were not available for all the chemicals with CvT data, so evaluations aimed at characterizing the predictivity of in vitro HTTK only relied on",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk) &
+              !is.na(CvT.chems.nona$Human.Clint.httk)),
+              "chemicals.\n"))
+cat("\n")
+cat("Results: Level 2 Analysis\n")
+cat(paste("While there were",
+          sum(!is.na(CvT.chems.nona$Human.Clint.httk)),
+          "chemicals with measured Clint and",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk)),
+          "chemicals with measured fup, for a total of",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk) |
+              !is.na(CvT.chems.nona$Human.Clint.httk)),
+          "unique chemicals, there were only",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk) &
+              !is.na(CvT.chems.nona$Human.Clint.httk)),
+          "with both measured values available. In vitro-parameterized HTPBTK was only evaluated for this set of",
+          sum(!is.na(CvT.chems.nona$Human.Fup.httk) &
+              !is.na(CvT.chems.nona$Human.Clint.httk)),
+          "chemicals.\n"))
+cat("\n")
+
+this.label <- "HTPBTK-InVitro" 
+out <- make_cvt_comparisons(this.label, 
+                            "Human.Clint.httk", 
+                            "Human.Fup.httk",
+                            CvT.data, 
+                            CvT.chems.nona, 
+                            fittable)
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level3tab[[this.label]] <- out$level3tab
+```
+
+```{r cvt_compare_admet, eval = TRUE}
+this.label <- "HTPBTK-ADMET" 
+out <- make_cvt_comparisons(this.label, 
+                            "Human.Clint.ADMET", 
+                            "Human.Fup.ADMET",
+                            CvT.data, 
+                            CvT.chems.nona, 
+                            fittable)
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level3tab[[this.label]] <- out$level3tab
+```
+
+```{r cvt_compare_dawson, eval = TRUE}
+this.label <- "HTPBTK-Dawson" 
+out <- make_cvt_comparisons(this.label, 
+                            "Human.Clint.Dawson", 
+                            "Human.Fup.Dawson",
+                            CvT.data, 
+                            CvT.chems.nona, 
+                            fittable)
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level3tab[[this.label]] <- out$level3tab
+```
+
+```{r cvt_compare_pradeep, eval = TRUE}
+this.label <- "HTPBTK-Pradeep" 
+out <- make_cvt_comparisons(this.label, 
+                            "Human.Clint.Pradeep", 
+                            "Human.Fup.Pradeep",
+                            CvT.data, 
+                            CvT.chems.nona, 
+                            fittable)
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level3tab[[this.label]] <- out$level3tab
+```
+
+## Add OPERA predictions:
+```{r cvt_compare_opera, eval = TRUE}
+this.label <- "HTPBTK-OPERA"
+out <- make_cvt_comparisons(this.label, 
+                            "Human.Clint.OPERA", 
+                            "Human.Fup.OPERA",
+                            CvT.data, 
+                            CvT.chems.nona, 
+                            fittable)
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level3tab[[this.label]] <- out$level3tab
+```
+
+## Add consensus predictions:
+```{r cvt_compare_consensus, eval = TRUE}
+this.label <- "HTPBTK-Consensus" 
+out <- make_cvt_comparisons(this.label, 
+                            "Human.Clint.Max", 
+                            "Human.Fup.Mean",
+                            CvT.data, 
+                            CvT.chems.nona, 
+                            fittable)
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level3tab[[this.label]] <- out$level3tab
+```
+
+## Add y-random predictions:
+```{r cvt_compare_yrandom, eval = TRUE}
+this.label <- "HTPBTK-YRandom"
+level2tab.yrandom.cvt <- list()
+level2tab.yrandom.stats <- list()
+level3tab.yrandom <- list()
+level2tab.yrandom.rmsle <- list()
+level2tab.yrandom.aafe <- list()
+level2tab.yrandom.rmsle.early <- list()
+level2tab.yrandom.aafe.early <- list()
+level2tab.yrandom.rmsle.late <- list()
+level2tab.yrandom.aafe.late <- list()
+for (i in 1:NUM.YRANDOM)
+{
+  print(paste("Y-randomization Number",i))
+  out <- make_cvt_comparisons(this.label, 
+                            paste("Human.Clint.YRandom",i,sep=""), 
+                            paste("Human.Fup.YRandom",i,sep=""),
+                            CvT.data, 
+                            CvT.chems.nona, 
+                            fittable)
+
+  level2tab.yrandom.cvt[[i]] <- out$level2tab.cvt
+  level2tab.yrandom.stats[[i]] <- out$level2tab.stats
+  level3tab.yrandom[[i]] <- out$level3tab
+  level2tab.yrandom.rmsle[[i]] <- out$level2tab.rmsle
+  level2tab.yrandom.aafe[[i]] <- out$level2tab.aafe
+level2tab.yrandom.rmsle.early[[i]] <- out$level2tab.rmsle.early
+level2tab.yrandom.aafe.early[[i]] <- out$level2tab.aafe.early
+level2tab.yrandom.rmsle.late[[i]] <- out$level2tab.rmsle.late
+level2tab.yrandom.aafe.late[[i]] <- out$level2tab.aafe.late
+}
+```
+# Average over the ten y-random draws:
+```{r cvt_average_yrandom, eval = TRUE}
+this.label <- "HTPBTK-YRandom"
+level2tab.cvt[[this.label]] <- level2tab.yrandom.cvt[[1]]
+level2tab.stats[[this.label]] <- level2tab.yrandom.stats[[1]]
+level3tab[[this.label]] <- level3tab.yrandom[[1]]
+level2tab.rmsle[[this.label]] <- level2tab.yrandom.rmsle[[1]]
+level2tab.aafe[[this.label]] <- level2tab.yrandom.aafe[[1]]
+level2tab.rmsle.early[[this.label]] <- level2tab.yrandom.rmsle.early[[1]]
+level2tab.aafe.early[[this.label]] <- level2tab.yrandom.aafe.early[[1]]
+level2tab.rmsle.late[[this.label]] <- level2tab.yrandom.rmsle.late[[1]]
+level2tab.aafe.late[[this.label]] <- level2tab.yrandom.aafe.late[[1]]
+for (i in 2:NUM.YRANDOM)
+{
+  print(i)
+  level2tab.cvt[[this.label]][,"Conc.pred"] <- 
+    level2tab.cvt[[this.label]][,"Conc.pred"] +
+    level2tab.yrandom.cvt[[i]]$Conc.pred
+  level2tab.stats[[this.label]][,"Cmax.pred"] <- 
+    level2tab.stats[[this.label]][,"Cmax.pred"] +
+    level2tab.yrandom.stats[[i]]$Cmax.pred
+  level2tab.stats[[this.label]][,"AUC.pred"] <- 
+    level2tab.stats[[this.label]][,"AUC.pred"] +
+    level2tab.yrandom.stats[[i]]$AUC.pred
+  level3tab[[this.label]][,"Vd.pred"] <- 
+    level3tab[[this.label]][,"Vd.pred"] +
+    level3tab.yrandom[[i]]$Vd.pred
+  level3tab[[this.label]][,"thalf.pred"] <- 
+    level3tab[[this.label]][,"thalf.pred"] +
+    level3tab.yrandom[[i]]$thalf.pred
+  for (this.chem in names(level2tab.yrandom.rmsle[[i]]))
+  {
+    print(this.chem)
+    level2tab.rmsle[[this.label]][[this.chem]] <-
+      level2tab.rmsle[[this.label]][[this.chem]] +
+      level2tab.yrandom.rmsle[[i]][[this.chem]]
+    level2tab.aafe[[this.label]][[this.chem]] <-
+      level2tab.aafe[[this.label]][[this.chem]] +
+      level2tab.yrandom.aafe[[i]][[this.chem]]
+    level2tab.rmsle.early[[this.label]][[this.chem]] <-
+      level2tab.rmsle.early[[this.label]][[this.chem]] +
+      level2tab.yrandom.rmsle.early[[i]][[this.chem]]
+    level2tab.aafe.early[[this.label]][[this.chem]] <-
+      level2tab.aafe.early[[this.label]][[this.chem]] +
+      level2tab.yrandom.aafe.early[[i]][[this.chem]]
+    level2tab.rmsle.late[[this.label]][[this.chem]] <-
+      level2tab.rmsle.late[[this.label]][[this.chem]] +
+      level2tab.yrandom.rmsle.late[[i]][[this.chem]]
+    level2tab.aafe.late[[this.label]][[this.chem]] <-
+      level2tab.aafe.late[[this.label]][[this.chem]] +
+      level2tab.yrandom.aafe.late[[i]][[this.chem]]
+  }
+}
+level2tab.cvt[[this.label]][,"Conc.pred"] <- 
+      signif(level2tab.cvt[[this.label]][,"Conc.pred"]/NUM.YRANDOM,
+             4)
+level2tab.stats[[this.label]][,"Cmax.pred"] <- 
+      signif(level2tab.stats[[this.label]][,"Cmax.pred"]/NUM.YRANDOM,
+             4)
+level2tab.stats[[this.label]][,"AUC.pred"] <- 
+      signif(level2tab.stats[[this.label]][,"AUC.pred"]/NUM.YRANDOM,
+             4)
+for (this.chem in names(level2tab.rmsle[[this.label]]))
+{
+  level2tab.rmsle[[this.label]][[this.chem]] <-
+    signif(level2tab.rmsle[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
+  level2tab.aafe[[this.label]][[this.chem]] <-
+    signif(level2tab.aafe[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
+  level2tab.rmsle.early[[this.label]][[this.chem]] <-
+    signif(level2tab.rmsle.early[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
+  level2tab.aafe.early[[this.label]][[this.chem]] <-
+    signif(level2tab.aafe.early[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
+    level2tab.rmsle.late[[this.label]][[this.chem]] <-
+    signif(level2tab.rmsle.late[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
+  level2tab.aafe.late[[this.label]][[this.chem]] <-
+    signif(level2tab.aafe.late[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
+}
+```
+
+The performance of actual 1 compartment model fits provides an upper limit
+of how good we can get (thanks Rusty)
+```{r cvt_compare_fits, eval = TRUE}
+this.label <- "In Vivo Fits"
+fit.chems <- subset(fittable, !is.na(Vdist) | !is.na(V1))
+out <- makeCvTpredsfromfits(
+  subset(CvT.data, DTXSID %in% fit.chems$DTXSID),
+  fit.chems,
+  label = this.label)
+
+level2tab.cvt[[this.label]] <- out$cvt
+level2tab.stats[[this.label]] <- out$stats
+level2tab.rmsle[[this.label]] <- out$rmsle
+level2tab.aafe[[this.label]] <- out$aafe
+level2tab.rmsle.early[[this.label]] <- out$rmsle.early
+level2tab.aafe.early[[this.label]] <- out$aafe.early
+level2tab.rmsle.late[[this.label]] <- out$rmsle.late
+level2tab.aafe.late[[this.label]] <- out$aafe.late
+level3tab[[this.label]] <- out$level3tab
+```
+
+```{r save_level2_tables, eval = TRUE}
+save(
+  level2tab.cvt,
+  level2tab.stats,
+  level2tab.rmsle,
+  level2tab.aafe,
+  level2tab.rmsle.early,
+  level2tab.aafe.early,
+  level2tab.rmsle.late,
+  level2tab.aafe.late,
+  file="data/level2-tables.RData")
+save(
+  level2tab.yrandom.cvt,
+  level2tab.yrandom.stats,
+  level3tab.yrandom,
+  level2tab.yrandom.rmsle,
+  level2tab.yrandom.aafe,
+  level2tab.yrandom.rmsle.early,
+  level2tab.yrandom.aafe.early,
+  level2tab.yrandom.rmsle.late,
+  level2tab.yrandom.aafe.late,
+  file = "data/level2-yrandomindividualresults.RData")
+save(
+  level3tab,
+     file="data/level3-tables.RData")
+save(CvT.chems.nona, file="data/cvT-chems-nona.RData")
+```

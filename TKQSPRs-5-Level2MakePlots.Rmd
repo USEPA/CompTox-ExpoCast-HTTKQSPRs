@@ -893,28 +893,50 @@ dev.off()
 #  theme( text  = element_text(size=20))
 # print(FigLev2a)
 ```{r make_pred_vs_obs_plots, eval = TRUE}
-FigLev2 <- ggplot(data=level2tab) +
- geom_point(size=.75,alpha=0.05,aes(x=Conc.pred,y=Conc.obs))+
- scale_x_log10(breaks=10^seq(-5,4,by=2),label=scientific_10) +
- scale_y_log10(breaks=10^seq(-5,4,by=2),label=scientific_10)+
-  geom_abline(intercept = 0, slope = 1,linetype="solid", colour="black",size=0.3) +
-  # geom_abline(intercept = log10(3), slope = 1,linetype="dotted", colour="gray") +
-  #geom_abline(intercept = -log10(3), slope = 1,linetype="dotted", colour="gray") +
-  geom_abline(intercept = 1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
-  geom_abline(intercept = -1, slope = 1,linetype="dashed", colour="gray22",size=0.3) +
-# xlab(bquote('HTPBTK-InVitro')) +
-# ylab(bquote(' ')) +
- xlab(bquote('Predicted Concentraion (mg/L)')) +
- ylab(expression(paste("Observed Conc. ",
-    italic("In Vivo"),
-    " (mg/L)"))) +
- facet_wrap(~QSPR)+
- theme_bw()+
- theme( text  = element_text(size=16),
-         axis.text.x = element_text(size=10),
-         axis.text.y = element_text(size=10))
+FigLev2 <- ggplot(data = level2tab) +
+  geom_point(size = .75,
+             alpha = 0.05,
+             aes(x = Conc.pred,
+                 y = Conc.obs
+                 shape = QSPR,
+                 fill = QSPR,
+                 color = QSPR)) +
+  scale_shape_manual(values = ggshapes)+
+  scale_fill_manual(values = ggfill)+
+  scale_color_manual(values = ggcolors)+
+  scale_x_log10(breaks=10^seq(-5,4,by=2),
+                label=scientific_10) +
+  scale_y_log10(breaks=10^seq(-5,4,by=2),
+                label=scientific_10)+
+  geom_abline(intercept = 0, 
+              slope = 1,
+              linetype="solid", 
+              colour="black",
+              size=0.3) +
+  geom_abline(intercept = 1, 
+              slope = 1,
+              linetype="dashed", 
+              colour="gray22",
+              size=0.3) +
+  geom_abline(intercept = -1, 
+              slope = 1,
+              linetype="dashed", 
+              colour="gray22",
+              size=0.3) +
+  xlab(bquote('Predicted Concentraion (mg/L)')) +
+  ylab(expression(paste("Observed Conc. ",
+                        italic("In Vivo"),
+                        " (mg/L)"))) +
+  facet_wrap(~QSPR)+
+  theme_bw()+
+  theme(text  = element_text(size=16),
+        axis.text.x = element_text(size=10),
+        axis.text.y = element_text(size=10))
 print(FigLev2)
-ggsave(paste("figs/Fig5-Lev2_Conc_scatter",output.prefix,".tiff",sep=""), width=6, height=6, dpi=300)
+ggsave(paste("figs/Fig5-Lev2_Conc_scatter",output.prefix,".tiff",sep=""), 
+       width=6, 
+       height=6, 
+       dpi=300)
 ```
 
 #Are the Dawson chemicals where RMSLE early < httk early truly different from RMSLE late < httk late?

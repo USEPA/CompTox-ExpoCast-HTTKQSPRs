@@ -186,7 +186,9 @@ write.csv(CvT.data,row.names=FALSE,file="tables/SupTable-CvTData.txt")
 
 # Load empirical fits to Cvt data:
 ```{r load_empirical_fits, eval = TRUE}
-fittable <- as.data.frame(read_excel("CvTdb/evalTKstats_bakeoff.xlsx"))
+fittable <- as.data.frame(read_excel(
+  "CvTdb/evalTKstats_bakeoff.xlsx",
+  sheet=1))
 
 KELIM.COL <- "kelim.tkstats"
 HALFLIFE.COL <- "halflife.tkstats"

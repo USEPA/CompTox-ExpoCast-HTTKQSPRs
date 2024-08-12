@@ -572,23 +572,24 @@ maketkstatpreds <- function(
       for (this.species in unique(this.subset1$Species))
       {
         this.subset2 <- subset(this.subset1,Species==this.species)
-        vd.obs <- unlist(as.numeric(this.subset2[,"Vdist"]))
-        vd.pred <- suppressWarnings(calc_vdist(
+        vd.obs <- unlist(as.numeric(this.subset2[,"Vdist"])) # L/kg BW
+        vd.pred <- suppressWarnings(calc_vdist( # L /kg BW
           chem.cas=this.cas,
           species=this.species,
           default.to.human=TRUE,
-          suppress.messages=TRUE))
-        thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"]))
-        kelim.obs <- unlist(as.numeric(this.subset2[,"kelim"]))
-        cl.obs <- signif(vd.obs*kelim.obs,3)
-        cl.pred <- try(signif(1/suppressWarnings(calc_css( # 1 / Css = Cltot
-          chem.cas=this.cas,
-          species=this.species,
-          default.to.human=TRUE,
-          model="gas_pbtk",
-          suppress.messages=TRUE)$avg),3))
-        ke.pred <- signif(cl.pred/vd.pred,3) 
-        thalf.pred <- signif(log(2)/ke.pred,3)
+          suppress.messages=TRUE)) 
+        thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"])) # h
+        kelim.obs <- unlist(as.numeric(this.subset2[,"kelim"])) # 1/h
+        cl.obs <- signif(vd.obs*kelim.obs,3) # L / kg BW / h
+        cl.pred <- try(signif(1/suppressWarnings(calc_css( # Convenient TK fact: 
+          chem.cas=this.cas,                               # 1 / Css = Cltot
+          species=this.species,                            # Dimensional analysis:
+          default.to.human=TRUE,                           # [Css] = mg/L / 1 mg/kg/day
+          model="gas_pbtk",                                # [Cltot] = L/kg/day
+          output.units="mg/L",                             # day -> hours:
+          suppress.messages=TRUE)$avg)*24,3))              # [Cltot] = L/kg/h
+        ke.pred <- signif(cl.pred/vd.pred,3) # 1/h
+        thalf.pred <- signif(log(2)/ke.pred,3) # h
         new.tab <- data.frame(
           Compound=this.compound,
           DTXSID=this.dtxsid,
