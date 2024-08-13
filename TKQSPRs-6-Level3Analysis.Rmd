@@ -91,15 +91,23 @@ level3tab.arnot2$QSPR <- "IFS-QSAR"
 
 for (this.dtxsid in level3.arnot$test_substance_dtxsid)
   if (this.dtxsid %in% level3tab.arnot1$DTXSID)
-{
+  {
   level3tab.arnot1[level3tab.arnot1$DTXSID==this.dtxsid,"thalf.pred"] <- 
     as.numeric(level3.arnot[level3.arnot$test_substance_dtxsid==this.dtxsid,
-    "QINS_Hum_HLT_Hour"])                            
+    "QINS_Hum_HLT_Hour"])
   level3tab.arnot2[level3tab.arnot1$DTXSID==this.dtxsid,"thalf.pred"]  <- 
     as.numeric(level3.arnot[level3.arnot$test_substance_dtxsid==this.dtxsid,
     "IFS_Hum_HLT_Hour"]) 
   }
 
+level3tab.arnot1[tolower(level3tab.arnot1$Species)=="rat", "thalf.pred"] <-
+  signif(level3tab.arnot1[tolower(level3tab.arnot1$Species)=="rat", 
+                          "thalf.pred"]*(0.25/70)^(0.75), # allometric scaling by body weight
+         3)
+level3tab.arnot2[tolower(level3tab.arnot2$Species)=="rat", "thalf.pred"] <-
+  signif(level3tab.arnot2[tolower(level3tab.arnot1$Species)=="rat", 
+                          "thalf.pred"]*(0.25/70)^(0.75), # allometric scaling by body weight
+         3)
 # Pull in the consensus Vd's so we can calculated clearance:
 consensus.results <- level3tab.old[["HTPBTK-Consensus"]]
 for (this.chem in level3tab.arnot1$DTXSID)
@@ -115,7 +123,12 @@ for (this.chem in level3tab.arnot2$DTXSID)
     consensus.results[consensus.results$DTXSID==this.chem,"Vd.pred"]
 }
 # Calculate the clearance using the consensus Vd
-level3tab.arnot1$cl.pred <- level3tab.arnot1$Vd.pred * log(2) / level3tab.arnot1$thalf.pred 
+level3tab.arnot1$cl.pred <- signif(level3tab.arnot1$Vd.pred * log(2) / 
+                                     level3tab.arnot1$thalf.pred,
+                                   3)
+level3tab.arnot2$cl.pred <- signif(level3tab.arnot2$Vd.pred * log(2) / 
+                                     level3tab.arnot2$thalf.pred,
+                                   3)
 level3tab <- rbind(level3tab, level3tab.arnot1, level3tab.arnot2)
 ```
 
