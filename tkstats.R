@@ -424,6 +424,10 @@ makeCvTpredsfromfits <- function(
   label = "FitsToData") # How the predictions should be labeled
 {
   cat("Running makeCvTpredsfromfits...\n")
+  
+  # We only want one row in the table per chemical and species:
+  fittable <- subset(fittable, !duplicated(fittable[,c("DTXSID","Species")]))
+  
   cvt.table <- NULL
   stats.table <- NULL
   for (this.cas in unique(CvT.data$CAS))

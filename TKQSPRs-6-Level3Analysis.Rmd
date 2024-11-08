@@ -49,7 +49,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "July2024"
+output.prefix <- "November2024"
 ```
 
 #Level III Predictions -- predicted half-life or volume of distribution (Vd)
@@ -317,7 +317,7 @@ ggsave(paste("figs/SupFigLev3b_thalf_boxplot_",output.prefix,".tiff",sep=""), wi
 ```
 
 ```{r make_level3_vd_scatter_plot, eval = TRUE}
-FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSAR","QSPRINS")))) +
+FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSAR","QSARINS")))) +
   geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,                        
                         shape=QSPR, 
                         fill=QSPR, 

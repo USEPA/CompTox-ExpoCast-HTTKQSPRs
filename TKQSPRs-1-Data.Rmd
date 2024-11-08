@@ -48,7 +48,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
-output.prefix <- "July2024"
+output.prefix <- "November2024"
 ```
 
 
@@ -91,6 +91,7 @@ series_res_set$Reference <- series_res_set[,CVTREFERENCE.COL]
 series_res_set[is.na(series_res_set$Reference), "Reference"] <-
   "NTP"
 series_res_set$Source <- series_res_set$Reference
+cat("Number of rows of CvT data for DTXSID3032179:")
 dim(subset(series_res_set, DTXSID=="DTXSID3032179"))
 
 # Only want human and rat:
@@ -108,6 +109,7 @@ series_res_set <- subset(series_res_set, !(DTXSID %in% c("DTXSID3032179")))
 # There are 101 chemicals with CvT data for which the collaborators have been asked
 # to make predictions
 eval.cas <- unique(series_res_set$CAS)
+cat("Number of unique CAS with CvT data:")
 length(eval.cas)
 
 # We have both human and rat:
@@ -131,19 +133,21 @@ series_res_set$Conc_mgpL <- suppressWarnings(signif(
 
 CvT.data <- series_res_set
 CvT.chems <- unique(CvT.data$DTXSID)
+cat("Number of unique DTXSIDs with CvT data:")
 length(CvT.chems)
 
 CvT.data[,"Dose"] <- signif(as.numeric(CvT.data[,"Dose"]), 3)
 CvT.data[,"Time_Days"] <- signif(as.numeric(CvT.data[,"Time_Days"]), 3)
-
 CvT.data <- subset(CvT.data,Time_Days>0)
 ```
 
 # Calculate a limit of quantification (90% of lowest observation)
 ```{r calc_loq, eval = TRUE}
+cat("Number of rows of CvT data without a calculated LOQ:")
 dim(subset(CvT.data,is.na(calc_loq)))[1]
 no.loqs <- is.na(CvT.data$calc_loq)
 
+cat("Assigning LOQs to each row...")
 for (this.study in unique(CvT.data[no.loqs,"Source"]))
 {
   this.subset1 <- subset(CvT.data,
@@ -174,8 +178,10 @@ for (this.study in unique(CvT.data[no.loqs,"Source"]))
   }
 }
 
+cat("Number of rows with no LOQ:")
 dim(subset(CvT.data,is.na(calc_loq)))[1]
 CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
+cat("Number of unique DTXSID's with CvT data:")
 length(unique(CvT.data$DTXSID))
 ```
 # Write the CvT data:
@@ -187,7 +193,7 @@ write.csv(CvT.data,row.names=FALSE,file="tables/SupTable-CvTData.txt")
 # Load empirical fits to Cvt data:
 ```{r load_empirical_fits, eval = TRUE}
 fittable <- as.data.frame(read_excel(
-  "CvTdb/evalTKstats_bakeoff.xlsx",
+  "CvTdb/25September2024evalTKstats_bakeoff.xlsx",
   sheet=1))
 
 KELIM.COL <- "kelim.tkstats"
@@ -204,10 +210,10 @@ DTXSID.COL <- "Chemical"
 SIGFIGS <- 4
 
 fittable[,"DTXSID"] <- fittable[,DTXSID.COL]
-length(unique(fittable$DTXSID))
 fittable[,"Model"] <- fittable[,MODEL.COL]
 fittable[fittable$Model=="model_1comp","Model"] <- "1Comp"
 fittable[fittable$Model=="model_2comp","Model"] <- "2Comp"
+cat("Number of chemicals with fits:")
 length(unique(fittable$DTXSID))
 
 # Calculate halflife for one compartment:
@@ -237,8 +243,10 @@ length(unique(fittable$DTXSID))
 fittable[,"Vdist"] <- signif(as.numeric(fittable[,VDIST.COL]), SIGFIGS)  
 
 # Although CvTdb has expanded, keep focus on human and rat:
+cat("Limit fits to just rat and human...\n")
 fittable <- subset(fittable, tolower(Species) %in%
                            c("rat", "human"))
+cat("Unique species with good fits:")
 unique(fittable$Species)
 
 for (this.chem in unique(fittable$DTXSID))
@@ -268,6 +276,7 @@ fittable[,"k21"] <- fittable[,K21.COL]
 fittable[,"Fgutabs"] <- fittable[,FGUTABS.COL]
 fittable[,"kgutabs"] <- fittable[,KGUTABS.COL]
 
+cat("Number of chemicals with rat or human fits:")
 length(unique(fittable$DTXSID))
 ```
 #How many chemicals have 1 or 2 compartment fits:
@@ -298,14 +307,22 @@ CvT.data$calc_loq <- signif(CvT.data$calc_loq,3)
 
 # Write out TK parameter estimates:
 ```{r load_physchem, eval = TRUE}
+cat("Number of rows in fittable...")
 dim(fittable)[1]
+cat("Number of unique chemicals in fittable...")
 length(unique(fittable$DTXSID))
 
+cat("Merging fittable with chemical information from CCD...")
 fittable <- merge(fittable,
                   test.chems.dashboard[,c("DTXSID","PREFERRED_NAME","CAS"
                                           )],
                   by="DTXSID",
                   all.x=TRUE)
+cat("Number of rows in fittable...")
+dim(fittable)[1]
+fittable.all <- fittable
+write.csv(fittable.all,file="tables/SupTable-TKFits.txt",row.names=FALSE)
+
 fittable <- fittable[, c("DTXSID",
                          "PREFERRED_NAME",
                          "CAS",
@@ -323,12 +340,12 @@ fittable <- fittable[, c("DTXSID",
                           TIMEUNITS.COL
                           )]
 
+cat("Removing duplicated rows from fittable...")
 fittable <- subset(fittable, !duplicated(fittable))
               
-fittable.all <- fittable
-
-write.csv(fittable,file="tables/SupTable-TKFits.txt",row.names=FALSE)
+cat("Number of rows in fittable:")
 dim(fittable)[1]
+cat("Number of unique chemicals in fittable:")
 length(unique(fittable$DTXSID))
 ```
 # Load phys-chem information:
@@ -411,6 +428,7 @@ write.csv(subset(fittable, !(DTXSID%in%fittable.noflat$DTXSID))[,
           file="tables/SupTable-NoEmpiricalFitChems.txt")
 fittable <- fittable.noflat
 
+cat("Unique chemicals in fittable:")
 length(unique(fittable$DTXSID))
 
 # Count chemicals where we don't have a usable empirical fit (No Vdist or V1):
@@ -424,12 +442,17 @@ cat(paste("There were",
                      length(unique(fittable.usable$DTXSID)),
             "chemicals where we only had oral data (no empirical fit suitable for prediction).\n"))
 cat("\n")
+cat("Unique chemicals in fittable:")
 length(unique(fittable$DTXSID))
+cat("Unique chemicals in CvT.data.all:")
 print(length(unique(CvT.data.all$DTXSID)))
+cat("Subsetting CvT.data to only those chemicals with fits leaves:")
 CvT.data <- subset(CvT.data.all, DTXSID %in% fittable$DTXSID)
 print(length(unique(CvT.data$DTXSID)))
 
+cat("Unique chemicals in CvT.chems object:")
 print(length(unique(CvT.chems$DTXSID)))
+cat("Subsetting CvT.chems to only those chemicals with fits leaves:")
 CvT.chems<- subset(CvT.chems,DTXSID %in% fittable$DTXSID)
 print(length(unique(CvT.chems$DTXSID)))
 ```
@@ -501,6 +524,6 @@ invitro <- httk.data
 save(invitro,file="data/httkinvitro.RData")
 save(CvT.chems,file="data/Cvt-chems.RData")
 save(CvT.data,file="data/Cvt-data.RData")
-save(fittable,file="data/fittable.RData")
+save(fittable,fittable.all,file="data/fittable.RData")
 save(httk.both ,file="data/httk-goodchems.RData")
 ```

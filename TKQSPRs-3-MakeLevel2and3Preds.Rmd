@@ -41,7 +41,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "July2024"
+output.prefix <- "November2024"
 ```
 
 ```{r load_data, eval= TRUE}
@@ -50,6 +50,7 @@ load(file="data/Cvt-chems-level1.RData")
 load(file="data/operatrainingchems.RData")
 load(file="data/Cvt-data.RData")
 load(file="data/fittable.RData")
+fittable <- fittable.all
 ```
 
 # Level II Predictions -- CvT data
