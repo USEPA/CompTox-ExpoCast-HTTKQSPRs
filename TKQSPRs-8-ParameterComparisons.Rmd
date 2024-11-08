@@ -14,11 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(httk)
 library(ggplot2)
 library(magrittr)
-library(scales)
-```
-Load custom code 
-```{r load_code, eval = TRUE}
-source("tkstats.R")
 ```
 
 
@@ -82,33 +77,23 @@ tidy_summary %>%
   dplyr::mutate(SE = (hfup - rfup)^2) %>% 
   dplyr::ungroup() %>% dplyr::pull(SE) %>%
   {sqrt(sum(.)/length(.))} -> fup_rmse
-```
 
-```{r make_fupplot}
+
 plotA <- ggplot(tidy_summary,
                 aes(x = hfup, y = rfup)) +
   geom_point() +
   geom_abline() +
-  annotate(label = paste0("RMSE = ", signif(fup_rmse, 3)),
+  annotate(label = paste0("RMSE = ", signif(fup_rmse, 5)),
            geom = "text",
-           x = 5*10^-3, y = 0.85,
-    size = 6
+           x = 0.1, y = 0.85
   ) +
-  ylab(expression(paste("Rat ",
-                        f[up]))) +
-  xlab(expression(paste("Human ",
-                        f[up]))) +
-  scale_x_log10(label=scientific_10,limits=c(5*10^-4,1)) +
-  scale_y_log10(label=scientific_10,limits=c(5*10^-4,1)) +
-  theme_bw() +
-   theme( text  = element_text(size=16),
-         axis.text.x = element_text(size=10),
-         axis.text.y = element_text(size=10)
+  labs(
+    x = "median Human Fup",
+    y = "median Rat Fup") +
+  theme_bw()
 
 plotA
-```
 
-```{r clint_analysis}
 
 # Do the same thing with Clint
 chem_prop_long <- merge(tidyr::unnest(chem_properties[c("DTXSID", "Human.Clint")],
@@ -133,40 +118,22 @@ tidy_summary %>%
   dplyr::mutate(SLE = (log10(1+hclint) - log10(1+rclint))^2) %>% 
   dplyr::ungroup() %>% dplyr::pull(SLE) %>%
   {sqrt(sum(.)/length(.))} -> clint_rmsle
-```
 
-```{r make_panelb}
 plotB <- ggplot(tidy_summary, 
-                aes(x = 10^-3 + hclint, y = 10^-3 + rclint)) +
+                aes(x = log1p(hclint), y = log1p(rclint))) +
   geom_point() +
   geom_abline() +
-  annotate(label = paste0("RMSLE = ", signif(clint_rmsle, 3)),
+  annotate(label = paste0("RMSLE = ", signif(clint_rmsle, 5)),
            geom = "text",
-           x = 50*1e-3, y = 1000,
-    size = 6
+           x = 0.5, y = 6
   ) +
-  ylab(expression(paste("Rat ",
-                        Cl[int],
-                        " (",
-                        mu,
-                        "L/min/10"^6,
-                        " hep.)"))) +
-  xlab(expression(paste("Human ",
-                        Cl[int],
-                        " (",
-                        mu,
-                        "L/min/10"^6,
-                        " hep.)"))) +
-  scale_x_log10(label=scientific_10) +
-  scale_y_log10(label=scientific_10) +
-  theme_bw() +
-   theme( text  = element_text(size=16),
-         axis.text.x = element_text(size=10),
-         axis.text.y = element_text(size=10)
+  labs(
+    x = "log10(1 + median Human Clint)",
+    y = "log10(1 + median Rat Clint)") +
+  theme_bw()
 
 plotB
-```
-```{r make_twopanelplot}
+
 # This is the combined plot for the top panels
 # Note that this requires the package cowplot
 # require(cowplot)
@@ -179,7 +146,6 @@ in vitro values for Clint and Fup.
 
 ```{r human_measurements, eval=TRUE}
 rat_df <- data.frame(DTXSID = common_chems) 
-rat_df <- subset(rat_df, DTXSID %in% get_cheminfo(info="dtxsid", model="pbtk"))
 
 rat_df <- rat_df %>%
   dplyr::rowwise() %>%
@@ -197,19 +163,19 @@ chem.physical_and_invitro.data <- chem.physical_and_invitro.data %>%
   dplyr::mutate(Rat.Clint = NA, Rat.Funbound.plasma = NA)
 # Run reset_httk() if I've run this and I need to go back to the original data
 
-rat_df <- subset(rat_df, DTXSID %in% get_cheminfo(info="dtxsid", model="pbtk"))
+
 rat_df <- rat_df %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(RatHum_Css = try(suppressWarnings(
+  dplyr::mutate(RatHum_Css = suppressWarnings(
     calc_analytic_css(dtxsid = DTXSID,
                       model = "pbtk", suppress.messages = TRUE,
                       species = "rat",
-                      parameterize.args = list(default.to.human = TRUE)))),
-    RatHum_Cmax = try(suppressWarnings(
+                      parameterize.args = list(default.to.human = TRUE))),
+    RatHum_Cmax = suppressWarnings(
       calc_tkstats(dtxsid = DTXSID, 
                    model = "pbtk", suppress.messages = TRUE,
                  species = "rat",
-                 default.to.human = TRUE)[["peak"]])))
+                 default.to.human = TRUE)[["peak"]]))
 
 
 rat_df %>%
@@ -219,34 +185,21 @@ rat_df %>%
     sqrt(sum(.) / length(.))
   } -> css_rmsle
 
-```
-
-```{r make_panelc}
-plotC <- ggplot(rat_df, aes(y = 10^-3 + Rat_Css, x = 10^-3 + RatHum_Css)) +
+plotC <- ggplot(rat_df, aes(x = log10(1 + Rat_Css), y = log10(1 + RatHum_Css))) +
   geom_point() +
   geom_abline() +
   annotate(
-    label = paste0("RMSLE = ", signif(css_rmsle, 3)),
+    label = paste0("RMSLE = ", signif(css_rmsle, 5)),
     geom = "text",
-    x = 50*1e-3,
-    y = 10,
-    size = 6
+    x = 0.5,
+    y = 1.2
   ) +
-  ylab(expression(paste("Rat ",C[ss]," (mg/L)"))) +
-  xlab(expression(paste("Rat ",
-                        C[ss],
-                        " (mg/L) from Human "))) +
-  scale_x_log10(label=scientific_10) +
-  scale_y_log10(label=scientific_10) +
-  theme_bw() +
-   theme( text  = element_text(size=16),
-         axis.text.x = element_text(size=10),
-         axis.text.y = element_text(size=10)
+  labs(x = "log10(1 + Rat Css)", y = "log10(1 + Rat-Human Css)") +
+  theme_bw()
 
 plotC
-```
 
-```{r make_paneld}
+
 rat_df %>%
   dplyr::mutate(SLE = (log10(1 + Rat_Cmax) - log10(1 + RatHum_Cmax)) ^ 2) %>%
   dplyr::ungroup() %>% dplyr::pull(SLE) %>%
@@ -254,45 +207,29 @@ rat_df %>%
     sqrt(sum(.) / length(.))
   } -> cmax_rmsle
 
-plotD <- ggplot(rat_df, aes(y = 10^-3 + Rat_Cmax, x = 10^-3 + RatHum_Cmax)) +
+plotD <- ggplot(rat_df, aes(x = log10(1 + Rat_Cmax), y = log10(1 + RatHum_Cmax))) +
   geom_point() +
   geom_abline() +
   annotate(
-    label = paste0("RMSLE = ", signif(cmax_rmsle, 3)),
+    label = paste0("RMSLE = ", signif(cmax_rmsle, 5)),
     geom = "text",
-    x = 50*1e-3,
-    y = 10,
-    size = 6
+    x = 0.5,
+    y = 1.2
   ) +
-  ylab(expression(paste("Rat ",C[max]," (mg/L)"))) +
-  xlab(expression(paste("Rat ",
-                        C[max],
-                        " (mg/L) from Human "))) +
-  scale_x_log10(label=scientific_10) +
-  scale_y_log10(label=scientific_10) +
-  theme_bw() +
-   theme( text  = element_text(size=16),
-         axis.text.x = element_text(size=10),
-         axis.text.y = element_text(size=10)
+  labs(x = "log10(1 + Rat Cmax)", y = "log10(1 + Rat-Human Cmax)") +
+  theme_bw()
 
 
 plotD
-```
 
-```{r make_multipanelplot}
 cowplot::plot_grid(
   plotlist = list(plotA, plotB, plotC, plotD),
   labels = c("A", "B", "C", "D")
 )
 
-ggsave(filename = "figs/Fig9-human_rat_eval.png",
+ggsave(filename = "figs/human_rat_eval.png",
        height = 7,
        width = 7)
 
 ```
 
-```{r textforpaper}
-paste("There were",
-      length(unique(rat_df$DTXSID)),
-      "chemicals with in vitro measured fup and Clint for both human and rat. ")
-```
