@@ -518,6 +518,41 @@ cat(paste("Among the evaluation chemicals only",
           "percent were within two-fold of the median."))
 cat("\n")
 ```
+```{r slowfast_chems_test}
+for (this.chem in CvT.chems$DTXSID)
+  if (this.chem %in% get_cheminfo(info="dtxsid",
+                                  species="rat",
+                                  default.to.human=TRUE,
+                                  model="3compartment",
+                                  suppress.messages=TRUE))
+  {
+    this.index <- which(CvT.chems$DTXSID==this.chem)
+    CvT.chems[this.index,"Thalf.httk"] <- calc_half_life(dtxsid=this.chem,
+                                                    species="rat",
+                                                    default.to.human = TRUE,
+                                                    suppress.messages=TRUE)
+    CvT.chems[this.index,"Thalf.fit"] <- fittable[fittable$DTXSID==this.chem,
+                                                  "halflife.tkstats"][1]
+  }
+
+paste("The three chemicals with in vitro HTTK data and the shortest half-lives in rat were",
+      paste(CvT.chems[order(CvT.chems$Thalf.fit)[1:3],]$PREFERRED_NAME,collapse=", "),
+      "-- mean of",
+      signif(mean(CvT.chems[order(CvT.chems$Thalf.fit)[1:3],"Thalf.fit"]),1),
+      "hours.")
+paste("The three chemicals with longest half-lives in rat were",
+      paste(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:3],]$PREFERRED_NAME,collapse=", "),
+      "-- mean of",
+      signif(mean(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:3],"Thalf.fit"]),1),
+      "hours.")
+
+pharma <- read.csv("data/Chemical List ZINC15PHARMA-2024-09-09.csv")
+paste(sum(CvT.chems$CASRN%in%pharma$CASRN),
+      "of the chemicals with in vitro HTTK data and in vivo concentration vs. time data were pharmaceuticals.")
+
+
+```
+
 
 ```{r write_out_data, eval= TRUE}
 invitro <- httk.data
