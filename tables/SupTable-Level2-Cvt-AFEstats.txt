@@ -1,0 +1,5 @@
+"","HTPBTK-YRandom","In Vivo Fits"
+"In Vitro ","0.8 (56)","-0.021 (49)"
+"No In Vitro ","0.74 (33)","-0.0014 (30)"
+"QSPR Intersection ","0.98 (23)","-0.0029 (20)"
+"Maximal ","0.78 (89)","-0.013 (79)"

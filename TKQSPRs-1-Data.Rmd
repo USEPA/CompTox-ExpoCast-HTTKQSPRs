@@ -37,6 +37,18 @@ library(DescTools)
 library(gridExtra)
 library(reshape2)
 ```
+```{r httk_version}
+cat(paste("Using httk v",
+          packageVersion("httk"),
+          "\n"))
+pkasource <- sort(unique(c(
+  chem.physical_and_invitro.data$pKa_Accept.Reference,
+  chem.physical_and_invitro.data$pKa_Donor.Reference)))
+pkasource <- pkasource[!is.na(pkasource)]
+cat(paste("pkA's taken from:",
+          paste(pkasource, collapse=", "),
+          "\n"))
+```
 
 Load custom code 
 ```{r load_code, eval = TRUE}
@@ -524,7 +536,8 @@ for (this.chem in CvT.chems$DTXSID)
                                   species="rat",
                                   default.to.human=TRUE,
                                   model="3compartment",
-                                  suppress.messages=TRUE))
+                                  suppress.messages=TRUE) &
+      this.chem %in% subset(fittable, Species=="rat")$DTXSID)
   {
     this.index <- which(CvT.chems$DTXSID==this.chem)
     CvT.chems[this.index,"Thalf.httk"] <- calc_half_life(dtxsid=this.chem,
@@ -535,7 +548,7 @@ for (this.chem in CvT.chems$DTXSID)
                                                   "halflife.tkstats"][1]
   }
 
-paste("The three chemicals with in vitro HTTK data and the shortest half-lives in rat were",
+paste("The three chemicals with the shortest half-lives in rat were",
       paste(CvT.chems[order(CvT.chems$Thalf.fit)[1:3],]$PREFERRED_NAME,collapse=", "),
       "-- mean of",
       signif(mean(CvT.chems[order(CvT.chems$Thalf.fit)[1:3],"Thalf.fit"]),1),
@@ -546,13 +559,47 @@ paste("The three chemicals with longest half-lives in rat were",
       signif(mean(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:3],"Thalf.fit"]),1),
       "hours.")
 
-pharma <- read.csv("data/Chemical List ZINC15PHARMA-2024-09-09.csv")
+pharma <- read.csv("ccd_data/Chemical List ZINC15PHARMA-2024-09-09.csv")
 paste(sum(CvT.chems$CASRN%in%pharma$CASRN),
       "of the chemicals with in vitro HTTK data and in vivo concentration vs. time data were pharmaceuticals.")
 
 
 ```
 
+```{r describe_chemicals, eval=TRUE}
+pharma <- read.csv("ccd_data/Chemical List ZINC15PHARMA-2024-09-09.csv")
+pest.active<- read.csv("ccd_data/Chemical List EPAPCS-2024-12-09.csv")
+PFAS <- read.csv("ccd_data/Chemical List PFAS8a7v3-2024-12-09.csv")
+ToxCast <- read.csv("ccd_data/Chemical List ToxCast_invitroDB_v4_1-2024-12-09.csv")
+TSCA <- read.csv("ccd_data/Chemical List TSCA_ACTIVE_NCTI_0224-2024-12-09.csv")
+consumer <- read.csv("ccd_data/Chemical List EPACONS-2024-12-09.csv")
+
+cat(paste("Among the",
+          dim(CvT.chems)[1],
+          "evaluation chemicals,",
+          length(unique(subset(CvT.data, CAS %in% CvT.chems$CASRN & Species=="rat")$DTXSID)),
+          "had data in rat and",
+          length(unique(subset(CvT.data, CAS %in% CvT.chems$CASRN & Species=="human")$DTXSID)),
+          "in human.\n"))
+unique(subset(CvT.data, CAS %in% CvT.chems$CASRN & Species=="human")$Compound)  
+
+
+cat(paste(dim(subset(CvT.chems, CASRN %in% pharma$CASRN))[1],
+          "of the evaluation chemicals were pharmaceuticals.\n"))
+
+cat(paste("The evaluation chemicals included:",
+            dim(subset(CvT.chems, CASRN %in% TSCA$CASRN))[1],
+          "from the non-confidential Toxic Substances Control Act (TSCA) active inventory,",
+            dim(subset(CvT.chems, CASRN %in% pest.active$CASRN))[1],
+          "pesticide active ingredients,",
+          dim(subset(CvT.chems, CASRN %in% consumer$CASRN))[1],
+          "that are found in consumer products,",
+          dim(subset(CvT.chems, CASRN %in% PFAS$CASRN))[1],
+          "per- and poly-fluoroalkyl substances (PFAS), and",
+          dim(subset(CvT.chems, CASRN %in% ToxCast$CASRN))[1],
+          "that are part of the ToxCast screening program.\n"))
+      
+```
 
 ```{r write_out_data, eval= TRUE}
 invitro <- httk.data

@@ -132,6 +132,17 @@ stats.table <- makestatstable2(stats.table,
 write.csv(stats.table,file="tables/SupTable-Level2-Cvt-AAFEstats.txt",row.names=TRUE)
 kable(stats.table)
 aafe.stats.table <- stats.table
+
+```
+```{r create_afe_summary_table_bychemnumber, eval=TRUE}     
+stats.table <- data.frame()
+stats.table <- makestatstable2(stats.table,
+                level2tab.afe,
+                chem.lists,
+                sigfig=2)
+write.csv(stats.table,file="tables/SupTable-Level2-Cvt-AFEstats.txt",row.names=TRUE)
+kable(stats.table)
+afe.stats.table <- stats.table
 ```
 
 ```{r create_rmsle_summary_table_early_late, eval=TRUE}
@@ -202,6 +213,7 @@ Cmax.stats.table <- stats.table
 ```{r write_level2_results}
 save(rmsle.stats.table,
      aafe.stats.table,
+     afe.stats.table,
      earlylate.stats.table,
      AUC.stats.table,
      Cmax.stats.table,

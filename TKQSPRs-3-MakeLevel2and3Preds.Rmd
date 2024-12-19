@@ -206,6 +206,9 @@ level2tab.rmsle.early <-
 level2tab.aafe.early <-
 level2tab.rmsle.late <-
 level2tab.aafe.late <-
+level2tab.afe <- 
+level2tab.afe.early <-
+level2tab.afe.late <-
 level3tab <- list()
 ```
 Make predictions of CvT using in vitro measured data. Rather than use default
@@ -358,10 +361,13 @@ level2tab.yrandom.stats <- list()
 level3tab.yrandom <- list()
 level2tab.yrandom.rmsle <- list()
 level2tab.yrandom.aafe <- list()
+level2tab.yrandom.afe <- list()
 level2tab.yrandom.rmsle.early <- list()
 level2tab.yrandom.aafe.early <- list()
+level2tab.yrandom.afe.early <- list()
 level2tab.yrandom.rmsle.late <- list()
 level2tab.yrandom.aafe.late <- list()
+level2tab.yrandom.afe.late <- list()
 for (i in 1:NUM.YRANDOM)
 {
   print(paste("Y-randomization Number",i))
@@ -377,10 +383,13 @@ for (i in 1:NUM.YRANDOM)
   level3tab.yrandom[[i]] <- out$level3tab
   level2tab.yrandom.rmsle[[i]] <- out$level2tab.rmsle
   level2tab.yrandom.aafe[[i]] <- out$level2tab.aafe
-level2tab.yrandom.rmsle.early[[i]] <- out$level2tab.rmsle.early
-level2tab.yrandom.aafe.early[[i]] <- out$level2tab.aafe.early
-level2tab.yrandom.rmsle.late[[i]] <- out$level2tab.rmsle.late
-level2tab.yrandom.aafe.late[[i]] <- out$level2tab.aafe.late
+  level2tab.yrandom.afe[[i]] <- out$level2tab.afe
+  level2tab.yrandom.rmsle.early[[i]] <- out$level2tab.rmsle.early
+  level2tab.yrandom.aafe.early[[i]] <- out$level2tab.aafe.early
+  level2tab.yrandom.afe.early[[i]] <- out$level2tab.afe.early
+  level2tab.yrandom.rmsle.late[[i]] <- out$level2tab.rmsle.late
+  level2tab.yrandom.aafe.late[[i]] <- out$level2tab.aafe.late
+  level2tab.yrandom.afe.late[[i]] <- out$level2tab.afe.late
 }
 ```
 # Average over the ten y-random draws:
@@ -395,6 +404,9 @@ level2tab.rmsle.early[[this.label]] <- level2tab.yrandom.rmsle.early[[1]]
 level2tab.aafe.early[[this.label]] <- level2tab.yrandom.aafe.early[[1]]
 level2tab.rmsle.late[[this.label]] <- level2tab.yrandom.rmsle.late[[1]]
 level2tab.aafe.late[[this.label]] <- level2tab.yrandom.aafe.late[[1]]
+level2tab.afe[[this.label]] <- level2tab.yrandom.afe[[1]]
+level2tab.afe.early[[this.label]] <- level2tab.yrandom.afe.early[[1]]
+level2tab.afe.late[[this.label]] <- level2tab.yrandom.afe.late[[1]]
 for (i in 2:NUM.YRANDOM)
 {
   print(i)
@@ -422,18 +434,27 @@ for (i in 2:NUM.YRANDOM)
     level2tab.aafe[[this.label]][[this.chem]] <-
       level2tab.aafe[[this.label]][[this.chem]] +
       level2tab.yrandom.aafe[[i]][[this.chem]]
+    level2tab.afe[[this.label]][[this.chem]] <-
+      level2tab.afe[[this.label]][[this.chem]] +
+      level2tab.yrandom.afe[[i]][[this.chem]]
     level2tab.rmsle.early[[this.label]][[this.chem]] <-
       level2tab.rmsle.early[[this.label]][[this.chem]] +
       level2tab.yrandom.rmsle.early[[i]][[this.chem]]
     level2tab.aafe.early[[this.label]][[this.chem]] <-
       level2tab.aafe.early[[this.label]][[this.chem]] +
       level2tab.yrandom.aafe.early[[i]][[this.chem]]
+    level2tab.afe.early[[this.label]][[this.chem]] <-
+      level2tab.afe.early[[this.label]][[this.chem]] +
+      level2tab.yrandom.afe.early[[i]][[this.chem]]
     level2tab.rmsle.late[[this.label]][[this.chem]] <-
       level2tab.rmsle.late[[this.label]][[this.chem]] +
       level2tab.yrandom.rmsle.late[[i]][[this.chem]]
     level2tab.aafe.late[[this.label]][[this.chem]] <-
       level2tab.aafe.late[[this.label]][[this.chem]] +
       level2tab.yrandom.aafe.late[[i]][[this.chem]]
+    level2tab.afe.late[[this.label]][[this.chem]] <-
+      level2tab.afe.late[[this.label]][[this.chem]] +
+      level2tab.yrandom.afe.late[[i]][[this.chem]]
   }
 }
 level2tab.cvt[[this.label]][,"Conc.pred"] <- 
@@ -453,17 +474,26 @@ for (this.chem in names(level2tab.rmsle[[this.label]]))
   level2tab.aafe[[this.label]][[this.chem]] <-
     signif(level2tab.aafe[[this.label]][[this.chem]]/NUM.YRANDOM,
            4)
+  level2tab.afe[[this.label]][[this.chem]] <-
+    signif(level2tab.afe[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
   level2tab.rmsle.early[[this.label]][[this.chem]] <-
     signif(level2tab.rmsle.early[[this.label]][[this.chem]]/NUM.YRANDOM,
            4)
   level2tab.aafe.early[[this.label]][[this.chem]] <-
     signif(level2tab.aafe.early[[this.label]][[this.chem]]/NUM.YRANDOM,
            4)
-    level2tab.rmsle.late[[this.label]][[this.chem]] <-
+  level2tab.afe.early[[this.label]][[this.chem]] <-
+    signif(level2tab.afe.early[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
+  level2tab.rmsle.late[[this.label]][[this.chem]] <-
     signif(level2tab.rmsle.late[[this.label]][[this.chem]]/NUM.YRANDOM,
            4)
   level2tab.aafe.late[[this.label]][[this.chem]] <-
     signif(level2tab.aafe.late[[this.label]][[this.chem]]/NUM.YRANDOM,
+           4)
+  level2tab.afe.late[[this.label]][[this.chem]] <-
+    signif(level2tab.afe.late[[this.label]][[this.chem]]/NUM.YRANDOM,
            4)
 }
 ```
@@ -482,10 +512,13 @@ level2tab.cvt[[this.label]] <- out$cvt
 level2tab.stats[[this.label]] <- out$stats
 level2tab.rmsle[[this.label]] <- out$rmsle
 level2tab.aafe[[this.label]] <- out$aafe
+level2tab.afe[[this.label]] <- out$afe
 level2tab.rmsle.early[[this.label]] <- out$rmsle.early
 level2tab.aafe.early[[this.label]] <- out$aafe.early
+level2tab.afe.early[[this.label]] <- out$afe.early
 level2tab.rmsle.late[[this.label]] <- out$rmsle.late
 level2tab.aafe.late[[this.label]] <- out$aafe.late
+level2tab.afe.late[[this.label]] <- out$afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
@@ -494,22 +527,28 @@ save(
   level2tab.cvt,
   level2tab.stats,
   level2tab.rmsle,
-  level2tab.aafe,
   level2tab.rmsle.early,
-  level2tab.aafe.early,
   level2tab.rmsle.late,
+  level2tab.aafe,
+  level2tab.aafe.early,
   level2tab.aafe.late,
+  level2tab.afe,
+  level2tab.afe.early,
+  level2tab.afe.late,
   file="data/level2-tables.RData")
 save(
   level2tab.yrandom.cvt,
   level2tab.yrandom.stats,
   level3tab.yrandom,
   level2tab.yrandom.rmsle,
-  level2tab.yrandom.aafe,
   level2tab.yrandom.rmsle.early,
-  level2tab.yrandom.aafe.early,
   level2tab.yrandom.rmsle.late,
+  level2tab.yrandom.aafe,
+  level2tab.yrandom.aafe.early,
   level2tab.yrandom.aafe.late,
+  level2tab.yrandom.afe,
+  level2tab.yrandom.afe.early,
+  level2tab.yrandom.afe.late,
   file = "data/level2-yrandomindividualresults.RData")
 save(
   level3tab,

@@ -43,10 +43,13 @@ make_cvt_comparisons <- function(this.label, clint.col, fup.col,
               level2tab.stats = level2tab.list$stats,
               level2tab.rmsle = level2tab.list$rmsle,
               level2tab.aafe = level2tab.list$aafe,
+              level2tab.afe = level2tab.list$afe,
               level2tab.rmsle.early = level2tab.list$rmsle.early,
               level2tab.aafe.early = level2tab.list$aafe.early,
+              level2tab.afe.early = level2tab.list$afe.early,
               level2tab.rmsle.late = level2tab.list$rmsle.late,
               level2tab.aafe.late = level2tab.list$aafe.late,
+              level2tab.afe.late = level2tab.list$afe.late,
               level3tab = level3tab))
 }
 
@@ -54,15 +57,16 @@ make_cvt_comparisons <- function(this.label, clint.col, fup.col,
 makeCvTpreds <- function(CvT.data,label,model.args)
 {
   cat("Running makeCvTpreds...\n")
-  nonvol.chems <- suppressWarnings(get_cheminfo(model="pbtk", 
-                                                class.exclude=FALSE))
+ # nonvol.chems <- suppressWarnings(get_cheminfo(model="pbtk", 
+ #                                               class.exclude=FALSE))
   vol.chems <- suppressWarnings(get_cheminfo(model="gas_pbtk",
                                              class.exclude=FALSE))
   
   cvt.table <- NULL
   stats.table <- NULL
   for (this.cas in unique(CvT.data$CAS))
-  if (this.cas %in% c(nonvol.chems, vol.chems))
+  if (this.cas %in% #c(nonvol.chems, 
+                      vol.chems)#)
   {
     this.model <- NULL
     #if (this.cas %in% nonvol.chems) this.model <- "solve_pbtk"
@@ -242,12 +246,14 @@ calc_cvt_stats <- function(cvt.table, stats.table)
   cvt.table$AbsFE <- calc_AbsFE(cvt.table)
   
   # Calculate chemical-specific RMSLE and AAFE:
-  rmsle <- aafe <- rmsle.early <- rmsle.late <- aafe.early <- aafe.late <- list()
+  rmsle <- aafe <- rmsle.early <- rmsle.late <- aafe.early <- aafe.late <- 
+    afe <- afe.early <- afe.late <- list()
   for (this.chem in unique(cvt.table$DTXSID))
   {
     this.data <- subset(cvt.table,DTXSID==this.chem)
     rmsle[[this.chem]] <- calc_RMSLE(this.data, zeroval = -Inf)
     aafe[[this.chem]] <- calc_AAFE(this.data)
+    afe[[this.chem]] <- calc_AFE(this.data)
     
     # Separate data into early and late times:
     this.data.early <- this.data.late <- NULL
@@ -264,8 +270,10 @@ calc_cvt_stats <- function(cvt.table, stats.table)
     }
     rmsle.early[[this.chem]] <- calc_RMSLE(this.data.early, zeroval = -Inf)
     aafe.early[[this.chem]] <- calc_AAFE(this.data.early)
+    afe.early[[this.chem]] <- calc_AFE(this.data.early)
     rmsle.late[[this.chem]] <- calc_RMSLE(this.data.late, zeroval = -Inf)
     aafe.late[[this.chem]] <- calc_AAFE(this.data.late)
+    afe.late[[this.chem]] <- calc_AFE(this.data.late)
   }
   
   return(list(
@@ -276,7 +284,10 @@ calc_cvt_stats <- function(cvt.table, stats.table)
     rmsle.early=rmsle.early,
     rmsle.late=rmsle.late,
     aafe.early = aafe.early,
-    aafe.late = aafe.late
+    aafe.late = aafe.late,
+    afe=afe,
+    afe.early = afe.early,
+    afe.late = afe.late
     ))
 }
 
@@ -631,6 +642,25 @@ calc_AbsFE <- function(level2tab)
   AbsFE[AbsFE=="NaN"]<-0  #none
 
   return(AbsFE)
+}
+
+## calculate average fold error
+calc_AFE <- function(in.table,
+                    pred.col = "Conc.pred",
+                    obs.col = "Conc.obs",
+                    sigfig=4)
+{
+  # fold error (FE) : log10(pred/obs)
+  FE<-signif(log10(in.table[,pred.col]/in.table[obs.col]),
+                sigfig)
+  
+  #Turn -Inf and Inf into finite value
+  FE[FE=="Inf"]<-4   ######## lots because lots of $Conc.pred is zero
+  
+  #Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
+  FE[FE=="NaN"]<-0  #none
+
+  return(mean(unlist(FE), na.rm=TRUE))
 }
 
 

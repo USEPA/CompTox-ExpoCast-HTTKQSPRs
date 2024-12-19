@@ -500,7 +500,7 @@ chem_props %>% group_by(Clust) %>%
 this_list <- list()
 null.parms <- parameterize_gas_pbtk(chem.name="bisphenola")
 null.parms[] <- NA
-for (i in 1:73) if(pull(chem_props,
+for (i in 1:length(pull(chem_props, DTXSID))) if(pull(chem_props,
                           DTXSID)[i] %in% 
                     get_cheminfo(info="DTXSID",model="gas_pbtk"))
   {
