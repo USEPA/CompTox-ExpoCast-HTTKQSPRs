@@ -132,6 +132,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
                      default.to.human=TRUE,
                      class.exclude=FALSE,
                      suppress.messages=TRUE,
+                     restrictive.clearance=TRUE,
                      input.units='mg/kg',
                      output.units = "mg/L",
                      exp.conc=0),
@@ -596,14 +597,24 @@ maketkstatpreds <- function(
         thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"])) # h
         kelim.obs <- unlist(as.numeric(this.subset2[,"kelim"])) # 1/h
         cl.obs <- signif(vd.obs*kelim.obs,3) # L / kg BW / h
-        cl.pred <- try(signif(1/suppressWarnings(calc_css( # Convenient TK fact: 
-          chem.cas=this.cas,                               # 1 / Css = Cltot
-          species=this.species,                            # Dimensional analysis:
-          default.to.human=TRUE,                           # [Css] = mg/L / 1 mg/kg/day
-          model="gas_pbtk",                                # [Cltot] = L/kg/day
-          output.units="mg/L",                             # day -> hours:
-          suppress.messages=TRUE)$avg)/24,3))              # [Cltot] = L/kg/h
-        if (inherits(cl.pred, "try-error")) cl.pred <- NA
+        css.obs <- signif(unlist(as.numeric(this.subset2[,"Fgutabs.tkstats"]))/cl.obs,3)
+        fbio.pred <- calc_hep_bioavailability(chem.cas=this.cas,                               # Css = fbio/ Cltot
+                                              species=this.species,
+                                              suppress.messages = TRUE)
+        css.pred <- try(signif(suppressWarnings(
+          calc_css(                           # Convenient TK fact: 
+            chem.cas=this.cas,                # Css = fbio/ Cltot
+            species=this.species,             # Dimensional analysis:
+            default.to.human=TRUE,            # [Css] = mg/L / 1 mg/kg/da
+            model="gas_pbtk",                 # [Cltot] = L/kg/day
+            output.units="mg/L",              # day -> hours:
+            suppress.messages=TRUE)$avg)/24,  # [Cltot] = L/kg/h
+          3))              
+        if (inherits(css.pred, "try-error")) 
+        {
+          css.pred <- NA
+        }
+        cl.pred <- signif(fbio.pred / css.pred, 3)
         ke.pred <- signif(cl.pred/vd.pred,3) # 1/h
         thalf.pred <- signif(log(2)/ke.pred,3) # h
         new.tab <- data.frame(
@@ -615,6 +626,8 @@ maketkstatpreds <- function(
           Vd.pred = vd.pred,
           cl.obs = cl.obs,
           cl.pred = cl.pred,
+          css.obs = css.obs,
+          css.pred = css.pred,
           thalf.obs=thalf.obs,
           thalf.pred = thalf.pred,
           stringsAsFactors=F)

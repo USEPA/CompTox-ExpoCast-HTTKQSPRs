@@ -46,10 +46,10 @@ output.prefix <- "November2024"
 
 ```{r load_data, eval= TRUE}
 load(file="data/httkinvitro.RData")
-load(file="data/Cvt-chems-level1.RData")
-load(file="data/operatrainingchems.RData")
 load(file="data/Cvt-data.RData")
 load(file="data/fittable.RData")
+load(file="data/Cvt-chems-level1.RData")
+load(file="data/trainingchems.RData")
 fittable <- fittable.all
 ```
 
@@ -94,17 +94,15 @@ cat(paste(dim(subset(fittable,!is.na(Vdist) | !is.na(V1)))[1],
 ## Get rid of chemical predictions that are possibly just training set lookups:
 ```{r remove_training_chems, eval=TRUE}
 CvT.chems.notraining <- CvT.chems
-for (this.qspr in unique(possible.training.chems$QSPR))
-{
-  this.subset <- subset(possible.training.chems, QSPR==this.qspr)
-  for (this.id in this.subset$DTXSID)
-  {
-    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
-      paste("Human.Clint",this.qspr,sep=".")]<-NA
-    CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.id,
-      paste("Human.Fup",this.qspr,sep=".")]<-NA
-  }
-}
+for (this.dtxsid in training.set.table$DTXSID)
+  for (this.pred in colnames(training.set.table))
+    if (this.pred != "DTXSID")
+      if (training.set.table[training.set.table$DTXSID== this.dtxsid, 
+                            this.pred] == "Possible")
+      {
+        CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.dtxsid,
+          this.pred]<-NA
+      }
 length(unique(CvT.chems.notraining$DTXSID))
 ```
 

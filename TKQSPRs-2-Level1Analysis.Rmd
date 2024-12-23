@@ -407,59 +407,144 @@ kable(pred.counts)
 write.csv(pred.counts,
           file="tables/SupTable-QSPRPredCounts.txt")
 ```
+# Initialize training set table:
+```{r init_training_set}
+training.set.table <- CvT.chems[,c(1,16:24)]
+training.set.table[,2:10] <- ""
+```
 
 # Let's try to avoid values that are just being retrieved from the training set:
+```{r load_known_traning_sets, eval=TRUE}
+dawson.fup <- read.csv("training_sets/Dawson-2021-fup.csv")
+dawson.clint <- read.csv("training_sets/Dawson-2021-clint.csv")
+pradeep.fup <- read.csv("training_sets/Pradeep-2020-fup.csv")
+pradeep.clint <- read.csv("training_sets/Pradeep-2020-clint.csv")
+for (this.dtxsid in CvT.chems$DTXSID)
+{
+  this.cas <- CvT.chems[CvT.chems$DTXSID==this.dtxsid,"CASRN"]
+  if (this.dtxsid %in% dawson.fup$DTXSID)
+  {
+    this.row <- level1tab$QSPR == "Dawson" & level1tab$DTXSID == this.dtxsid
+    level1tab[this.row,"Human.Fup.pred"] <-NA
+    level1tab[this.row,"Human.fup.AbsFE"] <-NA
+    level1tab[this.row,"Human.fup.FE"] <-NA
+#   CvT.chems[CvT.chems$DTXSID %in% level1tab[this.row,"DTXSID"],
+#                "Human.Fup.Dawson"] <- NA
+    training.set.table[training.set.table$DTXSID==this.dtxsid,
+                       "Human.Fup.Dawson"] <- "Training Set"
+  }
+  if (this.cas %in% pradeep.fup$CASRN)
+  {
+    this.row <- level1tab$QSPR == "Pradeep" & level1tab$DTXSID == this.dtxsid
+    level1tab[this.row,"Human.Fup.pred"] <-NA
+    level1tab[this.row,"Human.fup.AbsFE"] <-NA
+    level1tab[this.row,"Human.fup.FE"] <-NA
+#    CvT.chems[CvT.chems$DTXSID %in% level1tab[this.row,"DTXSID"],
+#                "Human.Fup.Pradeep"] <- NA
+    training.set.table[training.set.table$DTXSID==this.dtxsid,
+                       "Human.Fup.Pradeep"] <- "Training Set"
+  }
+  if (this.dtxsid %in% dawson.clint$DTXSID)
+  {
+    this.row <- level1tab$QSPR == "Dawson" & level1tab$DTXSID == this.dtxsid
+    level1tab[this.row,"Human.Clint.pred"] <-NA
+    level1tab[this.row,"Human.Clint.AbsFE"] <-NA
+    level1tab[this.row,"Human.Clint.FE"] <-NA
+#    CvT.chems[CvT.chems$DTXSID %in% level1tab[this.row,"DTXSID"],
+#                "Human.Clint.Dawson"] <- NA
+    training.set.table[training.set.table$DTXSID==this.dtxsid,
+                       "Human.Clint.Dawson"] <- "Training Set"
+  }
+  if (this.cas %in% pradeep.clint$CASRN)
+  {
+    this.row <- level1tab$QSPR == "Pradeep" & level1tab$DTXSID == this.dtxsid
+    level1tab[this.row,"Human.Clint.pred"] <-NA
+    level1tab[this.row,"Human.Clint.AbsFE"] <-NA
+    level1tab[this.row,"Human.Clint.FE"] <-NA
+#    CvT.chems[CvT.chems$DTXSID %in% level1tab[this.row,"DTXSID"],
+#                "Human.Clint.Pradeep"] <- NA
+    training.set.table[training.set.table$DTXSID==this.dtxsid,
+                       "Human.Clint.Pradeep"] <- "Training Set"
+  }
+}
+```
+
 ```{r fold_error_cutoff, eval = TRUE}
 TOOCLOSE.THRESHOLD <- 0.01
-possible.training.chems <- NULL
 for (this.row in 1:dim(level1tab)[1])
 {
+  this.qspr <- level1tab[this.row,"QSPR"]
+  this.dtxsid <- level1tab[this.row,"DTXSID"]
   clint <- level1tab[this.row,"Human.Clint.AbsFE"]
-  fup <- level1tab[this.row,"Human.fup.AbsFE"]
   if (!is.na(clint))
   {
-    if (!is.na(fup))
+    if (clint < TOOCLOSE.THRESHOLD)
     {
-      if (clint < TOOCLOSE.THRESHOLD & fup < TOOCLOSE.THRESHOLD)
-      {
-        possible.training.chems <- rbind(possible.training.chems,
-                                         level1tab[this.row,])
-        # Remove possible training chems from the analysis:
-        level1tab[this.row,"Human.Clint.pred"] <-NA
-        level1tab[this.row,"Human.Clint.AbsFE"] <-NA
-        level1tab[this.row,"Human.Fup.pred"] <-NA
-        level1tab[this.row,"Human.fup.AbsFE"] <-NA
-        CvT.chems[CvT.chems$DTXSID %in% level1tab[this.row,"DTXSID"],
-                  "Human.Clint.OPERA"] <- NA                            
-        CvT.chems[CvT.chems$DTXSID %in% level1tab[this.row,"DTXSID"],
-                  "Human.Fup.OPERA"] <- NA
-      }
+      # Remove possible training chems from the analysis:
+      level1tab[this.row,"Human.Clint.pred"] <-NA
+      level1tab[this.row,"Human.Clint.AbsFE"] <-NA
+      level1tab[this.row,"Human.Clint.FE"] <-NA
+      print(paste("Human.Clint.",this.qspr,sep=""))
+      training.set.table[training.set.table$DTXSID==this.dtxsid,
+                         paste("Human.Clint.",this.qspr,sep="")] <- 
+                        "Possible"
+      CvT.chems[CvT.chems$DTXSID == this.dtxsid,
+                paste("Human.Clint.",this.qspr,sep="")] <- NA                            
+    }
+  }
+  fup <- level1tab[this.row,"Human.fup.AbsFE"]
+  if (!is.na(fup))
+  {
+    if (fup < TOOCLOSE.THRESHOLD)
+    {
+      # Remove possible training chems from the analysis:
+      level1tab[this.row,"Human.Fup.pred"] <-NA
+      level1tab[this.row,"Human.fup.AbsFE"] <-NA
+      level1tab[this.row,"Human.fup.FE"] <-NA
+      print(paste("Human.Fup.",this.qspr,sep=""))
+      training.set.table[training.set.table$DTXSID==this.dtxsid,
+                         paste("Human.Fup.",this.qspr,sep="")] <- 
+                        "Possible"
+      CvT.chems[CvT.chems$DTXSID == this.dtxsid,
+                paste("Human.Fup.",this.qspr,sep="")] <- NA     
     }
   }
 }
 
-for (this.col in colnames(possible.training.chems))
-  if (is.numeric(possible.training.chems[1,this.col]))
-    possible.training.chems[,this.col] <- 
-  signif(possible.training.chems[,this.col],3)
-kable(possible.training.chems)
-write.csv(possible.training.chems,row.names=FALSE,
-          file="tables/SupTable-PossibleTrainingChems.txt")
+kable(training.set.table)
+write.csv(training.set.table, row.names=FALSE,
+          file="tables/SupTable-TrainingSetChems.txt")
+```
 
+```{r text_for_paper}
 cat("Results: QSPR Predictions\n")
 cat(paste("A total of",
-    dim(possible.training.chems)[1],
-    "QSPR predictions were removed for possibly being in the training set (see Supplement Materials Table SupTable-PossibleTrainingChems.txt).\n"))
+    sum(training.set.table[,2:9]!=""),
+    "QSPR predictions were removed as known or suspected training set data (see Supplement Materials Table SupTable-TrainingSetChems.txt).\n"))
 cat("\n")
 cat(paste("A total of",
-          dim(subset(possible.training.chems,QSPR=="OPERA"))[1],
-          "predictions, all made by OPERA, were removed for possibly being in the training set (see Supplement Materials Table SupTable-PossibleTrainingChems.txt).\n"))
+          dim(subset(training.set.table,"Human.Fup.OPERA"!="" |
+                       "Human.Clint.OPERA" != ""))[1],
+          "predictions were removed from OPERA for possibly being in the training set (see Supplement Materials Table SupTable-TrainingSetChems.txt).\n"))
 cat("\n")
 cat("Results: Level 1 Analysis\n")
-cat("Note that there were",
-    dim(possible.training.chems)[1],
-    "potential training chemicals that were removed from all analyses because they had been predicted too accurately.\n")
 cat("\n")
+```
+# Count the number of predictions
+```{r number_predictions_after_training_removed, eval = TRUE}
+pred.counts2 <- data.frame()
+for (this.qspr in unique(level1tab$QSPR))
+{
+  pred.counts2[this.qspr,"Clint"] <-
+    sum(!is.na(subset(level1tab, QSPR==this.qspr)$Human.Clint.pred))
+  pred.counts2[this.qspr,"Fup"] <-
+    sum(!is.na(subset(level1tab, QSPR==this.qspr)$Human.Fup.pred))
+}
+
+kable(pred.counts2)
+
+write.csv(pred.counts2,
+          file="tables/SupTable-QSPRPredCountsPostTrainingRemoval.txt")
 ```
 
 ```{r fold_error_differences, eval = TRUE}
@@ -524,7 +609,9 @@ level1tab[,"Human.Fup.RPE"] <-
   (as.numeric(level1tab[,"Human.Fup.pred"]) - 
   as.numeric(level1tab[,"Human.Fup.httk"])) /
   as.numeric(level1tab[,"Human.Fup.httk"])
-  
+```
+
+```{r make_historams, eval=FALSE}
 hist(subset(level1tab,QSPR=="Dawson")$Human.Clint.RPE,
      main="Dawson",xlab="Clint RPE")
 hist(subset(level1tab,QSPR=="Pradeep")$Human.Clint.RPE,
@@ -837,7 +924,7 @@ ggsave(paste("figs/SupFigLev1d-fup-boxplot-wtable-",output.prefix,".tiff",sep=""
 ```
 
 ```{r write_out_data, eval=TRUE}
-save(possible.training.chems, file="data/operatrainingchems.RData")
+save(training.set.table, file="data/trainingchems.RData")
 save(CvT.chems,CvT.chems.scale,
      file="data/Cvt-chems-level1.RData")
 ```
