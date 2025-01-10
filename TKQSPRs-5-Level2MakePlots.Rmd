@@ -50,7 +50,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
-output.prefix <- "November2024"
+output.prefix <- "Jan2025"
 ```
 
 ```{r load_data, eval= TRUE}
@@ -58,6 +58,9 @@ load("data/level2-tables.RData")
 load("data/level2stats.RData")
 load("data/httk-goodchems.RData")
 load("data/Cvt-chems-level1.RData")
+# Remove non-restrictive runs:
+level2tab.cvt <- level2tab.cvt[
+  names(level2tab.cvt) != "HTPBTK-InVitro-NonRestrict"]
 ```
 
 # Level II Predictions -- CvT data
@@ -111,7 +114,7 @@ level2tab.stats <- subset(level2tab.stats, !is.na(AUC.obs))
 ```
 
 ## Concentration vs. time plots for each chemical-QSPR combination
-```{r evaluation_plots, eval=TRUE}
+```{r evaluation_plots}
 pdf(file="figs/SupFig-ChembyQSPRCvTPlots.pdf")
 for (this.chem in unique(level2tab$DTXSID))
   for (this.QSPR in unique(level2tab$QSPR))
@@ -250,6 +253,18 @@ for (this.chem in CvT.chems.stats.heatmap$PREFERRED_NAME)
 }
 ```
 
+```{r shrink_heatmap, eval = TRUE}
+CvT.chems.stats.heatmap <- CvT.chems.stats.heatmap[,
+                             c("DTXSID",
+                               "PREFERRED_NAME",
+                               "CASRN",
+                               colnames(CvT.chems.stats.heatmap)[regexpr("RMSLE", colnames(CvT.chems.stats.heatmap))!=-1],
+                               colnames(CvT.chems.stats.heatmap)[regexpr("RPE", colnames(CvT.chems.stats.heatmap))!=-1],
+                              "Thalf.fit")]
+CvT.chems.stats.heatmap <- CvT.chems.stats.heatmap[
+  apply(CvT.chems.stats.heatmap[,4:28],1,function(x) !all(is.na(x))),]
+```
+
 ```{r make_stats_heatmap, eval = TRUE}
 mypalette<-brewer.pal(11,"RdYlBu")
 heatmap.2(as.matrix(CvT.chems.stats.heatmap[,
@@ -291,7 +306,6 @@ fontsize <- 12
 FigLev2 <- ggplot(data=subset(level2tab,
                               regexpr("Caco2",QSPR)==-1), 
                   aes(x=QSPR, y=RPE)) + 
-    geom_hline(yintercept=0,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=3,linetype = "dashed",color="blue")+
   #  geom_hline(yintercept=10,linetype = "dashed",color="blue")+
 #  scale_y_log10(label=scientific_10,limits=c(10^-2,10^4))+
@@ -338,7 +352,7 @@ FigLev2 <- ggplot(data=subset(level2tab,
   annotation_custom(
     tableGrob(stats.table[c("AAFE","RMSLE"),"HTPBTK-YRandom"],
     rows=NULL, theme = ttheme_minimal(base_size = fontsize)),
-    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)+
+    xmin=0,xmax=14.3+xshift,ymin=(texty-1),ymax=texty)
 
 
 print(FigLev2) 
@@ -660,8 +674,9 @@ write.csv(Cmax.stats.table,file="tables/SupTable-CmaxStats.txt")
 #### Set order from left to right:
 qsprs.rmsle.bychem <- NULL
 # just the chemicals with in vitro data:
-invitro.chems <- subset(qsprbychem.table, QSPR=="HTPBTK-InVitro")$DTXSID
-qsprbychem.table2 <- subset(qsprbychem.table, DTXSID %in% invitro.chems)
+#invitro.chems <- subset(qsprbychem.table, QSPR=="HTPBTK-InVitro")$DTXSID
+#qsprbychem.table2 <- subset(qsprbychem.table, DTXSID %in% invitro.chems)
+qsprbychem.table2 <- qsprbychem.table
 for (this.qspr in unique(qsprbychem.table2$QSPR)) 
   qsprs.rmsle.bychem[this.qspr] <-
     mean(subset(qsprbychem.table2,QSPR==this.qspr)$RMSLE) 
@@ -679,7 +694,7 @@ qsprbychem.table2$QSPR <- factor(qsprbychem.table2$QSPR,
 #### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2
 xshift <- -0.1
-these.stats <- "In Vitro"
+these.stats <- "Maximal RMSLE"
 stat.labels <- "Mean"
 
      
@@ -721,7 +736,7 @@ ggsave(paste("figs/SupFigLev2_RMSEbyChem",output.prefix,".tiff",sep=""),
 ```{r make_RMSE_bychem_early_plot, eval = TRUE}
 texty <- 2
 xshift <- -0.1
-these.stats <- "In Vitro Early"
+these.stats <- "Maximal Early"
 stat.labels <- "Mean"
 
 #### Make Plot
@@ -763,7 +778,7 @@ ggsave(paste("figs/SupFigLev2_RMSEbyChemEarly",output.prefix,".tiff",sep=""),
 ```{r make_RMSE_bychem_late_plot, eval = TRUE}
 texty <- 2.8
 xshift <- -0.1
-these.stats <- "In Vitro Late"
+these.stats <- "Maximal Late"
 stat.labels <- "Mean"
 
 #### Make Plot

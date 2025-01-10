@@ -38,6 +38,8 @@ load("data/level3-tables.RData")
 load("data/level2stats.RData")
 load("data/httk-goodchems.RData")
 load("data/chemicallists.RData")
+  # Can't work with NA's:
+  level3tab <- level3tab[!names(level3tab) %in% c("HTPBTK-InVitro-NonRestrict")]
 ```
 
 Load custom code 
@@ -49,7 +51,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "November2024"
+output.prefix <- "Jan2025"
 ```
 
 #Level III Predictions -- predicted half-life or volume of distribution (Vd)
@@ -141,13 +143,23 @@ level3tab$Cl.obs <- level3tab$Vd.obs * log(2) / level3tab$thalf.obs
 level3tab$Cl.pred <- level3tab$Vd.pred * log(2) / level3tab$thalf.pred
 level3tab$Cl.RPE <- (level3tab$Cl.pred - level3tab$Cl.obs)/level3tab$Cl.obs
 ```
+
 ```{r auccmax_table, eval=TRUE}
-AUCCmax.table <- rbind(Cmax.stats.table["RMSLE In Vitro",],
-                       AUC.stats.table["RMSLE In Vitro",])
-rownames(AUCCmax.table) <- c("Cmax RMSLE","AUC RMSLE")
+AUCCmax.table <- rbind(Cmax.stats.table["RMSLE Maximal",],
+                       Cmax.stats.table["RMSLE Pharma",],
+                       Cmax.stats.table["RMSLE Non-Pharma",],
+                       AUC.stats.table["RMSLE Maximal",],
+                       AUC.stats.table["RMSLE Pharma",],
+                       AUC.stats.table["RMSLE Non-Pharma",])
+rownames(AUCCmax.table) <- c("Cmax RMSLE",
+                             "Cmax RMSLE (Pharma)",
+                             "Cmax RMSLE (Non-Pharma)",
+                             "AUC RMSLE",
+                             "AUC RMSLE (Pharma)",
+                             "AUC RMSLE (Non-Pharma)")
 kable(AUCCmax.table)
 write.csv(AUCCmax.table, 
-          file="tables/Table5-AUCCmax-stats.txt")
+          file="tables/Table7-AUCCmax-stats.txt")
 ```
 # Get rid of Vd predictions from HTTK not made by QSPR:
 ```{r remove_placeholder_vd, eval = TRUE}
@@ -176,9 +188,6 @@ halflife.stats.table <- makestatstable(level3tab,
                                        obs.col="thalf.obs",
                                        pred.col="thalf.pred",
                                        chem.lists=list(
-                                         "In Vitro" = invitro.chems,
-                                         "No In Vitro" = noinvitro.chems,
-                                         "QSPR Intersection" = intersect.chems,
                                          "Maximal" = max.chems
                                          ),
                                        logrsquared = FALSE
@@ -193,10 +202,7 @@ vd.stats.table <- makestatstable(level3tab,
                                        obs.col="Vd.obs",
                                        pred.col="Vd.pred",
                                        chem.lists=list(
-                                         "In Vitro" = invitro.chems,
-                                         "No In Vitro" = noinvitro.chems,
-                                         "QSPR Intersection" = intersect.chems,
-                                         "Maximal" = max.chems
+                                          "Maximal" = max.chems
                                          ),
                                        logrsquared = TRUE
                                        )
@@ -210,8 +216,6 @@ cl.stats.table <- makestatstable(level3tab,
                                        obs.col="Cl.obs",
                                        pred.col="Cl.pred",
                                        chem.lists=list(
-                                         "In Vitro" = invitro.chems,
-                                         "QSPR Intersection" = intersect.chems,
                                          "Maximal" = unique(level3tab$DTXSID)
                                          ),
                                        logrsquared = TRUE
@@ -228,8 +232,6 @@ css.stats.table <- makestatstable(level3tab,
                                        obs.col="Css.obs",
                                        pred.col="Css.pred",
                                        chem.lists=list(
-                                         "In Vitro" = invitro.chems,
-                                         "QSPR Intersection" = intersect.chems,
                                          "Maximal" = unique(level3tab$DTXSID)
                                          ),
                                        logrsquared = TRUE
@@ -242,28 +244,28 @@ write.csv(css.stats.table,
 # Compiled Stats Table for main manuscript:
 ```{r make_manuscritplevel3_table, eval =TRUE}
 level3stats.table <- rbind(
-  halflife.stats.table[c("RMSLE In Vitro","RMSLE QSPR Intersection"),],
-  cl.stats.table[c("RMSLE In Vitro","RMSLE QSPR Intersection"),],
-  vd.stats.table[c("RMSLE In Vitro","RMSLE QSPR Intersection"),],
-  css.stats.table[c("RMSLE In Vitro","RMSLE QSPR Intersection"),]
+  halflife.stats.table[c("RMSLE Maximal"),],
+  cl.stats.table[c("RMSLE Maximal"),],
+  vd.stats.table[c("RMSLE Maximal"),],
+  css.stats.table[c("RMSLE Maximal"),]
   )
 rownames(level3stats.table) <- c(
-  "Half-Life RMSLE (In Vitro HTTK)",
-  "Half-Life RMSLE (QSPR Intersection)",
+  "Half-Life RMSLE",
+ # "Half-Life RMSLE (QSPR Intersection)",
   #  "Half-Life RSquared",
-  "Cltot RMSLE (In Vitro HTTK)",
-  "CLtot RMSLE (QSPR Intersection)",
+  "Cltot RMSLE",
+#  "CLtot RMSLE (QSPR Intersection)",
   #  "CLtot RSquared",
-  "Vd RMSLE (In Vitro HTTK)",
-  "Vd RMSLE (QSPR Intersection)",
+  "Vd RMSLE",
+#  "Vd RMSLE (QSPR Intersection)",
   #  "Vd RSquared"
-  "Css RMSLE (In Vitro HTTK)",
-  "Css RMSLE (QSPR Intersection)"
+  "Css RMSLE"#,
+ # "Css RMSLE (QSPR Intersection)"
   )
 level3stats.table<-apply(level3stats.table,c(1,2),function(x) strsplit(x, " ")[[1]][1])
 kable(level3stats.table)
 write.csv(level3stats.table,
-          file="tables/Table6-halflifeVdCltot-stats.txt")
+          file="tables/Table8-halflifeVdCltot-stats.txt")
 ```
 
 # Half-life scatter plot:

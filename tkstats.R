@@ -7,8 +7,20 @@ invlogit <- function(x)
   return(sapply(x, function(x) exp(x)/(exp(x)+1)))
 }
 
-make_cvt_comparisons <- function(this.label, clint.col, fup.col,
-                                 CvT.data, CvT.chems.nona, fittable)
+make_cvt_comparisons <- function(this.label, 
+                                 clint.col, 
+                                 fup.col,
+                                 CvT.data, 
+                                 CvT.chems.nona, 
+                                 fittable,
+                                 model.args = list(
+                                   Caco2.options=list(
+                                     keepit100=TRUE),
+                                   default.to.human=TRUE,
+                                   class.exclude=FALSE,
+                                   restrictive.clearance=TRUE
+                                   )
+                                 )
 {
   clear_httk()
   chem.physical_and_invitro.data <<- add_chemtable(
@@ -33,11 +45,13 @@ make_cvt_comparisons <- function(this.label, clint.col, fup.col,
 
   level2tab.list <- makeCvTpreds(CvT.data,
                                  this.label,
-                                 list(Caco2.options=list(
-                                   keepit100=TRUE)
-                                 ))                                       
+                                 model.args = model.args
+                                 )                                       
   
-  level3tab <- maketkstatpreds(CvT.data, fittable, this.label)
+  level3tab <- maketkstatpreds(CvT.data, 
+                               fittable, 
+                               this.label,
+                               model.args=model.args)
   
   return(list(level2tab.cvt = level2tab.list$cvt,
               level2tab.stats = level2tab.list$stats,
@@ -54,7 +68,9 @@ make_cvt_comparisons <- function(this.label, clint.col, fup.col,
 }
 
 # This function does the level II concentration comparisons:
-makeCvTpreds <- function(CvT.data,label,model.args)
+makeCvTpreds <- function(CvT.data,
+                         label,
+                         model.args)
 {
   cat("Running makeCvTpreds...\n")
  # nonvol.chems <- suppressWarnings(get_cheminfo(model="pbtk", 
@@ -108,9 +124,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
               params <- suppressWarnings(do.call("parameterize_gas_pbtk",
                                                  args=c(list(
                                                    chem.cas=this.cas,
-                                                   species=this.species,
-                                                   default.to.human=TRUE,
-                                                   class.exclude=FALSE),
+                                                   species=this.species),
                                                    model.args)))
            #   if (this.cas %in% c("335-67-1", "3871-99-6")) browser()
             }
@@ -129,10 +143,7 @@ makeCvTpreds <- function(CvT.data,label,model.args)
                      species=this.species,
                      iv.dose=(this.route=="iv"),
                      dose=this.dose,
-                     default.to.human=TRUE,
-                     class.exclude=FALSE,
                      suppress.messages=TRUE,
-                     restrictive.clearance=TRUE,
                      input.units='mg/kg',
                      output.units = "mg/L",
                      exp.conc=0),
@@ -570,7 +581,15 @@ makeCvTpredsfromfits <- function(
 maketkstatpreds <- function(
   CvT.data,
   cvtfits,
-  label)
+  label,
+  model.args =list(
+    Caco2.options=list(
+      keepit100=TRUE),
+    default.to.human=TRUE,
+    class.exclude=FALSE,
+    restrictive.clearance=TRUE
+    )
+  )
 {
   cat("Running maketkstatpreds...\n")
   chems.good.1comp <- suppressWarnings(get_cheminfo(model="1compartment"))
@@ -602,19 +621,24 @@ maketkstatpreds <- function(
                                               species=this.species,
                                               suppress.messages = TRUE)
         css.pred <- try(signif(suppressWarnings(
-          calc_css(                           # Convenient TK fact: 
-            chem.cas=this.cas,                # Css = fbio/ Cltot
-            species=this.species,             # Dimensional analysis:
-            default.to.human=TRUE,            # [Css] = mg/L / 1 mg/kg/da
-            model="gas_pbtk",                 # [Cltot] = L/kg/day
-            output.units="mg/L",              # day -> hours:
-            suppress.messages=TRUE)$avg)/24,  # [Cltot] = L/kg/h
+          do.call("calc_css",
+            c(list(                             # Convenient TK fact: 
+              chem.cas=this.cas,                # Css = fbio/ Cltot
+              species=this.species,             # Dimensional analysis:
+              #default.to.human=TRUE,            # [Css] = mg/L / 1 mg/kg/day
+              model="gas_pbtk",                 # [Cltot] = L/kg/day
+              output.units="mg/L",              # day -> hours:
+              suppress.messages=TRUE
+              ),
+              model.args
+            ))$avg),  # [Cltot] = L/kg/h
           3))              
         if (inherits(css.pred, "try-error")) 
         {
           css.pred <- NA
         }
-        cl.pred <- signif(fbio.pred / css.pred, 3)
+        cl.pred <- signif(fbio.pred / css.pred / 24, 3) # [Cltot] = L/kg/day
+                                                        # day -> hours
         ke.pred <- signif(cl.pred/vd.pred,3) # 1/h
         thalf.pred <- signif(log(2)/ke.pred,3) # h
         new.tab <- data.frame(

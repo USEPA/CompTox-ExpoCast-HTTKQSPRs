@@ -33,7 +33,7 @@ library(knitr)
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "November2024"
+output.prefix <- "Jan2025"
 ```
 
 Load custom code 
@@ -97,6 +97,11 @@ level2tab$RPE[level2tab$RPE=="NaN"]<-0
 ``` 
 
 ```{r create_summary_chemlists, eval=TRUE}
+pharma <- read.csv("ccd_data/Chemical List ZINC15PHARMA-2024-09-09.csv")
+pharma$DTXSID <- gsub("https://comptox.epa.gov/dashboard/chemical/details/","",pharma$DTXSID)
+pharma.chems <- CvT.chems$DTXSID[CvT.chems$DTXSID%in%pharma$DTXSID]
+nonpharma.chems <- CvT.chems$DTXSID[!(CvT.chems$DTXSID%in%pharma$DTXSID)]
+
 invitro.chems <- names(level2tab.rmsle[["HTPBTK-InVitro"]])
 intersect.chems <- CvT.chems.nona$DTXSID
 for (this.qspr in names(level2tab.rmsle))
@@ -104,13 +109,16 @@ for (this.qspr in names(level2tab.rmsle))
   intersect.chems <- intersect(intersect.chems, names(level2tab.rmsle[[this.qspr]]))
 max.chems <- unique(CvT.chems.nona$DTXSID)
 noinvitro.chems <- max.chems[!(max.chems %in% invitro.chems)]
+
 ```
 
 ```{r create_rmsle_summary_table_bychemnumber, eval=TRUE}     
 chem.lists<-list("In Vitro" = invitro.chems,
                  "No In Vitro" = noinvitro.chems,
                  "QSPR Intersection" = intersect.chems,
-                 "Maximal" = max.chems
+                 "Maximal" = max.chems,
+                 "Pharma" = pharma.chems,
+                 "Non-Pharma" = nonpharma.chems
                 )
                                          
 stats.table <- data.frame()
@@ -118,7 +126,7 @@ stats.table <- makestatstable2(stats.table,
                 level2tab.rmsle,
                 chem.lists,
                 sigfig=2)
-write.csv(stats.table,file="tables/Table4-Level2-Cvt-RMSLEstats.txt",row.names=TRUE)
+write.csv(stats.table,file="tables/Table5-Level2-Cvt-RMSLEstats.txt",row.names=TRUE)
 kable(stats.table)
 rmsle.stats.table <- stats.table
 ```
@@ -143,6 +151,27 @@ stats.table <- makestatstable2(stats.table,
 write.csv(stats.table,file="tables/SupTable-Level2-Cvt-AFEstats.txt",row.names=TRUE)
 kable(stats.table)
 afe.stats.table <- stats.table
+```
+```{r create_rmsleaafeafe_comp_table, eval=TRUE}     
+stats.table <- data.frame()
+stats.table <- makestatstable2(stats.table,
+                level2tab.rmsle,
+                chem.lists["Maximal"],
+                label="RMSLE",
+                sigfig=2)
+stats.table <- makestatstable2(stats.table,
+                level2tab.aafe,
+                chem.lists["Maximal"],
+                label="AAFE",
+                sigfig=2)
+stats.table <- makestatstable2(stats.table,
+                level2tab.afe,
+                chem.lists["Maximal"],
+                label="AFE",
+                sigfig=2)
+write.csv(stats.table,file="tables/Table6-Level2-Cvt-RMSLEAAFEAFEcomp.txt",row.names=TRUE)
+kable(stats.table)
+rmsle.stats.table <- stats.table
 ```
 
 ```{r create_rmsle_summary_table_early_late, eval=TRUE}
@@ -180,7 +209,9 @@ stats.table <- makestatstable(level2tab.stats,
                                            !(unique(level2tab.stats$DTXSID) %in%
                                                invitro.chems)],
                                          "QSPR Intersection" = intersect.chems,
-                                         "Maximal" = unique(level2tab.stats$DTXSID)
+                                         "Maximal" = unique(level2tab.stats$DTXSID),
+                                         "Pharma" = pharma.chems,
+                                         "Non-Pharma" = nonpharma.chems
                                          ),
                                        logrsquared = TRUE,
                               average.per.chemical = TRUE
@@ -199,7 +230,9 @@ stats.table <- makestatstable(level2tab.stats,
                                            !(unique(level2tab.stats$DTXSID) %in%
                                                invitro.chems)],
                                          "QSPR Intersection" = intersect.chems,
-                                         "Maximal" = unique(level2tab.stats$DTXSID)
+                                         "Maximal" = unique(level2tab.stats$DTXSID),
+                                         "Pharma" = pharma.chems,
+                                         "Non-Pharma" = nonpharma.chems
                                          ),
                                        logrsquared = TRUE,
                               average.per.chemical = TRUE

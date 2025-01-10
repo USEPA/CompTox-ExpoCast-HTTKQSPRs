@@ -41,7 +41,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "November2024"
+output.prefix <- "Jan2025"
 ```
 
 ```{r load_data, eval= TRUE}
@@ -88,22 +88,8 @@ CvT.chems.nofits <- CvT.chems[
 CvT.data <- subset(CvT.data, !(CAS %in% CvT.chems.nofits$CASRN))
 cat(paste(length(unique(CvT.data$DTXSID)),
           "chemicals with good invivoPKfit fits of CvT data.\n"))
-cat(paste(dim(subset(fittable,!is.na(Vdist) | !is.na(V1)))[1],
+cat(paste(length(unique(subset(fittable,!is.na(Vdist) | !is.na(V1))$DTXSID)),
           "chemicals where volume of distribution could be estimated (iv data available), allowing us to make empirical predictions.\n"))
-```
-## Get rid of chemical predictions that are possibly just training set lookups:
-```{r remove_training_chems, eval=TRUE}
-CvT.chems.notraining <- CvT.chems
-for (this.dtxsid in training.set.table$DTXSID)
-  for (this.pred in colnames(training.set.table))
-    if (this.pred != "DTXSID")
-      if (training.set.table[training.set.table$DTXSID== this.dtxsid, 
-                            this.pred] == "Possible")
-      {
-        CvT.chems.notraining[CvT.chems.notraining$DTXSID==this.dtxsid,
-          this.pred]<-NA
-      }
-length(unique(CvT.chems.notraining$DTXSID))
 ```
 
 # Data size
@@ -139,8 +125,6 @@ CvT.chems.nobad$Human.Fup.Mean <- apply(
 ```
 
 
-## Make a version of the prediction matrix where we've replaced QSPR-chemical combinations with no predictions with the consensus predictions:
-### Stop doing this -- we will assign mean RMSLE to each QSPR's output, no need to predict with mean predictions
 ```{r dont_remove_missing_predictions}
 CvT.chems.nona <- CvT.chems.nobad
 ```
@@ -247,10 +231,42 @@ level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
 level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.afe[[this.label]] <- out$level2tab.afe
 level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
 level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.afe.early[[this.label]] <- out$level2tab.afe.early
 level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
 level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
+level3tab[[this.label]] <- out$level3tab
+```
+```{r cvt_compare_invitro_nonrestrict, eval = TRUE}
+this.label <- "HTPBTK-InVitro-NonRestrict" 
+out <- make_cvt_comparisons(this.label, 
+                            "Human.Clint.httk", 
+                            "Human.Fup.httk",
+                            CvT.data, 
+                            CvT.chems.nona, 
+                            fittable,
+                            model.args=list(
+                              Caco2.options=list(
+                                keepit100=TRUE),
+                              default.to.human=TRUE,
+                              class.exclude=FALSE,
+                              restrictive.clearance=FALSE
+                              )
+                            )
+level2tab.cvt[[this.label]] <- out$level2tab.cvt
+level2tab.stats[[this.label]] <- out$level2tab.stats
+level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
+level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.afe[[this.label]] <- out$level2tab.afe
+level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
+level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.afe.early[[this.label]] <- out$level2tab.afe.early
+level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
+level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
@@ -266,10 +282,13 @@ level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
 level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.afe[[this.label]] <- out$level2tab.afe
 level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
 level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.afe.early[[this.label]] <- out$level2tab.afe.early
 level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
 level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
@@ -285,10 +304,13 @@ level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
 level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.afe[[this.label]] <- out$level2tab.afe
 level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
 level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.afe.early[[this.label]] <- out$level2tab.afe.early
 level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
 level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
@@ -304,10 +326,13 @@ level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
 level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.afe[[this.label]] <- out$level2tab.afe
 level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
 level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.afe.early[[this.label]] <- out$level2tab.afe.early
 level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
 level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
@@ -324,10 +349,13 @@ level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
 level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.afe[[this.label]] <- out$level2tab.afe
 level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
 level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.afe.early[[this.label]] <- out$level2tab.afe.early
 level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
 level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
@@ -344,10 +372,13 @@ level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
 level2tab.aafe[[this.label]] <- out$level2tab.aafe
+level2tab.afe[[this.label]] <- out$level2tab.afe
 level2tab.rmsle.early[[this.label]] <- out$level2tab.rmsle.early
 level2tab.aafe.early[[this.label]] <- out$level2tab.aafe.early
+level2tab.afe.early[[this.label]] <- out$level2tab.afe.early
 level2tab.rmsle.late[[this.label]] <- out$level2tab.rmsle.late
 level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
+level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
@@ -391,7 +422,7 @@ for (i in 1:NUM.YRANDOM)
 }
 ```
 # Average over the ten y-random draws:
-```{r cvt_average_yrandom, eval = TRUE}
+```{r cvt_sum_yrandom, eval = TRUE}
 this.label <- "HTPBTK-YRandom"
 level2tab.cvt[[this.label]] <- level2tab.yrandom.cvt[[1]]
 level2tab.stats[[this.label]] <- level2tab.yrandom.stats[[1]]
@@ -455,6 +486,9 @@ for (i in 2:NUM.YRANDOM)
       level2tab.yrandom.afe.late[[i]][[this.chem]]
   }
 }
+```
+```{r cvt_average_yrandom, eval = TRUE}
+this.label <- "HTPBTK-YRandom"
 level2tab.cvt[[this.label]][,"Conc.pred"] <- 
       signif(level2tab.cvt[[this.label]][,"Conc.pred"]/NUM.YRANDOM,
              4)
@@ -463,6 +497,12 @@ level2tab.stats[[this.label]][,"Cmax.pred"] <-
              4)
 level2tab.stats[[this.label]][,"AUC.pred"] <- 
       signif(level2tab.stats[[this.label]][,"AUC.pred"]/NUM.YRANDOM,
+             4)
+level3tab[[this.label]][,"Vd.pred"] <- 
+      signif(level3tab[[this.label]][,"Vd.pred"]/NUM.YRANDOM,
+             4)
+level3tab[[this.label]][,"thalf.pred"] <- 
+      signif(level3tab[[this.label]][,"thalf.pred"]/NUM.YRANDOM,
              4)
 for (this.chem in names(level2tab.rmsle[[this.label]]))
 {
@@ -535,6 +575,7 @@ save(
   level2tab.afe.late,
   file="data/level2-tables.RData")
 save(
+  NUM.YRANDOM,
   level2tab.yrandom.cvt,
   level2tab.yrandom.stats,
   level3tab.yrandom,
