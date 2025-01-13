@@ -20,7 +20,7 @@ The following [R](https://cran.r-project.org/ "R") [vignettes](https://r-pkgs.or
 
 ### Authors
 
-#### Principal Investigator 
+#### Corresponding author 
 John Wambaugh [wambaugh.john@epa.gov]
 
 #### Full Author List
