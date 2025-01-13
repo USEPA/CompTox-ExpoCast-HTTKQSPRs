@@ -11,7 +11,7 @@ The following [R](https://cran.r-project.org/ "R") [vignettes](https://r-pkgs.or
 
 1. [Loading Data Files](https://github.com/USEPA/CompTox-ExpoCast-HTTKQSPRs/blob/main/TKQSPRs-1-Data.Rmd "Loading Data Files").
 2. [Level 1 Analysis](https://github.com/USEPA/CompTox-ExpoCast-HTTKQSPRs/blob/main/TKQSPRs-2-Level1Analysis.Rmd "Level 1 Analysis").
-3. [Make CvT Predictions](https://github.com/USEPA/CompTox-ExpoCast-HTTKQSPRs/blob/main/TKQSPRs-3-Level2MakePreds.Rmd "Make CvT Predictions").
+3. [Make CvT Predictions](https://github.com/USEPA/CompTox-ExpoCast-HTTKQSPRs/blob/main/TKQSPRs-3-MakeLevel2and3Preds.Rmd "Make CvT Predictions").
 4. [Level 2 Analysis](https://github.com/USEPA/CompTox-ExpoCast-HTTKQSPRs/blob/main/TKQSPRs-4-Level2AnalyzePreds.Rmd "Level 2 Analysis").
 5. [Make Level 2 Plots](https://github.com/USEPA/CompTox-ExpoCast-HTTKQSPRs/blob/main/TKQSPRs-5-Level2MakePlots.Rmd "Make Level 2 Plots").
 6. [Level 3 Analysis](https://github.com/USEPA/CompTox-ExpoCast-HTTKQSPRs/blob/main/TKQSPRs-6-Level3Analysis.Rmd "Level 3 Analysis").
