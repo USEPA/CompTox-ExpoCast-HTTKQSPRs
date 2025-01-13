@@ -19,6 +19,7 @@ library(scales)
 Load custom code 
 ```{r load_code, eval = TRUE}
 source("tkstats.R")
+reset_httk()
 ```
 
 
@@ -32,7 +33,6 @@ take the median values in those cases. I use median values instead of average
 because it represents a real measured value and a central tendency statistic.
 
 ```{r Fup_analysis, eval=TRUE}
-reset_httk()
 common_chems <- intersect(
   get_cheminfo(model = "pbtk", species = "human", info = "DTXSID"),
   get_cheminfo(model = "pbtk", species = "rat", info = "DTXSID")
@@ -89,9 +89,9 @@ plotA <- ggplot(tidy_summary,
                 aes(x = hfup, y = rfup)) +
   geom_point() +
   geom_abline() +
-  annotate(label = paste0("RMSE = ", signif(fup_rmse, 3)),
+  annotate(label = paste0("RMSE\n = ", signif(fup_rmse, 2)),
            geom = "text",
-           x = 5*10^-3, y = 0.85,
+           x = 5*10^-3/3, y = 0.85/5,
     size = 6
   ) +
   ylab(expression(paste("Rat ",
@@ -140,9 +140,9 @@ plotB <- ggplot(tidy_summary,
                 aes(x = 10^-3 + hclint, y = 10^-3 + rclint)) +
   geom_point() +
   geom_abline() +
-  annotate(label = paste0("RMSLE = ", signif(clint_rmsle, 3)),
+  annotate(label = paste0("RMSLE\n = ", signif(clint_rmsle, 2)),
            geom = "text",
-           x = 50*1e-3, y = 1000,
+           x = 50*1e-3/3, y = 1000/5,
     size = 6
   ) +
   ylab(expression(paste("Rat ",
@@ -226,10 +226,10 @@ plotC <- ggplot(rat_df, aes(y = 10^-3 + Rat_Css, x = 10^-3 + RatHum_Css)) +
   geom_point() +
   geom_abline() +
   annotate(
-    label = paste0("RMSLE = ", signif(css_rmsle, 3)),
+    label = paste0("RMSLE\n = ", signif(css_rmsle, 2)),
     geom = "text",
-    x = 50*1e-3,
-    y = 10,
+    x = 50*1e-3/3,
+    y = 100/5,
     size = 6
   ) +
   ylab(expression(paste("Rat ",C[ss]," (mg/L)"))) +
@@ -258,10 +258,10 @@ plotD <- ggplot(rat_df, aes(y = 10^-3 + Rat_Cmax, x = 10^-3 + RatHum_Cmax)) +
   geom_point() +
   geom_abline() +
   annotate(
-    label = paste0("RMSLE = ", signif(cmax_rmsle, 3)),
+    label = paste0("RMSLE\n = ", signif(cmax_rmsle, 2)),
     geom = "text",
-    x = 50*1e-3,
-    y = 10,
+    x = 50*1e-3/3,
+    y = 10/2,
     size = 6
   ) +
   ylab(expression(paste("Rat ",C[max]," (mg/L)"))) +

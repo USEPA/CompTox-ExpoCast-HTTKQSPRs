@@ -37,6 +37,7 @@ library(DescTools)
 library(gridExtra)
 library(reshape2)
 library(knitr)
+library(ggpubr)
 ```
 
 Load custom code 
@@ -464,6 +465,7 @@ cat(paste("For fup",
 ```
 # For later CvT evaluations we will try to avoid values that are just being retrieved from the training set (as in KNN methods):
 ```{r fold_error_cutoff, eval = TRUE}
+level1tab.withtrainingset <- level1tab
 direct.retrieval.table <- NULL
 TOOCLOSE.THRESHOLD <- 0.01
 
@@ -605,6 +607,15 @@ for (this.dtxsid in CvT.chems$DTXSID)
                        "Human.HL.QSAR-INS"] <- "Training Set"
   }  
 }
+
+sum(!is.na(level1tab.withtrainingset$Human.Fup.pred))
+sum(!is.na(level1tab$Human.Fup.pred))
+# Create a table with only predictions from the training set:
+level1tab.trainingonly <- level1tab.withtrainingset
+# Move back only those predictions removed from level1tab:
+level1tab.trainingonly$Human.Fup.pred[!is.na(level1tab$Human.Fup.pred)] <- NA
+level1tab.trainingonly$Human.Clint.pred[!is.na(level1tab$Human.Clint.pred)] <- NA
+
 write.csv(training.set.table, row.names=FALSE,
           file="tables/SupTable-TrainingSetChems.txt")
 ```
@@ -898,7 +909,7 @@ hist(subset(level1tab,QSPR=="OPERA")$Human.Fup.RPE,main="OPERA",xlab="Fup RPE")
 ```
 
 Make Level1 predictions vs. observed plot for Clint:
-```{r clint_rpe_scatter, eval = TRUE}
+```{r clint_scatter, eval = TRUE}
 FigLev1a <- ggplot(data=level1tab) +
   geom_point(size=3,alpha=0.5,
              aes(x=Human.Clint.pred+10^-4,
@@ -926,10 +937,44 @@ FigLev1a <- ggplot(data=level1tab) +
   xlab(bquote('Predicted'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
   ylab(bquote('Obs.'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
   theme_bw()+
-  theme( text  = element_text(size=18))
+  theme( text  = element_text(size=16))
 print(FigLev1a)
 ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
+```
+```{r clint_scatter_train, eval = TRUE}
+FigLev1apanel2 <- ggplot(data=level1tab.trainingonly) +
+  geom_point(size=3,alpha=0.5,
+             aes(x=Human.Clint.pred+10^-4,
+                 y=Human.Clint.httk+10^-4,
+                 shape=QSPR,
+                 fill=QSPR,
+                 color=QSPR))+
+  scale_shape_manual(values = ggshapes)+
+  scale_color_manual(values = ggcolors)+
+  scale_fill_manual(values = ggcolors)+
+  scale_x_log10(label=scientific_10) +
+  scale_y_log10(label=scientific_10)+
+  geom_abline(intercept = log10(10^(1/2)), 
+              slope = 1,
+              linetype="dashed", 
+              colour="lightBlue") + 
+  geom_abline(intercept = 0, 
+              slope = 1,
+              linetype="solid", 
+              colour="Grey") + 
+  geom_abline(intercept = log10(10^(-1/2)), 
+              slope = 1
+              ,linetype="dashed", 
+              colour="lightBlue") + 
+  xlab(bquote('Predicted'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
+  ylab(bquote('Obs.'~Cl[int]~"("*mu*"L/min/"*10^6~"hep.)")) +
+  theme_bw()+
+  theme( text  = element_text(size=16))
+print(FigLev1apanel2)
+ggarrange(FigLev1a,FigLev1apanel2,labels=c("A","B"),common.legend=TRUE)
+ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
+       width=8, height=4.5, dpi=300)
 ```
 
 ## Make Level1 predictions vs. observed plot for Clint (faceted):
@@ -1060,7 +1105,7 @@ ggsave(paste("figs/SupFigLev1b-Clint-boxplot-wtable-",output.prefix,".tiff",sep=
        width=6, height=4, dpi=300)
 ```
 
-```{r fup_rpe_boxwhisker_stats, eval = TRUE}
+```{r fup_rpe_scatterall, eval = TRUE}
 
 FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
   geom_point(size=3,
@@ -1092,10 +1137,43 @@ ggsave(paste("figs/Fig4-Lev1c-Fup-obsvpred-",output.prefix,".tiff",sep=""),
        width=6, height=4, dpi=300)
 ```
 
+```{r fup_rpe_scatterall_training, eval = TRUE}
+
+FigLev1cpanel2 <- ggplot(data=subset(level1tab.trainingonly,!(QSPR %in% "IVBP"))) +
+  geom_point(size=3,
+             alpha=0.5,
+             aes(x=Human.Fup.pred+10^-4,
+                 y=Human.Fup.httk+10^-4,
+                 shape=QSPR,fill=QSPR,color=QSPR))+
+  scale_shape_manual(values = ggshapes)+
+  scale_color_manual(values = ggcolors)+
+  scale_fill_manual(values = ggcolors)+
+  scale_x_log10(label=scientific_10) +
+  scale_y_log10(label=scientific_10)+
+  geom_abline(intercept = log10(10^(1/2)), 
+              slope = 1,linetype="dashed", 
+              colour="lightBlue") +
+  geom_abline(intercept = 0, 
+              slope = 1,
+              linetype="solid", 
+              colour="Grey") + 
+  geom_abline(intercept = log10(10^(-1/2)), 
+              slope = 1,linetype="dashed", 
+              colour="lightBlue") + 
+  xlab(bquote('Predicted'~f[up])) +
+  ylab(bquote('Observed'~f[up])) +
+  theme_bw()+
+  theme( text  = element_text(size=20))
+print(FigLev1cpanel2)
+ggarrange(FigLev1c,FigLev1cpanel2,labels=c("A","B"),common.legend=TRUE)
+ggsave(paste("figs/Fig4-Lev1c-Fup-obsvpred-twopanel",output.prefix,".tiff",sep=""), 
+       width=8, height=4, dpi=300)
+```
+
 ```{r fup_rpe_boxwhisker_faceted, eval = TRUE}
 
 ## faceted
-FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
+FigLev1cfacet <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
   geom_point(size=2,
              aes(x=Human.Fup.pred+10^-4,
                  y=Human.Fup.httk+10^-4,
@@ -1121,9 +1199,9 @@ FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
          legend.position = "none",
          axis.title = element_text(size=20),
          axis.text.x = element_text(size=14))
-print(FigLev1c)
+print(FigLev1cfacet)
 ggsave(paste("figs/SupFigLev1c-Fup-obsVpred-facet-",output.prefix,".tiff",sep=""), 
-       width=6, height=5, dpi=300)
+       width=6, height=4.5, dpi=300)
 ```
 
 ```{r fup_rpe_boxwhisker_stats, eval = TRUE}
