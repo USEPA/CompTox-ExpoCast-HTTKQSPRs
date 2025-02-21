@@ -41,7 +41,12 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "Jan2025"
+output.prefix <- "Feb2025"
+```
+
+Set reestrictive vs. non-restrictive metabolic clearance:
+```{r time_stamp, eval = TRUE}
+RESTRICTIVE.CLEARANCE <- FALSE
 ```
 
 ```{r load_data, eval= TRUE}
@@ -226,7 +231,15 @@ out <- make_cvt_comparisons(this.label,
                             "Human.Fup.httk",
                             CvT.data, 
                             CvT.chems.nona, 
-                            fittable)
+                            fittable,
+                            model.args=list(
+                              Caco2.options=list(
+                                keepit100=TRUE),
+                              default.to.human=TRUE,
+                              class.exclude=FALSE,
+                              restrictive.clearance=RESTRICTIVE.CLEARANCE
+                              ))
+
 level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
@@ -240,8 +253,9 @@ level2tab.aafe.late[[this.label]] <- out$level2tab.aafe.late
 level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
-```{r cvt_compare_invitro_nonrestrict, eval = TRUE}
-this.label <- "HTPBTK-InVitro-NonRestrict" 
+
+```{r cvt_compare_invitro_alterrestrict, eval = TRUE}
+this.label <- "HTPBTK-InVitro-AlterRestrict" 
 out <- make_cvt_comparisons(this.label, 
                             "Human.Clint.httk", 
                             "Human.Fup.httk",
@@ -253,7 +267,7 @@ out <- make_cvt_comparisons(this.label,
                                 keepit100=TRUE),
                               default.to.human=TRUE,
                               class.exclude=FALSE,
-                              restrictive.clearance=FALSE
+                              restrictive.clearance=!RESTRICTIVE.CLEARANCE
                               )
                             )
 level2tab.cvt[[this.label]] <- out$level2tab.cvt
@@ -277,7 +291,15 @@ out <- make_cvt_comparisons(this.label,
                             "Human.Fup.ADMET",
                             CvT.data, 
                             CvT.chems.nona, 
-                            fittable)
+                            fittable,
+                            model.args=list(
+                              Caco2.options=list(
+                                keepit100=TRUE),
+                              default.to.human=TRUE,
+                              class.exclude=FALSE,
+                              restrictive.clearance=RESTRICTIVE.CLEARANCE
+                              )
+                            )
 level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
@@ -299,7 +321,15 @@ out <- make_cvt_comparisons(this.label,
                             "Human.Fup.Dawson",
                             CvT.data, 
                             CvT.chems.nona, 
-                            fittable)
+                            fittable,
+                            model.args=list(
+                              Caco2.options=list(
+                                keepit100=TRUE),
+                              default.to.human=TRUE,
+                              class.exclude=FALSE,
+                              restrictive.clearance=RESTRICTIVE.CLEARANCE
+                              )
+                            )
 level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
@@ -321,7 +351,15 @@ out <- make_cvt_comparisons(this.label,
                             "Human.Fup.Pradeep",
                             CvT.data, 
                             CvT.chems.nona, 
-                            fittable)
+                            fittable,
+                            model.args=list(
+                              Caco2.options=list(
+                                keepit100=TRUE),
+                              default.to.human=TRUE,
+                              class.exclude=FALSE,
+                              restrictive.clearance=RESTRICTIVE.CLEARANCE
+                              )
+                            )
 level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
@@ -344,7 +382,15 @@ out <- make_cvt_comparisons(this.label,
                             "Human.Fup.OPERA",
                             CvT.data, 
                             CvT.chems.nona, 
-                            fittable)
+                            fittable,
+                            model.args=list(
+                              Caco2.options=list(
+                                keepit100=TRUE),
+                              default.to.human=TRUE,
+                              class.exclude=FALSE,
+                              restrictive.clearance=RESTRICTIVE.CLEARANCE
+                              )
+                            )
 level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
@@ -367,7 +413,15 @@ out <- make_cvt_comparisons(this.label,
                             "Human.Fup.Mean",
                             CvT.data, 
                             CvT.chems.nona, 
-                            fittable)
+                            fittable,
+                            model.args=list(
+                              Caco2.options=list(
+                                keepit100=TRUE),
+                              default.to.human=TRUE,
+                              class.exclude=FALSE,
+                              restrictive.clearance=RESTRICTIVE.CLEARANCE
+                              )
+                            )
 level2tab.cvt[[this.label]] <- out$level2tab.cvt
 level2tab.stats[[this.label]] <- out$level2tab.stats
 level2tab.rmsle[[this.label]] <- out$level2tab.rmsle
@@ -405,7 +459,15 @@ for (i in 1:NUM.YRANDOM)
                             paste("Human.Fup.YRandom",i,sep=""),
                             CvT.data, 
                             CvT.chems.nona, 
-                            fittable)
+                            fittable,
+                            model.args=list(
+                              Caco2.options=list(
+                                keepit100=TRUE),
+                              default.to.human=TRUE,
+                              class.exclude=FALSE,
+                              restrictive.clearance=RESTRICTIVE.CLEARANCE
+                              )
+                            )
 
   level2tab.yrandom.cvt[[i]] <- out$level2tab.cvt
   level2tab.yrandom.stats[[i]] <- out$level2tab.stats

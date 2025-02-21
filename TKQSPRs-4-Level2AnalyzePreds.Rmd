@@ -33,7 +33,7 @@ library(knitr)
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "Jan2025"
+output.prefix <- "Feb2025"
 ```
 
 Load custom code 
