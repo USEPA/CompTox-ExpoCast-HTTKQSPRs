@@ -722,6 +722,7 @@ calc_RMSLE <- function(in.table,
                        obs.col="Conc.obs",
                        sigfig=4,zeroval=1e-6)
 {
+  in.table <- as.data.frame(in.table)
 # Get red of NA's:
   in.table <- subset(in.table, 
                       !is.na(in.table[,pred.col]) & 

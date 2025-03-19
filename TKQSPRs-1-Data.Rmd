@@ -60,7 +60,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
-output.prefix <- "Jan2025"
+output.prefix <- "Mar2025"
 ```
 
 
@@ -599,6 +599,9 @@ cat(paste("The evaluation chemicals included:",
           dim(subset(CvT.chems, CASRN %in% ToxCast$CASRN))[1],
           "that are part of the ToxCast screening program.\n"))
       
+load("data/interspecies.RData")
+cat(paste(dim(subset(CvT.chems,DTXSID%in%common_chems_all))[1],
+          "evaluation chemicals had both human and rat in vitro HTTK data\n"))
 ```
 
 ```{r write_out_data, eval= TRUE}
