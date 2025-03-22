@@ -39,7 +39,7 @@ load("data/level2stats.RData")
 load("data/httk-goodchems.RData")
 load("data/chemicallists.RData")
   # Can't work with NA's:
-  level3tab <- level3tab[!names(level3tab) %in% c("HTPBTK-InVitro-NonRestrict")]
+  level3tab <- level3tab[!names(level3tab) %in% c("HTPBTK-InVitro-AltClear","HTPBTK-InVitro-Rat")]
 ```
 
 Load custom code 
@@ -51,7 +51,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "Jan2025"
+output.prefix <- "Mar2025"
 ```
 
 #Level III Predictions -- predicted half-life or volume of distribution (Vd)
@@ -88,7 +88,7 @@ level3tab.arnot1$Vd.pred <- NA
 level3tab.arnot1$thalf.pred <- NA
 level3tab.arnot1$cl.pred <- NA
 level3tab.arnot2 <- level3tab.arnot1
-level3tab.arnot1$QSPR <- "QSARINS"
+level3tab.arnot1$QSPR <- "Papa 2018"
 level3tab.arnot2$QSPR <- "IFS-QSAR"
 
 for (this.dtxsid in level3.arnot$test_substance_dtxsid)
@@ -163,7 +163,7 @@ write.csv(AUCCmax.table,
 ```
 # Get rid of Vd predictions from HTTK not made by QSPR:
 ```{r remove_placeholder_vd, eval = TRUE}
-level3tab[level3tab$QSPR %in% c("QSARINS", "IFS-QSAR"),"Vd.pred"] <- NA
+level3tab[level3tab$QSPR %in% c("Papa 2018", "IFS-QSAR"),"Vd.pred"] <- NA
 ```
 
 # Standardize Plotting
@@ -175,7 +175,7 @@ level3tab$QSPR <- factor(level3tab$QSPR, levels=c("HTPBTK-InVitro",
                                                   "HTPBTK-Pradeep",
                                                   "HTPBTK-Consensus",
                                                   "HTPBTK-YRandom",
-                                                  "QSARINS",
+                                                  "Papa 2018",
                                                   "IFS-QSAR"))
 ggshapes <- c(21, 21, 22, 23, 24, 22, 23, 24, 25)
 ggcolors <- c("black", "red", "orange", "green", "blue", "chartreuse4", "coral", "cyan3", "deeppink")
@@ -319,7 +319,7 @@ ggsave(paste("figs/SupFigLev3b_thalf_boxplot_",output.prefix,".tiff",sep=""), wi
 ```
 
 ```{r make_level3_vd_scatter_plot, eval = TRUE}
-FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSAR","QSARINS")))) +
+FigLev3c <- ggplot(data=subset(level3tab,!(QSPR %in% c("IFS-QSAR","Papa 2018")))) +
   geom_point(size=3,aes(x=Vd.pred,y=Vd.obs,                        
                         shape=QSPR, 
                         fill=QSPR, 

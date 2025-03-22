@@ -33,7 +33,7 @@ library(knitr)
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
-output.prefix <- "Feb2025"
+output.prefix <- "Mar2025"
 ```
 
 Load custom code 
@@ -65,36 +65,6 @@ Predictors evaluated:
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-compartment fits to CvT data
 
-# Calculate relative prediction error (RPE):  
-RPE = (pred - obs)/ obs
-```{r calc_level2_rpe, eval = FALSE}
-  RPE.THRESH <- Inf
-  # Can't work with NA's:
-  level2tab <- subset(level2tab,!is.na(Conc.pred))
-
-  level2tab$RPE <- (level2tab$Conc.pred-level2tab$Conc.obs)/level2tab$Conc.obs
-  level2tab[level2tab$RPE>RPE.THRESH,"RPE"] <- RPE.THRESH
-  hist(level2tab$RPE)
-
-level2tab.stats$AUC.RPE <- (level2tab.stats$AUC.pred-level2tab.stats$AUC.obs)/level2tab.stats$AUC.obs
-level2tab.stats[level2tab.stats$AUC.RPE>RPE.THRESH,"AUC.RPE"] <- RPE.THRESH
-hist(level2tab.stats$AUC.RPE)
-
-level2tab.stats$Cmax.RPE <- (level2tab.stats$Cmax.pred-level2tab.stats$Cmax.obs)/level2tab.stats$Cmax.obs
-level2tab.stats[level2tab.stats$Cmax.RPE>RPE.THRESH,"Cmax.RPE"] <- RPE.THRESH
-hist(level2tab.stats$Cmax.RPE)
-     
-#level2tab$RPE.trunc[level2tab$RPE.trunc < -100] <- -100
-#level2tab$RPE.trunc[level2tab$RPE.trunc > 100] <- 100
- 
-#Turn -Inf and Inf into NA .... we don't need this because no $Conc.obs are 0, but it's good practice to write here
-level2tab$RPE[level2tab$RPE=="Inf"]<-NA
-level2tab$RPE[level2tab$RPE=="-Inf"]<-NA
-#Turn NaN into 0 , because the NaN is a result of matching 0/0...and hence it was correctly identified.
-
-### but we don't need this because no $Conc.obs are 0, but it's good practice to write here
-level2tab$RPE[level2tab$RPE=="NaN"]<-0
-``` 
 
 ```{r create_summary_chemlists, eval=TRUE}
 pharma <- read.csv("ccd_data/Chemical List ZINC15PHARMA-2024-09-09.csv")

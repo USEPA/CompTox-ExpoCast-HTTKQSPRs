@@ -1,91 +1,91 @@
-"DTXSID","Human.Clint.ADMET","Human.Fup.ADMET","Human.Clint.Dawson","Human.Fup.Dawson","Human.Clint.Pradeep","Human.Fup.Pradeep","Human.Clint.OPERA","Human.Fup.OPERA","Human.Clint.IVBP","Human.HL.QSAR-INS"
-"DTXSID0020365","","","","","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID0020442","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID0020652","","","Training Set","","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID0020868","","","","","","","Training Set","Training Set","",""
-"DTXSID0021125","","","","","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID0021383","","","","","","","Training Set","Training Set","","Training Set"
-"DTXSID0021961","","","","","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID0022985","","","","","","","","","",""
-"DTXSID1020198","","","","","","","","","",""
-"DTXSID1021087","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID1021116","","","Training Set","","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID1022265","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID1023815","","","","","","","","","",""
-"DTXSID1026118","","","","","","","","","",""
-"DTXSID1034187","","","Training Set","","Training Set","Training Set","","Training Set","","Training Set"
-"DTXSID1043881","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID1051432","","","","","","","","","",""
-"DTXSID2020139","","","","","","","Training Set","Training Set","",""
-"DTXSID2020420","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID2020428","","","","","","","","","","Training Set"
-"DTXSID2020682","","","","Training Set","","Training Set","","Training Set","","Training Set"
-"DTXSID2021781","","","","","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID2032390","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID2039336","","","Training Set","Training Set","Training Set","Training Set","","","",""
-"DTXSID2046624","","","Training Set","","Training Set","Training Set","","Training Set","",""
-"DTXSID3020095","","","","","","","","","",""
-"DTXSID3022405","","","Training Set","","","","Training Set","Training Set","",""
-"DTXSID3026148","","","","","","","","","",""
-"DTXSID3031860","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID3031862","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID3032179","","","","","","","","","","Training Set"
-"DTXSID3034872","","","","","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID3037707","","","","Training Set","Training Set","Training Set","","","",""
-"DTXSID3037709","","","Training Set","Training Set","Training Set","Training Set","","","",""
-"DTXSID30575892","","","","","","","","","",""
-"DTXSID3061635","","","","","","","","","",""
-"DTXSID4020290","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID4020458","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID4020533","","","","","","","Training Set","Training Set","","Training Set"
-"DTXSID4021268","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID4022107","","","","","","","","","",""
-"DTXSID4022577","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID4023917","","","","","","","","","",""
-"DTXSID4024642","","","","","","","","","",""
-"DTXSID4024729","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID4032376","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID4032405","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID5020029","","","","","","","Training Set","Training Set","",""
-"DTXSID5020285","","","","","","","","","",""
-"DTXSID5020732","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID5023320","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID5023794","","","","","","","","","",""
-"DTXSID5024219","","","","","","","","","",""
-"DTXSID5025231","","","","","","","","","",""
-"DTXSID5025607","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID5032442","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID5032498","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID5032600","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID5034773","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID5037523","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID50881104","","","","","","","","","",""
-"DTXSID6020438","","","","","","","Training Set","Training Set","",""
-"DTXSID6022923","","","Training Set","","Training Set","Training Set","","Training Set","","Training Set"
-"DTXSID6023733","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID6023947","","","","","","","","","",""
-"DTXSID6034392","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID6034849","","","","","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID7020182","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID7021106","","","Training Set","","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID7022253","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID7022413","","","Training Set","Training Set","Training Set","Training Set","Training Set","","",""
-"DTXSID7023510","","","","","","","","Training Set","","Training Set"
-"DTXSID7029904","","","","","","","","","",""
-"DTXSID7046627","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID80108992","","","","","","","","","",""
-"DTXSID8020541","","","Training Set","","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID8020913","","","","","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID8021359","","","Training Set","","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID8022292","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID8023393","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","","Training Set"
-"DTXSID8024151","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID8025337","","","","","","","","","",""
-"DTXSID8031865","","","Training Set","Training Set","Training Set","Training Set","","","","Training Set"
-"DTXSID8032673","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID8034586","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID9020247","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
-"DTXSID9021924","","","","","","","","","",""
-"DTXSID9025617","","","","","","","","","",""
-"DTXSID9030258","","","","","","","","","",""
-"DTXSID9032329","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","",""
+"DTXSID","Thalf.httk","Thalf.fit","Rat.Clint","Rat.Funbound.plasma","Human.Clint.ADMET","Human.Fup.ADMET","Human.Clint.Dawson","Human.Fup.Dawson","Human.Clint.Pradeep","Human.HL.QSAR-INS","Human.Fup.Pradeep","Human.Fup.OPERA","Human.Clint.OPERA"
+"DTXSID0020365","","","","","","","","","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID0020442","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID0020652","","","","","","","Training Set","","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID0020868","","","","","","","","","","",NA,"Training Set","Training Set"
+"DTXSID0021125","","","","","","","","","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID0021383","","","","","","","","","","Training Set",NA,"Training Set","Training Set"
+"DTXSID0021961","","","","","","","","","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID0022985","","","","","","","","","","",NA,NA,NA
+"DTXSID1020198","","","","","","","","","","",NA,NA,NA
+"DTXSID1021087","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID1021116","","","","","","","Training Set","","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID1022265","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID1023815","","","","","","","","","","",NA,NA,NA
+"DTXSID1026118","","","","","","","","","","",NA,NA,NA
+"DTXSID1034187","","","","","","","Training Set","","Training Set","Training Set","Training Set","Training Set",NA
+"DTXSID1043881","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID1051432","","","","","","","","","","",NA,NA,NA
+"DTXSID2020139","","","","","","","","","","",NA,"Training Set","Training Set"
+"DTXSID2020420","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID2020428","","","","","","","","","","Training Set",NA,NA,NA
+"DTXSID2020682","","","","","","","","Training Set","","Training Set","Training Set","Training Set",NA
+"DTXSID2021781","","","","","","","","","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID2032390","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID2039336","","","","","","","Training Set","Training Set","Training Set","","Training Set",NA,NA
+"DTXSID2046624","","","","","","","Training Set","","Training Set","","Training Set","Training Set",NA
+"DTXSID3020095","","","","","","","","","","",NA,NA,NA
+"DTXSID3022405","","","","","","","Training Set","","","",NA,"Training Set","Training Set"
+"DTXSID3026148","","","","","","","","","","",NA,NA,NA
+"DTXSID3031860","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID3031862","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID3032179","","","","","","","","","","Training Set",NA,NA,NA
+"DTXSID3034872","","","","","","","","","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID3037707","","","","","","","","Training Set","Training Set","","Training Set",NA,NA
+"DTXSID3037709","","","","","","","Training Set","Training Set","Training Set","","Training Set",NA,NA
+"DTXSID30575892","","","","","","","","","","",NA,NA,NA
+"DTXSID3061635","","","","","","","","","","",NA,NA,NA
+"DTXSID4020290","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID4020458","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID4020533","","","","","","","","","","Training Set",NA,"Training Set","Training Set"
+"DTXSID4021268","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID4022107","","","","","","","","","","",NA,NA,NA
+"DTXSID4022577","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID4023917","","","","","","","","","","",NA,NA,NA
+"DTXSID4024642","","","","","","","","","","",NA,NA,NA
+"DTXSID4024729","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID4032376","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID4032405","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID5020029","","","","","","","","","","",NA,"Training Set","Training Set"
+"DTXSID5020285","","","","","","","","","","",NA,NA,NA
+"DTXSID5020732","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID5023320","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID5023794","","","","","","","","","","",NA,NA,NA
+"DTXSID5024219","","","","","","","","","","",NA,NA,NA
+"DTXSID5025231","","","","","","","","","","",NA,NA,NA
+"DTXSID5025607","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID5032442","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID5032498","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID5032600","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID5034773","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID5037523","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID50881104","","","","","","","","","","",NA,NA,NA
+"DTXSID6020438","","","","","","","","","","",NA,"Training Set","Training Set"
+"DTXSID6022923","","","","","","","Training Set","","Training Set","Training Set","Training Set","Training Set",NA
+"DTXSID6023733","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID6023947","","","","","","","","","","",NA,NA,NA
+"DTXSID6034392","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID6034849","","","","","","","","","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID7020182","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID7021106","","","","","","","Training Set","","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID7022253","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID7022413","","","","","","","Training Set","Training Set","Training Set","","Training Set",NA,"Training Set"
+"DTXSID7023510","","","","","","","","","","Training Set",NA,"Training Set",NA
+"DTXSID7029904","","","","","","","","","","",NA,NA,NA
+"DTXSID7046627","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID80108992","","","","","","","","","","",NA,NA,NA
+"DTXSID8020541","","","","","","","Training Set","","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID8020913","","","","","","","","","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID8021359","","","","","","","Training Set","","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID8022292","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID8023393","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set","Training Set"
+"DTXSID8024151","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID8025337","","","","","","","","","","",NA,NA,NA
+"DTXSID8031865","","","","","","","Training Set","Training Set","Training Set","Training Set","Training Set",NA,NA
+"DTXSID8032673","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID8034586","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID9020247","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"
+"DTXSID9021924","","","","","","","","","","",NA,NA,NA
+"DTXSID9025617","","","","","","","","","","",NA,NA,NA
+"DTXSID9030258","","","","","","","","","","",NA,NA,NA
+"DTXSID9032329","","","","","","","Training Set","Training Set","Training Set","","Training Set","Training Set","Training Set"

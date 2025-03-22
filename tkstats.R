@@ -115,9 +115,8 @@ makeCvTpreds <- function(CvT.data,
             {
               params <- suppressWarnings(do.call("parameterize_pbtk",
                                                  args=c(list(
-                                                   ,
-                                                   species=this.species,
-                                                   default.to.human=TRUE),
+                                                   chem.cas=this.cas,,
+                                                   species=this.species),
                                                    model.args)))
             } else if (this.model=="solve_gas_pbtk")
             {
@@ -582,7 +581,7 @@ maketkstatpreds <- function(
   CvT.data,
   cvtfits,
   label,
-  model.args =list(
+  model.args = list(
     Caco2.options=list(
       keepit100=TRUE),
     default.to.human=TRUE,
@@ -619,19 +618,19 @@ maketkstatpreds <- function(
         css.obs <- signif(unlist(as.numeric(this.subset2[,"Fgutabs.tkstats"]))/cl.obs,3)
         fbio.pred <- calc_hep_bioavailability(chem.cas=this.cas,                               # Css = fbio/ Cltot
                                               species=this.species,
+                                              default.to.human=TRUE,
                                               suppress.messages = TRUE)
         css.pred <- try(signif(suppressWarnings(
           do.call("calc_css",
-            c(list(                             # Convenient TK fact: 
+            list(                             # Convenient TK fact: 
               chem.cas=this.cas,                # Css = fbio/ Cltot
               species=this.species,             # Dimensional analysis:
-              #default.to.human=TRUE,            # [Css] = mg/L / 1 mg/kg/day
+              parameterize.args.list=model.args,# [Css] = mg/L / 1 mg/kg/day
               model="gas_pbtk",                 # [Cltot] = L/kg/day
-              output.units="mg/L",              # day -> hours:
-              suppress.messages=TRUE
-              ),
-              model.args
-            ))$avg),  # [Cltot] = L/kg/h
+              suppress.messages=TRUE,           # day -> hours:
+              output.units = "mg/L"
+              )
+            )$avg),  # [Cltot] = L/kg/h
           3))              
         if (inherits(css.pred, "try-error")) 
         {

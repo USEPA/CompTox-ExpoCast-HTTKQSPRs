@@ -50,7 +50,7 @@ source("tkstats.R")
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
-output.prefix <- "Feb2025"
+output.prefix <- "Mar2025"
 ```
 
 ```{r load_data, eval= TRUE}
@@ -60,7 +60,7 @@ load("data/httk-goodchems.RData")
 load("data/Cvt-chems-level1.RData")
 # Remove non-restrictive runs:
 level2tab.cvt <- level2tab.cvt[
-  names(level2tab.cvt) != "HTPBTK-InVitro-NonRestrict"]
+  !(names(level2tab.cvt) %in% c("HTPBTK-InVitro-AltClear","HTPBTK-InVitro-Rat"))]
 ```
 
 # Level II Predictions -- CvT data

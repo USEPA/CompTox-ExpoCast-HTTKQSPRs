@@ -481,7 +481,10 @@ httk.data <- httk.data[,c(
   "CAS",
   "Human.Clint",
   "Human.Clint.pValue",
-  "Human.Funbound.plasma")]
+  "Human.Funbound.plasma",
+  "Rat.Clint",
+  "Rat.Clint.pValue",
+  "Rat.Funbound.plasma")]
 
 
 # Set insignificant trends to zero:
@@ -508,11 +511,13 @@ httk.both <- httk.data[,"CAS"][(apply(httk.data,1,function(x)
 Add HTTK measured data to CvT.chems table:
 ```{r default_table, eval = TRUE}
 CvT.chems <- merge(CvT.chems,
-  httk.data[,c("DTXSID","Human.Clint","Human.Funbound.plasma")],
+  httk.data[,c("DTXSID","Human.Clint","Human.Funbound.plasma","Rat.Clint","Rat.Funbound.plasma")],
   all.x=TRUE,
   by="DTXSID")
 colnames(CvT.chems)[colnames(CvT.chems)=="Human.Clint"] <- "Human.Clint.httk"
 colnames(CvT.chems)[colnames(CvT.chems)=="Human.Funbound.plasma"] <- "Human.Fup.httk"
+colnames(CvT.chems)[colnames(CvT.chems)=="Rat.Clint"] <- "Rat.Clint.httk"
+colnames(CvT.chems)[colnames(CvT.chems)=="Rat.Funbound.plasma"] <- "Rat.Fup.httk"
 ```
 
 Generate results for text:
@@ -602,6 +607,13 @@ cat(paste("The evaluation chemicals included:",
 load("data/interspecies.RData")
 cat(paste(dim(subset(CvT.chems,DTXSID%in%common_chems_all))[1],
           "evaluation chemicals had both human and rat in vitro HTTK data\n"))
+```
+Add HTTK data measured in rat to CvT.chems table:
+```{r rat_table, eval = TRUE}
+CvT.chems <- merge(CvT.chems,
+  httk.data[,c("DTXSID","Rat.Clint","Rat.Funbound.plasma")],
+  all.x=TRUE,
+  by="DTXSID")
 ```
 
 ```{r write_out_data, eval= TRUE}
