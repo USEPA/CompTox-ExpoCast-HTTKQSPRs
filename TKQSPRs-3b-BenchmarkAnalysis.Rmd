@@ -78,6 +78,11 @@ next.rows <- Cmax.stats.table[, which.cols]
 next.rows <- next.rows[c("RMSLE Maximal"),]
 rownames(next.rows) <- c("Cmax RMSLE")
 bench.table <- rbind(bench.table,next.rows)
+colnames(bench.table) <- c("In Vivo Fits",
+                           "In Vitro Non-Restrictive",
+                           "In Vitro Restrictive",
+                           "Rat In Vitro",
+                           "Y-Randomized")
 for (this.col in 1:dim(bench.table)[2])
 {
   colnames(bench.table)[this.col] <- paste(colnames(bench.table)[this.col],
@@ -85,15 +90,45 @@ for (this.col in 1:dim(bench.table)[2])
   bench.table[,this.col] <- as.numeric(lapply(strsplit(bench.table[,this.col]," "),
                                               function(x) x[1]))
 }
-colnames(bench.table) <- c("In Vivo Fits",
-                           "In Vitro Non-Restrictive",
-                           "In Vitro Restrictive",
-                           "Rat In Vitro",
-                           "Y-Randomized")
 kable(bench.table)
 write.csv(bench.table, 
           file="tables/Table6-Benchmark-stats.txt")
 save(bench.table,
      file="data/benchmarkstats.RData")
 ```
-
+```{r paper_text}
+cat(paste(
+  "It appears clear from the median error for HT-PBTK simulations that the ",
+  "majority of chemicals in this set are non-restrictive (RMSLE ",
+  bench.table["CvT RMSLE","In Vitro Non-Restrictive (56)"],
+  ") rather than restrictive (",
+  bench.table["CvT RMSLE","In Vitro Restrictive (56)"],
+  ").\n",
+  sep=""))
+cat(paste(
+  "For example, the difference for AUC is a factor of ",
+  signif(bench.table["AUC RMSLE","Y-Randomized (89)"]/
+         bench.table["AUC RMSLE","In Vitro Non-Restrictive (56)"],
+         2),
+  "-fold (or ",
+  signif(10^(bench.table["AUC RMSLE","Y-Randomized (89)"]-
+         bench.table["AUC RMSLE","In Vitro Non-Restrictive (56)"]),
+         2),
+  " times) between the appropriate in vitro value (",
+  bench.table["AUC RMSLE","In Vitro Non-Restrictive (56)"],
+  ") and the y-randomized value (",
+  bench.table["AUC RMSLE","Y-Randomized (89)"],
+  ").\n",
+  sep=""))
+cat(paste(
+  "In contrast, there is little difference for early CvT data -- a factor of ",
+  signif(bench.table["Early CvT RMSLE","Y-Randomized (89)"]/
+         bench.table["Early CvT RMSLE","In Vitro Non-Restrictive (56)"],
+         2),
+  "-fold between the appropriate in vitro value (",
+  bench.table["Early CvT RMSLE","In Vitro Non-Restrictive (56)"],
+  ") and the y-randomized value (",
+  bench.table["Early CvT RMSLE","Y-Randomized (89)"],
+  ").\n",
+  sep=""))
+```

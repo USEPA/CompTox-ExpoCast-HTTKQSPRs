@@ -861,7 +861,7 @@ ks.tests.fup <- apply(ks.tests.fup, 2, function(x) signif(x,3))
 kable(FE.table)
 kable(ks.tests.clint)
 kable(ks.tests.fup)
-write.csv(FE.table, file="tables/Table3-Level1FoldError.txt")
+write.csv(FE.table, file="tables/Table6-Level1FoldError.txt")
 write.csv(ks.tests.clint, file="tables/SupTable-Level1KSCorClint.txt")
 write.csv(ks.tests.fup, file="tables/SupTable-Level1KSCorFup.txt")
 ```
@@ -1263,4 +1263,6 @@ save(training.set.table,
      file="data/trainingchems.RData")
 save(CvT.chems,CvT.chems.scale,
      file="data/Cvt-chems-level1.RData")
+```
+```{r text_for_manuscript}
 ```

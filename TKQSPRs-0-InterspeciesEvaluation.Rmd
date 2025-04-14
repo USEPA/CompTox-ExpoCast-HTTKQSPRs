@@ -23,10 +23,14 @@ source("tkstats.R")
 reset_httk()
 ```
 ```{r sanity_test}
-humres <- calc_tkstats(dtxsid="DTXSID8023719",species="human",restrictive.clearance=TRUE)
-humnonres <- calc_tkstats(dtxsid="DTXSID8023719",species="human",restrictive.clearance=FALSE)
-ratres <- calc_tkstats(dtxsid="DTXSID8023719",species="rat",restrictive.clearance=TRUE)
-ratnonres <- calc_tkstats(dtxsid="DTXSID8023719",species="rat",restrictive.clearance=FALSE)
+humres <- calc_tkstats(dtxsid="DTXSID8023719",species="human",
+                       parameterize.args.list = list(restrictive.clearance=TRUE))
+humnonres <- calc_tkstats(dtxsid="DTXSID8023719",species="human",
+                          parameterize.args.list = list(restrictive.clearance=FALSE))
+ratres <- calc_tkstats(dtxsid="DTXSID8023719",species="rat",
+                       parameterize.args.list = list(restrictive.clearance=TRUE))
+ratnonres <- calc_tkstats(dtxsid="DTXSID8023719",species="rat",
+                          parameterize.args.list = list(restrictive.clearance=FALSE))
 humres$AUC/ratres$AUC
 humnonres$AUC/ratnonres$AUC
 humres$AUC/humnonres$AUC
@@ -195,7 +199,7 @@ hum.stats <- sapply(rat_df$DTXSID,
                       model = "pbtk", 
                       suppress.messages = TRUE,
                       species = "rat",
-                      default.to.human = TRUE)))
+                      parameterize.args.list = list(default.to.human = TRUE))))
 rat_df <- subset(rat_df, DTXSID %in% get_cheminfo(info="dtxsid", model="pbtk"))
 rat_df <- rat_df %>%
   dplyr::rowwise() %>%
@@ -217,7 +221,7 @@ rat.stats.nr <- sapply(rat_df$DTXSID,
                       dtxsid = x, 
                       model = "pbtk", 
                       suppress.messages = TRUE,
-                      restrictive.clearance=FALSE,
+                      parameterize.args.list = list(restrictive.clearance=FALSE),
                       species = "rat")))
 rat_df <- rat_df %>%
   dplyr::rowwise() %>%
@@ -242,8 +246,8 @@ hum.stats.nr <- sapply(rat_df$DTXSID,
                       model = "pbtk", 
                       suppress.messages = TRUE,
                       species = "rat",
-                      restrictive.clearance=FALSE,
-                      default.to.human = TRUE)))
+                      parameterize.args.list = list(restrictive.clearance=FALSE,
+                        default.to.human = TRUE))))
 rat_df <- subset(rat_df, DTXSID %in% get_cheminfo(info="dtxsid", model="pbtk"))
 rat_df <- rat_df %>%
   dplyr::rowwise() %>%
