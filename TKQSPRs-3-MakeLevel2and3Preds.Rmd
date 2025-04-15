@@ -129,7 +129,6 @@ CvT.chems.nobad$Human.Fup.Mean <- apply(
       logit(min(max(y,1e-8),(1-1e-8)))),na.rm=TRUE)),4))
 ```
 
-
 ```{r dont_remove_missing_predictions}
 CvT.chems.nona <- CvT.chems.nobad
 ```

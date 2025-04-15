@@ -263,6 +263,7 @@ rat_df <- rat_df %>%
 
 # Calculate stats for rat vs. human
 ```{r calc_rat_human_stats, eval=TRUE}
+test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
 rathum.table <- data.frame()
 rathum.table["Restrictive","Css"] <- calc_RMSLE(
   rat_df,
@@ -283,8 +284,29 @@ rathum.table["Non-Restrictive","Cmax"] <- calc_RMSLE(rat_df,
 rathum.table["Non-Restrictive","AUC"] <- calc_RMSLE(rat_df,
                                pred.col = "RatHum_AUC_NR",
                                obs.col="Rat_AUC_NR")
-rathum.table["RPow10",] <- signif(10^rathum.table["Restrictive",],3)
-rathum.table["NRPow10",] <- signif(10^rathum.table["Non-Restrictive",],3)
+#rathum.table["RPow10",] <- signif(10^rathum.table["Restrictive",],3)
+#rathum.table["NRPow10",] <- signif(10^rathum.table["Non-Restrictive",],3)
+rathum.table["Restrictive CvT","Css"] <- calc_RMSLE(
+  subset(rat_df, DTXSID %in% test.chems.dashboard$DTXSID),
+  pred.col = "RatHum_Css",
+  obs.col="Rat_Css")
+rathum.table["Restrictive CvT","Cmax"] <- calc_RMSLE(
+  subset(rat_df, DTXSID %in% test.chems.dashboard$DTXSID),
+                               pred.col = "RatHum_Cmax",
+                               obs.col="Rat_Cmax")
+rathum.table["Restrictive CvT","AUC"] <- calc_RMSLE(
+  subset(rat_df, DTXSID %in% test.chems.dashboard$DTXSID),
+                               pred.col = "RatHum_AUC",
+                               obs.col="Rat_AUC")
+rathum.table["Non-Restrictive CvT","Cmax"] <- calc_RMSLE(
+  subset(rat_df, DTXSID %in% test.chems.dashboard$DTXSID),
+                               pred.col = "RatHum_Cmax_NR",
+                               obs.col="Rat_Cmax_NR")
+rathum.table["Non-Restrictive CvT","AUC"] <- calc_RMSLE(
+  subset(rat_df, DTXSID %in% test.chems.dashboard$DTXSID),
+                               pred.col = "RatHum_AUC_NR",
+                               obs.col="Rat_AUC_NR")
+rathum.table <- signif(rathum.table,2)
 kable(rathum.table)
 ```
 

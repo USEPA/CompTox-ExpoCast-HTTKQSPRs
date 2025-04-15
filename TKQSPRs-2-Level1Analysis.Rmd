@@ -208,94 +208,6 @@ for (this.col in 1:dim(sup.table)[2])
 write.csv(sup.table, row.names=FALSE,file="tables/SupTable-QSPRPredsandInVitroData.txt")
 ```
 
-Heatmap of the Data Set:
-```{r make_heatmap, eval = TRUE}
-  CvT.chems.scale <- CvT.chems[,c(
-    "DTXSID",                                       
- "PREFERRED_NAME",                               
- "CASRN"  ,                                      
- "AVERAGE_MASS",                                 
- "BOILING_POINT_DEGC_OPERA_PRED" ,               
- "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",            
- "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED",
- "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED" ,     
- "MELTING_POINT_DEGC_OPERA_PRED",                
-"VAPOR_PRESSURE_MMHG_OPERA_PRED",               
-"WATER_SOLUBILITY_MOL/L_OPERA_PRED" ,           
- "Thalf.fit",    
- "Human.Clint.httk"  ,                           
- "Human.Fup.httk",                               
- "Human.Clint.ADMET",                            
- "Human.Fup.ADMET",                              
- "Human.Clint.Dawson",                           
- "Human.Fup.Dawson",                             
- "Human.Clint.Pradeep",                          
- "Human.Fup.Pradeep",                            
- "Human.Clint.OPERA" ,                           
- "Human.Fup.OPERA",                              
- "Human.Clint.IVBP" 
-)]
-  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "AVERAGE_MASS"] <- "Molecular Weight"
-  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "BOILING_POINT_DEGC_OPERA_PRED"] <- "Boiling Point"
-  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED"] <- "Henry's Law"
-  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED"] <- "Octanol:Air"
-  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED"] <- "Octanol:Water"
-  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "MELTING_POINT_DEGC_OPERA_PRED"] <- "Melting Point"
-  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "VAPOR_PRESSURE_MMHG_OPERA_PRED"] <- "Vapor Pressure"
-  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "WATER_SOLUBILITY_MOL/L_OPERA_PRED"] <- "Water Solubility"
-  rownames(CvT.chems.scale) <- CvT.chems.scale$PREFERRED_NAME 
-last.col <- dim(CvT.chems.scale)[2]
-# Make sure everything is numeric:
-  for (this.col in 4:last.col) CvT.chems.scale[,this.col] <- 
-    as.numeric(CvT.chems.scale[,this.col])
-clint.col <- which(colnames(CvT.chems.scale) == "Human.Clint.httk")
-fup.col <- which(colnames(CvT.chems.scale) == "Human.Fup.httk")
-httk.start <- min(clint.col,fup.col) 
-# Scale and center
-  for (this.col in 4:(httk.start-1)) 
-    CvT.chems.scale[,this.col] <- 
-    (CvT.chems.scale[,this.col] - mean(CvT.chems.scale[,this.col],na.rm=TRUE)) / 
-    sd(CvT.chems.scale[,this.col],na.rm=TRUE)
-# scale and center all predictions by in vitro:
-clint.mean <- mean(CvT.chems.scale[,clint.col], na.rm=TRUE)
-fup.mean <- mean(CvT.chems.scale[,fup.col], na.rm=TRUE)
-clint.sd <- sd(CvT.chems.scale[,clint.col], na.rm=TRUE)
-fup.sd <- sd(CvT.chems.scale[,fup.col], na.rm=TRUE)
-for (this.col in seq(clint.col,last.col,2)) CvT.chems.scale[,this.col] <- 
-    (CvT.chems.scale[,this.col] - clint.mean) / clint.sd
-for (this.col in seq(fup.col,last.col,2)) CvT.chems.scale[,this.col] <- 
-    (CvT.chems.scale[,this.col] - fup.mean) / fup.sd
-
-    mypalette<-brewer.pal(11,"RdYlBu")
-  heatmap.2(as.matrix(CvT.chems.scale[,4:(dim(CvT.chems.scale)[2])]),
-    lwid=c(0.4,1),
-    lhei=c(0.4,1),
-    margins=c(15,1),
-    labRow = FALSE,
-    cexCol=1,
-    trace="none",
-    col=mypalette)
-  png(paste("figs/Fig2-physchemandpredictors-heatmap-",
-           output.prefix,
-           ".tiff",sep=""),
-          width=800, height=750)
-  heatmap.2(as.matrix(CvT.chems.scale[,4:(dim(CvT.chems.scale)[2])]),
-    lwid=c(0.4,1),
-    lhei=c(0.4,1),
-    margins=c(15,1),
-    labRow = FALSE,
-    cexCol=1.5,
-    trace="none",
- #   dendrogram = "none",
-    col=mypalette)
-  dev.off()
-  
-cat("Figure Caption\n")
-cat("Each row corresponds to one of the",
-    dim(CvT.chems.scale)[1],
-    "chemicals.")
-```
-
 Divide into individual tables:
 ```{r divide_tables, eval = TRUE}
 level1tab <- CvT.chems
@@ -464,7 +376,7 @@ cat(paste("For fup",
           sep=""))
 ```
 # For later CvT evaluations we will try to avoid values that are just being retrieved from the training set (as in KNN methods):
-```{r fold_error_cutoff, eval = TRUE}
+```{r fold_error_cutoff, eval = GALSE}
 level1tab.withtrainingset <- level1tab
 direct.retrieval.table <- NULL
 TOOCLOSE.THRESHOLD <- 0.01
@@ -482,14 +394,14 @@ for (this.row in 1:dim(level1tab)[1])
       level1tab[this.row,"Human.Clint.pred"] <-NA
       level1tab[this.row,"Human.Clint.AbsFE"] <-NA
       level1tab[this.row,"Human.Clint.FE"] <-NA
-      print(paste("Human.Clint.",this.qspr,sep=""))
+      print(paste("Precise prediction for Human.Clint.",this.qspr,sep=""))
       direct.retrieval.table <- rbind(direct.retrieval.table,
         data.frame(QSPR=this.qspr,
                    DTXSID = this.dtxsid,
                    Property = "Clint",
                    AbsFE = clint))
-      CvT.chems[CvT.chems$DTXSID == this.dtxsid,
-                paste("Human.Clint.",this.qspr,sep="")] <- NA                            
+#      CvT.chems[CvT.chems$DTXSID == this.dtxsid,
+#                paste("Human.Clint.",this.qspr,sep="")] <- NA                            
     }
   }
   fup <- level1tab[this.row,"Human.fup.AbsFE"]
@@ -501,21 +413,17 @@ for (this.row in 1:dim(level1tab)[1])
       level1tab[this.row,"Human.Fup.pred"] <-NA
       level1tab[this.row,"Human.fup.AbsFE"] <-NA
       level1tab[this.row,"Human.fup.FE"] <-NA
-      print(paste("Human.Fup.",this.qspr,sep=""))
+      print(paste("Precise prediction for Human.Fup.",this.qspr,sep=""))
       direct.retrieval.table <- rbind(direct.retrieval.table,
         data.frame(QSPR=this.qspr,
                    DTXSID = this.dtxsid,
                    Property = "Fup",
                    AbsFE = fup))
-      CvT.chems[CvT.chems$DTXSID == this.dtxsid,
-                paste("Human.Fup.",this.qspr,sep="")] <- NA     
+     # CvT.chems[CvT.chems$DTXSID == this.dtxsid,
+     #            paste("Human.Fup.",this.qspr,sep="")] <- NA     
     }
   }
 }
-
-kable(direct.retrieval.table)
-write.csv(direct.retrieval.table, row.names=FALSE,
-          file="tables/SupTable-PossibleDirectRetrievals.txt")
 ```
 
 # Initialize training set supplemental table:
@@ -531,8 +439,18 @@ papa.hl <- read.csv("training_sets/Papa-2018-HL.txt",sep="\t")
 
 # Create supplemental table listing which evaluation chemicals are in the training sets for which QSPRS
 ```{r training_set_sup_table, eval=TRUE}
-training.set.table <- CvT.chems[,c(1,16:24)]
-training.set.table[,2:10] <- ""
+training.set.table <- CvT.chems[,c("DTXSID",
+  "Rat.Funbound.plasma",      
+  "Human.Clint.ADMET",                            
+"Human.Fup.ADMET",                               
+"Human.Clint.Dawson",                           
+"Human.Fup.Dawson",                              
+"Human.Clint.Pradeep",                          
+"Human.Fup.Pradeep",                             
+"Human.Clint.OPERA",                            
+"Human.Fup.OPERA",
+"Human.Clint.IVBP")]
+training.set.table[,2:dim(training.set.table)[2]] <- ""
 training.set.table[,"Human.HL.QSAR-INS"] <- ""
 
 for (this.dtxsid in CvT.chems$DTXSID)
@@ -557,7 +475,7 @@ for (this.dtxsid in CvT.chems$DTXSID)
     level1tab[this.row,"Human.fup.FE"] <-NA
     training.set.table[training.set.table$DTXSID==this.dtxsid,
                        "Human.Fup.Pradeep"] <- "Training Set"
-  }
+  }  
   # OPERA Fup:
   if (this.cas %in% opera.fup$CASRN |
       this.dtxsid %in% opera.fup$DTXSID)
@@ -771,32 +689,184 @@ train.set.sum.table[train.set.sum.table$QSPR=="IVBP","Num.Chems"] <-
 
 kable(train.set.sum.table)
 write.csv(train.set.sum.table, row.names=FALSE,
-          file="tables/Table-TrainingSetSummary.txt")
+          file="tables/Table4-TrainingSetSummary.txt")
 cat("Num.Chems = Number of Chemicals in Training Set, Fraction.Pharma is fraction of Training Set Chemcials that are Pharmaceuticals, Num.Preds = OVerall number of Evaluation Chemicals with Predictions Inside QSPR Domain of Applicability, Num.Eval.Chems = Number of Evaluation Chemicals In QSPR Training Set\n")
 cat("a: The training set is proprietary, consisting of pharmaceutical data.\n")
 cat("b: The training set, while public, is either not machine-readable or the chemical identities cannot be cross-referenced.\n")
 ```
 
+```{r compare lowerror_with_trainingset}
+dim(direct.retrieval.table)
+# Loop over each QSPR suspected of making a direct retrieval:
+for (this.qspr in unique(direct.retrieval.table$QSPR))
+{
+  this.subset1 <- subset(direct.retrieval.table, QSPR==this.qspr)
+  for (this.property in unique(this.subset1$Property))
+# check to see if we have a training set fo this QSPR:
+    if (any(training.set.table[, paste("Human.",
+                                       this.property,
+                                       ".",
+                                       this.qspr,
+                                       sep="")] ==
+          "Training Set"))
+    {
+      this.subset2 <- subset(this.subset1, Property == this.property)
+      for (this.chem in unique(this.subset2$DTXSID))
+      # Remove from suspected direct retrievals if not in training set:
+        if (training.set.table[training.set.table$DTXSID==this.chem, 
+                               paste("Human.",
+                                     this.property,
+                                     ".",
+                                     this.qspr,
+                                     sep="")] !=
+          "Training Set")
+        {
+          direct.retrieval.table <- subset(direct.retrieval.table, !(QSPR == this.qspr &
+                                                                   Property == this.property &
+                                                                   DTXSID == this.chem))
+        }
+    }
+}
+dim(direct.retrieval.table)
+kable(direct.retrieval.table)
+write.csv(direct.retrieval.table, row.names=FALSE,
+          file="tables/SupTable-PossibleDirectRetrievals.txt")
+```
 
+# We don't want to penalize good predictions, so only remove suspected direct 
+# retrievals from level 2/3 if:
+# 1) low FE and known to be in training set
+# 2) low FE and no training set available
+```{r remove_direct_retrievals}
+sum(!is.na(CvT.chems))
+for(this.row in 1:dim(direct.retrieval.table)[1])
+{
+  this.chem <- direct.retrieval.table[this.row,"DTXSID"]
+  this.property <- direct.retrieval.table[this.row,"Property"]
+  this.qspr <- direct.retrieval.table[this.row,"QSPR"]
+  print(paste(this.qspr,this.property))
+  print(CvT.chems[CvT.chems$DTXSID==this.chem, 
+                  paste("Human",this.property,this.qspr,sep=".")])
+  CvT.chems[CvT.chems$DTXSID==this.chem, 
+            paste("Human",this.property,this.qspr,sep=".")] <- NA 
+  print(CvT.chems[CvT.chems$DTXSID==this.chem, 
+                  paste("Human",this.property,this.qspr,sep=".")])
+  }
+sum(!is.na(CvT.chems))
+```
+Heatmap of the Data Set:
+```{r make_heatmap, eval = TRUE}
+  CvT.chems.scale <- CvT.chems[,c(
+    "DTXSID",                                       
+ "PREFERRED_NAME",                               
+ "CASRN"  ,                                      
+ "AVERAGE_MASS",                                 
+ "BOILING_POINT_DEGC_OPERA_PRED" ,               
+ "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED",            
+ "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED",
+ "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED" ,     
+ "MELTING_POINT_DEGC_OPERA_PRED",                
+"VAPOR_PRESSURE_MMHG_OPERA_PRED",               
+"WATER_SOLUBILITY_MOL/L_OPERA_PRED" ,           
+ "Thalf.fit",    
+ "Human.Clint.httk"  ,                           
+ "Human.Fup.httk",                               
+ "Human.Clint.ADMET",                            
+ "Human.Fup.ADMET",                              
+ "Human.Clint.Dawson",                           
+ "Human.Fup.Dawson",                             
+ "Human.Clint.Pradeep",                          
+ "Human.Fup.Pradeep",                            
+ "Human.Clint.OPERA" ,                           
+ "Human.Fup.OPERA",                              
+ "Human.Clint.IVBP" 
+)]
+  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "AVERAGE_MASS"] <- "Molecular Weight"
+  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "BOILING_POINT_DEGC_OPERA_PRED"] <- "Boiling Point"
+  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "HENRYS_LAW_ATM-M3/MOLE_OPERA_PRED"] <- "Henry's Law"
+  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "OCTANOL_AIR_PARTITION_COEFF_LOGKOA_OPERA_PRED"] <- "Octanol:Air"
+  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "OCTANOL_WATER_PARTITION_LOGP_OPERA_PRED"] <- "Octanol:Water"
+  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "MELTING_POINT_DEGC_OPERA_PRED"] <- "Melting Point"
+  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "VAPOR_PRESSURE_MMHG_OPERA_PRED"] <- "Vapor Pressure"
+  colnames(CvT.chems.scale)[colnames(CvT.chems.scale) == "WATER_SOLUBILITY_MOL/L_OPERA_PRED"] <- "Water Solubility"
+  rownames(CvT.chems.scale) <- CvT.chems.scale$PREFERRED_NAME 
+last.col <- dim(CvT.chems.scale)[2]
+# Make sure everything is numeric:
+  for (this.col in 4:last.col) CvT.chems.scale[,this.col] <- 
+    as.numeric(CvT.chems.scale[,this.col])
+clint.col <- which(colnames(CvT.chems.scale) == "Human.Clint.httk")
+fup.col <- which(colnames(CvT.chems.scale) == "Human.Fup.httk")
+httk.start <- min(clint.col,fup.col) 
+# Scale and center
+  for (this.col in 4:(httk.start-1)) 
+    CvT.chems.scale[,this.col] <- 
+    (CvT.chems.scale[,this.col] - mean(CvT.chems.scale[,this.col],na.rm=TRUE)) / 
+    sd(CvT.chems.scale[,this.col],na.rm=TRUE)
+# scale and center all predictions by in vitro:
+clint.mean <- mean(CvT.chems.scale[,clint.col], na.rm=TRUE)
+fup.mean <- mean(CvT.chems.scale[,fup.col], na.rm=TRUE)
+clint.sd <- sd(CvT.chems.scale[,clint.col], na.rm=TRUE)
+fup.sd <- sd(CvT.chems.scale[,fup.col], na.rm=TRUE)
+for (this.col in seq(clint.col,last.col,2)) CvT.chems.scale[,this.col] <- 
+    (CvT.chems.scale[,this.col] - clint.mean) / clint.sd
+for (this.col in seq(fup.col,last.col,2)) CvT.chems.scale[,this.col] <- 
+    (CvT.chems.scale[,this.col] - fup.mean) / fup.sd
 
+    mypalette<-brewer.pal(11,"RdYlBu")
+  heatmap.2(as.matrix(CvT.chems.scale[,4:(dim(CvT.chems.scale)[2])]),
+    lwid=c(0.4,1),
+    lhei=c(0.4,1),
+    margins=c(15,1),
+    labRow = FALSE,
+    cexCol=1,
+    trace="none",
+    col=mypalette)
+  png(paste("figs/Fig2-physchemandpredictors-heatmap-",
+           output.prefix,
+           ".tiff",sep=""),
+          width=800, height=750)
+  heatmap.2(as.matrix(CvT.chems.scale[,4:(dim(CvT.chems.scale)[2])]),
+    lwid=c(0.4,1),
+    lhei=c(0.4,1),
+    margins=c(15,1),
+    labRow = FALSE,
+    cexCol=1.5,
+    trace="none",
+ #   dendrogram = "none",
+    col=mypalette)
+  dev.off()
+  
+cat("Figure Caption\n")
+cat("Each row corresponds to one of the",
+    dim(CvT.chems.scale)[1],
+    "chemicals.")
+```
 
 ```{r text_for_paper}
+cat("For the Dawson et al. (2021) Clint training set, 
+    dim(subset(dawson.clint)
+    ")
 cat("Results: QSPR Predictions\n")
 cat(paste("A total of",
     sum(training.set.table[,2:9]!=""),
-    "QSPR predictions were removed from the Level 1 evaluation since they were training set data (see Supplement Materials Table SupTable-TrainingSetChems.txt).\n"))
+    "QSPR predictions were removed from the Level 1 evaluation since they were",
+    "in the QSPR training set data (see Supplement Materials Table",
+    "SupTable-TrainingSetChems.txt).\n"))
 cat("\n")
-cat("Table X summarizes the training sets for each QSPR approach and predicted endpoint. Training sets were evaluated for relative fraction of pharmaceutical chemicals and number of CvT evaluation chemicals included.\n")
+cat(paste("Table 4 summarizes the training sets for each QSPR approach and predicted",
+    "endpoint. Training sets were evaluated for relative fraction of pharmaceutical",
+    "chemicals and number of CvT evaluation chemicals included.\n"))
 cat("\n")
-cat("In Table X we indicate the number of evaluation chemicals with predictions inside each QSPRs domain of applicability. In table X we also identify how many of the evaluation chemicals were included in the various training sets. Since many of the evaluation chemicals were in the various training sets, we still included QSPR predictions in the CvT evaluations when they not appear to be direct retrievals of a training set value (as in a nearest-neighbor algorithm identifying the compound itself). We believe that there is value to evaluating the predictions made as long as the method of prediction is the same as what would be used for a chemical without a measured value.")
+cat("In Table 4 we indicate the number of evaluation chemicals with predictions inside each QSPRs domain of applicability. In table 4 we also identify how many of the evaluation chemicals were included in the various training sets. Since many of the evaluation chemicals were in the various training sets, we still included QSPR predictions in the CvT evaluations when they not appear to be direct retrievals of a training set value (as in a nearest-neighbor algorithm identifying the compound itself). We believe that there is value to evaluating the predictions made as long as the method of prediction is the same as what would be used for a chemical without a measured value.")
 cat("\n")
-cat(paste("We removed a total of",
-          dim(direct.retrieval.table)[1],
-          "predictions from the level 2 and 3 evaluations for being too similar (within one percent) of the measured value (see Supplement Materials Table SupTable-PossibleDirectRetrievals.txt).\n"))
-cat("\n")
+#cat(paste("We removed a total of",
+#          dim(direct.retrieval.table)[1],
+#          "predictions from the level 2 and 3 evaluations for being too similar (within one percent) of the measured value (see Supplement Materials Table SupTable-PossibleDirectRetrievals.txt).\n"))
+#cat("\n")
 cat("Results: Level 1 Analysis\n")
 cat("\n")
 ```
+
 # Count the number of predictions
 ```{r number_predictions_after_training_removed, eval = TRUE}
 pred.counts2 <- data.frame()
@@ -942,6 +1012,7 @@ print(FigLev1a)
 ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
        width=6, height=4, dpi=300)
 ```
+
 ```{r clint_scatter_train, eval = TRUE}
 FigLev1apanel2 <- ggplot(data=level1tab.trainingonly) +
   geom_point(size=3,alpha=0.5,
