@@ -30,13 +30,19 @@ To use the code in this vignette, you'll first need to load a few packages (if y
 library(knitr)
 ```
 
-Set the time stamp:
+# Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
 output.prefix <- "Mar2025"
 ```
 
-Load custom code 
+# Keep table numbering straight:
+```{r load_code, eval = TRUE}
+PREV.TABLES <- 4
+PREV.SUP.TABLES <- 7
+```
+
+# Load custom code 
 ```{r load_code, eval = TRUE}
 source("tkstats.R")
 ```
@@ -96,7 +102,11 @@ stats.table <- makestatstable2(stats.table,
                 level2tab.rmsle,
                 chem.lists,
                 sigfig=2)
-write.csv(stats.table,file="tables/Table5-Level2-Cvt-RMSLEstats.txt",row.names=TRUE)
+write.csv(stats.table, 
+          file=paste("tables/Table",
+          PREV.TABLES + 1,
+          "-Level2-Cvt-RMSLEstats.txt",sep=""),
+          row.names=TRUE)
 kable(stats.table)
 rmsle.stats.table <- stats.table
 ```
@@ -107,7 +117,11 @@ stats.table <- makestatstable2(stats.table,
                 level2tab.aafe,
                 chem.lists,
                 sigfig=2)
-write.csv(stats.table,file="tables/SupTable-Level2-Cvt-AAFEstats.txt",row.names=TRUE)
+write.csv(stats.table, 
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES + 1,
+          "-Level2-Cvt-AAFEstats.txt", sep=""),
+          row.names=TRUE)
 kable(stats.table)
 aafe.stats.table <- stats.table
 
@@ -118,7 +132,11 @@ stats.table <- makestatstable2(stats.table,
                 level2tab.afe,
                 chem.lists,
                 sigfig=2)
-write.csv(stats.table,file="tables/SupTable-Level2-Cvt-AFEstats.txt",row.names=TRUE)
+write.csv(stats.table,
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES + 2,
+          "-Level2-Cvt-AFEstats.txt", sep=""),
+          row.names=TRUE)
 kable(stats.table)
 afe.stats.table <- stats.table
 ```
@@ -139,7 +157,12 @@ stats.table <- makestatstable2(stats.table,
                 chem.lists["Maximal"],
                 label="AFE",
                 sigfig=2)
-write.csv(stats.table,file="tables/Table6-Level2-Cvt-RMSLEAAFEAFEcomp.txt",row.names=TRUE)
+write.csv(stats.table,
+          file=paste("tables/Table",
+          PREV.TABLES + 2,
+          "-Level2-Cvt-RMSLEAAFEAFEcomp.txt",
+          sep=""),
+          row.names=TRUE)
 kable(stats.table)
 rmsle.stats.table <- stats.table
 ```

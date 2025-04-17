@@ -50,14 +50,19 @@ cat(paste("pkA's taken from:",
           "\n"))
 ```
 
-Load custom code 
+# Load custom code 
 ```{r load_code, eval = TRUE}
 source("clear_httk.R")
 source("tkstats.R")
 ```
 
+# Keep table numbering straight:
+```{r load_code, eval = TRUE}
+PREV.TABLES <- 0
+PREV.SUP.TABLES <- 0
+```
 
-Set the time stamp:
+# Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
 output.prefix <- "Mar2025"
@@ -199,7 +204,12 @@ length(unique(CvT.data$DTXSID))
 # Write the CvT data:
 ```{r write_cvt_data, eval=TRUE}
 CvT.data.all <- CvT.data
-write.csv(CvT.data,row.names=FALSE,file="tables/SupTable-CvTData.txt")
+write.csv(CvT.data,
+          row.names=FALSE,
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES+2,
+          "-CvTData.txt", 
+          sep=""))
 ```
 
 # Load empirical fits to Cvt data:
@@ -303,7 +313,9 @@ nofit.table <- subset(CvT.data, !(DTXSID %in% fittable$DTXSID))[,c(
   "Compound",                               
   "CAS")]
 nofit.table <- subset(nofit.table, !duplicated(nofit.table))
-write.csv(nofit.table, row.names=FALSE,file="tables/SupTable-CvTDatabutNoEmpiricalFitChems.txt")
+write.csv(nofit.table, 
+          row.names=FALSE,
+          file="tables/SupTable-CvTDatabutNoEmpiricalFitChems.txt")
 ```
 
 
@@ -333,7 +345,12 @@ fittable <- merge(fittable,
 cat("Number of rows in fittable...")
 dim(fittable)[1]
 fittable.all <- fittable
-write.csv(fittable.all,file="tables/SupTable-TKFits.txt",row.names=FALSE)
+write.csv(fittable.all,
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES + 3,
+          "-TKFits.txt",
+          sep=""),
+          row.names=FALSE)
 
 fittable <- fittable[, c("DTXSID",
                          "PREFERRED_NAME",

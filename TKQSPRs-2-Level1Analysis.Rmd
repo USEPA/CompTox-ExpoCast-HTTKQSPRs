@@ -40,14 +40,19 @@ library(knitr)
 library(ggpubr)
 ```
 
-Load custom code 
+# Load custom code 
 ```{r load_code, eval = TRUE}
 source("clear_httk.R")
 source("tkstats.R")
 ```
 
+# Keep table numbering straight:
+```{r load_code, eval = TRUE}
+PREV.TABLES <- 4
+PREV.SUP.TABLES <- 0
+```
 
-Set the time stamp:
+# Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
 output.prefix <- "Mar2025"
@@ -205,7 +210,12 @@ sup.table <- CvT.chems
 for (this.col in 1:dim(sup.table)[2])
   if (is.numeric(sup.table[1,this.col]))
     sup.table[,this.col] <- signif(sup.table[,this.col],3)
-write.csv(sup.table, row.names=FALSE,file="tables/SupTable-QSPRPredsandInVitroData.txt")
+write.csv(sup.table, 
+          row.names=FALSE,
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES + 1,
+          "-QSPRPredsandInVitroData.txt",
+          sep=""))
 ```
 
 Divide into individual tables:
@@ -347,7 +357,10 @@ for (this.qspr in unique(level1tab$QSPR))
 kable(pred.counts)
 
 write.csv(pred.counts,
-          file="tables/SupTable-QSPRPredCounts.txt")
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES+3,
+          "-QSPRPredCounts.txt",
+          sep=""))
 
 cat("Supplemental Table 4 gives the per QSPR number of chemicals for which predictions were made. ")
 cat(paste("For Clint the number of chemicals with HTTK parameter predictions ranged from a low of ",
@@ -689,7 +702,10 @@ train.set.sum.table[train.set.sum.table$QSPR=="IVBP","Num.Chems"] <-
 
 kable(train.set.sum.table)
 write.csv(train.set.sum.table, row.names=FALSE,
-          file="tables/Table4-TrainingSetSummary.txt")
+          file=paste("tables/Table",
+          PREV.TABLES+1,
+          "-TrainingSetSummary.txt",
+          sep=""))
 cat("Num.Chems = Number of Chemicals in Training Set, Fraction.Pharma is fraction of Training Set Chemcials that are Pharmaceuticals, Num.Preds = OVerall number of Evaluation Chemicals with Predictions Inside QSPR Domain of Applicability, Num.Eval.Chems = Number of Evaluation Chemicals In QSPR Training Set\n")
 cat("a: The training set is proprietary, consisting of pharmaceutical data.\n")
 cat("b: The training set, while public, is either not machine-readable or the chemical identities cannot be cross-referenced.\n")
@@ -730,7 +746,10 @@ for (this.qspr in unique(direct.retrieval.table$QSPR))
 dim(direct.retrieval.table)
 kable(direct.retrieval.table)
 write.csv(direct.retrieval.table, row.names=FALSE,
-          file="tables/SupTable-PossibleDirectRetrievals.txt")
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES + 5,
+          "-PossibleDirectRetrievals.txt",
+          sep=""))
 ```
 
 # We don't want to penalize good predictions, so only remove suspected direct 
@@ -888,7 +907,7 @@ write.csv(pred.counts2,
 ks.tests.clint <- data.frame()
 ks.tests.fup <- data.frame()
 FE.table <- data.frame()
-for (this.qspr1 in unique(level1tab$QSPR))
+for (this.qspr1 in unique(as.character(level1tab$QSPR)))
 {
   this.subset <-subset(level1tab,QSPR==this.qspr1)
   FE.table[this.qspr1,"Num.Clint.Compared"] <-
@@ -911,11 +930,16 @@ for (this.qspr1 in unique(level1tab$QSPR))
     min(this.subset$Human.fup.FE,na.rm=TRUE)
   FE.table[this.qspr1,"Max.fup.FE"] <- 
     max(this.subset$Human.fup.FE,na.rm=TRUE)
-  
-  for (this.qspr2 in unique(level1tab$QSPR))
+}
+for (this.qspr1 in unique(as.character(level1tab$QSPR)))
+{
+  this.subset <-subset(level1tab,QSPR==this.qspr1)
+  for (this.qspr2 in unique(as.character(level1tab$QSPR)))
   {
     set1 <- this.subset$Human.Clint.FE
     set2 <- subset(level1tab,QSPR==this.qspr2)$Human.Clint.FE
+    print(this.qspr2)
+    print(set2)
     if (any(!is.na(set1)) & any(!is.na(set2))) ks.tests.clint[this.qspr1,this.qspr2] <- suppressWarnings(
       ks.test(set1,set2)$p.value)
     set1 <- this.subset$Human.fup.FE
@@ -931,9 +955,21 @@ ks.tests.fup <- apply(ks.tests.fup, 2, function(x) signif(x,3))
 kable(FE.table)
 kable(ks.tests.clint)
 kable(ks.tests.fup)
-write.csv(FE.table, file="tables/Table6-Level1FoldError.txt")
-write.csv(ks.tests.clint, file="tables/SupTable-Level1KSCorClint.txt")
-write.csv(ks.tests.fup, file="tables/SupTable-Level1KSCorFup.txt")
+write.csv(FE.table, file=paste(
+  "tables/Table",
+  PREV.TABLES + 2, # 6
+  "-Level1FoldError.txt",
+  sep=""))
+write.csv(ks.tests.clint, file=paste(
+  "tables/SupTable",
+  PREV.SUP.TABLES + 1, #6,
+  "-Level1KSCorClint.txt",
+  sep=""))
+write.csv(ks.tests.fup, file=paste(
+  "tables/SupTable",
+  PREV.SUP.TABLS + 2, #7
+  "-Level1KSCorFup.txt",
+  sep=""))
 ```
 
 Calculate RPE:     

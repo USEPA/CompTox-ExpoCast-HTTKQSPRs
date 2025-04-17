@@ -31,14 +31,19 @@ library(httk)
 library(DescTools)
 ```
 
-Load custom code 
+# Load custom code 
 ```{r load_code, eval = TRUE}
 source("clear_httk.R")
 source("tkstats.R")
 ```
 
+# Keep table numbering straight:
+```{r load_code, eval = TRUE}
+PREV.TABLES <- 2
+PREV.SUP.TABLES <- 7
+```
 
-Set the time stamp:
+# Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
 output.prefix <- "Mar2025"
