@@ -48,7 +48,7 @@ source("tkstats.R")
 
 # Keep table numbering straight:
 ```{r load_code, eval = TRUE}
-PREV.TABLES <- 4
+PREV.TABLES <- 3
 PREV.SUP.TABLES <- 0
 ```
 
@@ -358,7 +358,7 @@ kable(pred.counts)
 
 write.csv(pred.counts,
           file=paste("tables/SupTable",
-          PREV.SUP.TABLES+3,
+          PREV.SUP.TABLES+4,
           "-QSPRPredCounts.txt",
           sep=""))
 
@@ -957,17 +957,17 @@ kable(ks.tests.clint)
 kable(ks.tests.fup)
 write.csv(FE.table, file=paste(
   "tables/Table",
-  PREV.TABLES + 2, # 6
+  PREV.TABLES + 3, # 6
   "-Level1FoldError.txt",
   sep=""))
 write.csv(ks.tests.clint, file=paste(
   "tables/SupTable",
-  PREV.SUP.TABLES + 1, #6,
+  PREV.SUP.TABLES + 6, #6,
   "-Level1KSCorClint.txt",
   sep=""))
 write.csv(ks.tests.fup, file=paste(
   "tables/SupTable",
-  PREV.SUP.TABLS + 2, #7
+  PREV.SUP.TABLES + 7, #7
   "-Level1KSCorFup.txt",
   sep=""))
 ```

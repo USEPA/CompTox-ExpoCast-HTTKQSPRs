@@ -409,7 +409,7 @@ save(common_chems,
      rathum.table,
      file="data/interspecies.RData")
 write.csv(rathum.table,
-          file="tables/SupTab-Interspecies.txt")
+          file="tables/SupTable-Interspecies.txt")
 ```
 ```{r textforpaper}
 paste("There were",
