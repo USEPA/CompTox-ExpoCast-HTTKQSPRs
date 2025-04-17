@@ -37,6 +37,7 @@ library(DescTools)
 library(gridExtra)
 library(reshape2)
 ```
+
 ```{r httk_version}
 cat(paste("Using httk v",
           packageVersion("httk"),
@@ -65,7 +66,7 @@ PREV.SUP.TABLES <- 0
 # Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
-output.prefix <- "Mar2025"
+output.prefix <- "April2025"
 ```
 
 
@@ -76,18 +77,18 @@ test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
 DASHBOARDCAS.COL <- "CASRN"
 test.chems.dashboard[,"CAS"] <- test.chems.dashboard[, DASHBOARDCAS.COL]
 
-CVTSPECIES.COL <- "subjects.species_harmonized"
-CVTMEDIA.COL <- "series.conc_medium_normalized"
-CVTTIME.COL <- "conc_time_values.time_hr"
-CVTCONC.COL <- "conc_time_values.conc"
-CVTDOSE.COL <- "studies.dose_level_normalized_corrected"
-CVTROUTE.COL <- "studies.administration_route_normalized"
-CVTLOQ.COL <- "series.loq_normalized"
-CVTDTXSID.COL <- "series.analyte_dtxsid"
-CVTCAS.COL <- "series.test_substance_casrn"
-CVTREFERENCE.COL <- "documents_extraction.pmid"
+CVTSPECIES.COL <- "species"
+CVTMEDIA.COL <- "conc_medium_normalized"
+CVTTIME.COL <- "time_hr"
+CVTCONC.COL <- "invivPK_conc"
+CVTDOSE.COL <- "invivPK_dose_level"
+CVTROUTE.COL <- "administration_route_normalized"
+CVTLOQ.COL <- "invivPK_loq"
+CVTDTXSID.COL <- "analyte_dtxsid"
+CVTCAS.COL <- "analyte_casrn"
+CVTREFERENCE.COL <- "pmid"
 
-series_res_set <- read.csv("CvTdb/CvTdb_fullData_20230906.csv")
+series_res_set <- read.csv("CvTdb/CvTdb_fullData_2025April.csv")
 series_res_set$Species <- series_res_set[,CVTSPECIES.COL]
 series_res_set$Media <- series_res_set[,CVTMEDIA.COL]
 series_res_set$Time_Days <- series_res_set[,CVTTIME.COL] / 24 # hours -> days
@@ -96,29 +97,30 @@ series_res_set$Dose <- series_res_set[,CVTDOSE.COL] # mg/kg
 series_res_set$Route <- series_res_set[,CVTROUTE.COL]
 series_res_set$calc_loq <- series_res_set[,CVTLOQ.COL] # mg/L
 series_res_set$DTXSID <- series_res_set[,CVTDTXSID.COL]
-for (this.chem in unique(series_res_set$DTXSID))
-{
-  this.compound <- test.chems.dashboard[test.chems.dashboard$DTXSID %in% this.chem,
-                                         "PREFERRED_NAME"]
-  series_res_set[series_res_set$DTXSID %in% this.chem, "Compound"] <-
-    this.compound
-}
+
+series_res_set <- merge(
+  series_res_set, test.chems.dashboard[c("DTXSID", "PREFERRED_NAME")],
+  all.x = TRUE,
+  by = "DTXSID"
+  )
+
 series_res_set$CAS <- series_res_set[,CVTCAS.COL]
 series_res_set$Reference <- series_res_set[,CVTREFERENCE.COL]
-series_res_set[is.na(series_res_set$Reference), "Reference"] <-
-  "NTP"
+series_res_set[is.na(series_res_set$Reference), "Reference"] <- "NTP"
 series_res_set$Source <- series_res_set$Reference
 cat("Number of rows of CvT data for DTXSID3032179:")
-dim(subset(series_res_set, DTXSID=="DTXSID3032179"))
+dim(subset(series_res_set, DTXSID == "DTXSID3032179"))
+# No records for this in CvTdb anymore
 
 # Only want human and rat:
 series_res_set <- subset(series_res_set,
                          tolower(series_res_set[,CVTSPECIES.COL]) %in% 
                            c("human","rat"))
 ```
+
 ```{r baddose, eval=FALSE}
 # Looks like a problem with the extraction here:
-series_res_set <- subset(series_res_set, !(DTXSID %in% c("DTXSID3032179")))
+# series_res_set <- subset(series_res_set, !(DTXSID %in% c("DTXSID3032179")))
 ```
 
 ```{r organize_eval_chems, eval = TRUE}
@@ -200,6 +202,11 @@ dim(subset(CvT.data,is.na(calc_loq)))[1]
 CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
 cat("Number of unique DTXSID's with CvT data:")
 length(unique(CvT.data$DTXSID))
+
+cat("Number of unique DTXSIDs in the test set with CvT data")
+length(unique(
+  intersect(test.chems.dashboard$DTXSID, CvT.data$DTXSID)
+))
 ```
 # Write the CvT data:
 ```{r write_cvt_data, eval=TRUE}
@@ -215,7 +222,7 @@ write.csv(CvT.data,
 # Load empirical fits to Cvt data:
 ```{r load_empirical_fits, eval = TRUE}
 fittable <- as.data.frame(read_excel(
-  "CvTdb/25September2024evalTKstats_bakeoff.xlsx",
+  "CvTdb/evalTKstats_bakeoff_2025April.xlsx",
   sheet=1))
 
 KELIM.COL <- "kelim.tkstats"
