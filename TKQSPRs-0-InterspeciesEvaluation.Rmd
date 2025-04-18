@@ -63,8 +63,7 @@ chem_properties <- merge(
              DTXSID %in% common_chems))
 
 # Identify discordant Clints
-chem_properties_clintagree <- subset(chem_properties, 
-                                    (Human.Clint == 0 & Rat.Clint == 0) |
+chem_properties_clintnonzero <- subset(chem_properties, 
                                     (Human.Clint != 0 & Rat.Clint != 0))
 chem_properties_clintprob <- subset(chem_properties, 
                                     (Human.Clint == 0 & Rat.Clint != 0) |
@@ -115,7 +114,7 @@ plotA
 ```{r clint_analysis}
 
 # Do the same thing with Clint
-chem_properties %>%
+chem_properties_clintnonzero  %>%
   dplyr::group_by(DTXSID) %>%
   dplyr::summarize(hclint = median(Human.Clint),
                    rclint = median(Rat.Clint)) -> tidy_summary
@@ -133,7 +132,7 @@ plotB <- ggplot(tidy_summary,
   geom_abline() +
   annotate(label = paste0("RMSLE\n = ", signif(clint_rmsle, 2)),
            geom = "text",
-           x = 50*1e-3/3, y = 1000/5,
+           x = 50*1e-2, y = 1000/5,
     size = 6
   ) +
   ylab(expression(paste("Rat ",
