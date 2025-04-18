@@ -16,6 +16,8 @@ library(ggplot2)
 library(magrittr)
 library(scales)
 library(knitr)
+library(viridis)
+library(cowplot)
 ```
 Load custom code 
 ```{r load_code, eval = TRUE}
@@ -61,6 +63,9 @@ chem_properties <- merge(
              DTXSID %in% common_chems))
 
 # Identify discordant Clints
+chem_properties_clintagree <- subset(chem_properties, 
+                                    (Human.Clint == 0 & Rat.Clint == 0) |
+                                    (Human.Clint != 0 & Rat.Clint != 0))
 chem_properties_clintprob <- subset(chem_properties, 
                                     (Human.Clint == 0 & Rat.Clint != 0) |
                                     (Human.Clint != 0 & Rat.Clint == 0))
@@ -116,7 +121,7 @@ chem_properties %>%
                    rclint = median(Rat.Clint)) -> tidy_summary
 
 tidy_summary %>%
-  dplyr::mutate(SLE = (log10(1e-6+hclint) - log10(1e-6+rclint))^2) %>% 
+  dplyr::mutate(SLE = (log10(hclint) - log10(rclint))^2) %>% 
   dplyr::ungroup() %>% dplyr::pull(SLE) %>%
   {sqrt(sum(.)/length(.))} -> clint_rmsle
 ```
@@ -158,7 +163,7 @@ plotB
 # require(cowplot)
 cowplot::plot_grid(plotlist = list(plotA, plotB), labels = c("A", "B"))
 ggsave(filename = "figs/SupFig-human_rat_httk_params.png",
-       height = 7,
+       height = 5,
        width = 7)
 ```
 
@@ -264,6 +269,8 @@ rat_df <- rat_df %>%
 # Calculate stats for rat vs. human
 ```{r calc_rat_human_stats, eval=TRUE}
 test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
+rat_df$CvT <- "No"
+rat_df[rat_df$DTXSID %in% test.chems.dashboard$DTXSID, "CvT"] <- "Yes"
 rathum.table <- data.frame()
 rathum.table["Restrictive","Css"] <- calc_RMSLE(
   rat_df,
@@ -298,6 +305,10 @@ rathum.table["Restrictive CvT","AUC"] <- calc_RMSLE(
   subset(rat_df, DTXSID %in% test.chems.dashboard$DTXSID),
                                pred.col = "RatHum_AUC",
                                obs.col="Rat_AUC")
+rathum.table["Non-Restrictive CvT","Css"] <- calc_RMSLE(
+  subset(rat_df, DTXSID %in% test.chems.dashboard$DTXSID),
+  pred.col = "RatHum_Css_NR",
+  obs.col="Rat_Css_NR")
 rathum.table["Non-Restrictive CvT","Cmax"] <- calc_RMSLE(
   subset(rat_df, DTXSID %in% test.chems.dashboard$DTXSID),
                                pred.col = "RatHum_Cmax_NR",
@@ -312,16 +323,16 @@ kable(rathum.table)
 
 
 ```{r make_css_plot}
-plotCss <- ggplot(rat_df, aes(y = 10^-3 + Rat_Css_NR, 
-                              x = 10^-3 + RatHum_Css_NR)) +
-  geom_point() +
+plotCss <- ggplot(rat_df, aes(y = 10^-3 + Rat_Css, 
+                              x = 10^-3 + RatHum_Css)) +
+  geom_point(aes(shape=CvT,color=CvT),size=2) +
   geom_abline() +
   annotate(
     label = paste0("RMSLE\n = ", 
-                   signif(rathum.table["Non-Restrictive","Css"], 2)),
+                   signif(rathum.table["Restrictive","Css"], 2)),
     geom = "text",
     x = 50*1e-3/3,
-    y = 100/5,
+    y = 100/7,
     size = 6
   ) +
   ylab(expression(paste("Rat ",C[ss]," (mg/L)"))) +
@@ -330,6 +341,7 @@ plotCss <- ggplot(rat_df, aes(y = 10^-3 + Rat_Css_NR,
                         " (mg/L) from Human "))) +
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10) +
+  scale_color_viridis(discrete = TRUE) +
   theme_bw() +
    theme( text  = element_text(size=16),
          axis.text.x = element_text(size=10),
@@ -339,15 +351,15 @@ plotCss
 ```
 
 ```{r make_cmax_plot}
-plotCmax <- ggplot(rat_df, aes(y = 10^-3 + Rat_Cmax_NR, 
-                               x = 10^-3 + RatHum_Cmax_NR)) +
-  geom_point() +
+plotCmax <- ggplot(rat_df, aes(y = 10^-3 + Rat_Cmax, 
+                               x = 10^-3 + RatHum_Cmax)) +
+  geom_point(aes(shape=CvT,color=CvT),size=2) +
   geom_abline() +
   annotate(
     label = paste0("RMSLE\n = ", 
-                   signif(rathum.table["Non-Restrictive","Cmax"], 2)),
+                   signif(rathum.table["Restrictive","Cmax"], 2)),
     geom = "text",
-    x = 50*1e-3/3,
+    x = 50*1e-3/1,
     y = 10/2,
     size = 6
   ) +
@@ -357,6 +369,7 @@ plotCmax <- ggplot(rat_df, aes(y = 10^-3 + Rat_Cmax_NR,
                         " (mg/L) from Human "))) +
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10) +
+  scale_color_viridis(discrete = TRUE) +
   theme_bw() +
    theme( text  = element_text(size=16),
          axis.text.x = element_text(size=10),
@@ -367,22 +380,23 @@ plotCmax
 ```
 
 ```{r make_auc_plot}
-plotAUC <- ggplot(rat_df, aes(y = 10^-3 + Rat_AUC_NR, 
-                              x = 10^-3 + RatHum_AUC_NR)) +
-  geom_point() +
+plotAUC <- ggplot(rat_df, aes(y = 10^-3 + Rat_AUC, 
+                              x = 10^-3 + RatHum_AUC)) +
+  geom_point(aes(shape=CvT,color=CvT),size=2) +
   geom_abline() +
   annotate(
     label = paste0("RMSLE\n = ", 
-                   signif(rathum.table["Non-Restrictive","AUC"], 2)),
+                   signif(rathum.table["Restrictive","AUC"], 2)),
     geom = "text",
-    x = 50*1e-3/3,
-    y = 10/2,
+    x = 10*1e-1/3,
+    y = 100,
     size = 6
   ) +
   ylab(expression(paste("Rat AUC (mg/L*Day)"))) +
   xlab(expression(paste("Rat AUC (mg/L*Day) from Human "))) +
   scale_x_log10(label=scientific_10) +
   scale_y_log10(label=scientific_10) +
+  scale_color_viridis(discrete = TRUE) +
   theme_bw() +
    theme( text  = element_text(size=16),
          axis.text.x = element_text(size=10),
@@ -392,14 +406,23 @@ plotAUC
 ```
 
 ```{r make_multipanelplot}
-cowplot::plot_grid(
-  plotlist = list(plotCss, plotCmax, plotAUC),
+pcol <- cowplot::plot_grid(
+  plotlist = list(plotCss  + theme(legend.position="none"), 
+                  plotCmax + theme(legend.position="none"), 
+                  plotAUC + theme(legend.position="none")),
   labels = c("A", "B", "C"),
   ncol=1
 )
 
+legend <- get_legend(
+  # create some space to the left of the legend
+  plotCss + theme(legend.box.margin = margin(0, 0, 0, 12))
+)
+
+plot_grid(pcol, legend, rel_widths = c(3, .8))
+
 ggsave(filename = "figs/Fig2-human_rat_eval.png",
-       height = 15,
+       height = 12,
        width = 5)
 
 ```
