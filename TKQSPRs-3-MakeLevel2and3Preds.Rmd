@@ -31,14 +31,19 @@ library(httk)
 library(DescTools)
 ```
 
-Load custom code 
+# Load custom code 
 ```{r load_code, eval = TRUE}
 source("clear_httk.R")
 source("tkstats.R")
 ```
 
+# Keep table numbering straight:
+```{r load_code, eval = TRUE}
+PREV.TABLES <- 2
+PREV.SUP.TABLES <- 7
+```
 
-Set the time stamp:
+# Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
 output.prefix <- "Mar2025"
@@ -128,7 +133,6 @@ CvT.chems.nobad$Human.Fup.Mean <- apply(
     signif(invlogit(mean(sapply(x, function(y) 
       logit(min(max(y,1e-8),(1-1e-8)))),na.rm=TRUE)),4))
 ```
-
 
 ```{r dont_remove_missing_predictions}
 CvT.chems.nona <- CvT.chems.nobad

@@ -1,0 +1,6 @@
+"","Clint","Fup"
+"ADMET",60,60
+"Dawson",57,57
+"Pradeep",53,53
+"OPERA",86,83
+"IVBP",68,0

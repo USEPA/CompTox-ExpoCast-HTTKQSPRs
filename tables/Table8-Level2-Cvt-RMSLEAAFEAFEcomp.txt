@@ -1,0 +1,4 @@
+"","HTPBTK-InVitro","HTPBTK-InVitro-Rat","HTPBTK-InVitro-AltClear","HTPBTK-ADMET","HTPBTK-Dawson","HTPBTK-Pradeep","HTPBTK-OPERA","HTPBTK-Consensus","HTPBTK-YRandom","In Vivo Fits"
+"Maximal RMSLE","1 (56)","0.98 (39)","1.2 (56)","0.94 (57)","0.94 (55)","0.99 (48)","0.75 (25)","0.94 (86)","1.2 (89)","0.3 (79)"
+"Maximal AAFE","12 (56)","14 (39)","38 (56)","8.8 (57)","11 (55)","10 (48)","5.2 (25)","10 (86)","38 (89)","1.7 (79)"
+"Maximal AFE","0.09 (56)","0.019 (39)","0.69 (56)","-0.022 (57)","0.0039 (55)","-0.16 (48)","0.028 (25)","-0.29 (86)","0.076 (89)","-0.013 (79)"

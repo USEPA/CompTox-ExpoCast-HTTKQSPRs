@@ -47,6 +47,11 @@ Load custom code
 source("tkstats.R")
 ```
 
+# Keep table numbering straight:
+```{r load_code, eval = TRUE}
+PREV.TABLES <- 8
+PREV.SUP.TABLES <- 10
+```
 
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
@@ -159,7 +164,9 @@ rownames(AUCCmax.table) <- c("Cmax RMSLE",
                              "AUC RMSLE (Non-Pharma)")
 kable(AUCCmax.table)
 write.csv(AUCCmax.table, 
-          file="tables/Table7-AUCCmax-stats.txt")
+          file=paste("tables/Table",
+          PREV.TABLES + 1,
+          "-AUCCmax-stats.txt",sep=""))
 ```
 # Get rid of Vd predictions from HTTK not made by QSPR:
 ```{r remove_placeholder_vd, eval = TRUE}
@@ -265,7 +272,9 @@ rownames(level3stats.table) <- c(
 level3stats.table<-apply(level3stats.table,c(1,2),function(x) strsplit(x, " ")[[1]][1])
 kable(level3stats.table)
 write.csv(level3stats.table,
-          file="tables/Table8-halflifeVdCltot-stats.txt")
+          file=paste("tables/Table",
+          PREV.TABLES+2,
+          "-halflifeVdCltot-stats.txt",sep=""))
 ```
 
 # Half-life scatter plot:
@@ -429,7 +438,9 @@ for (this.col in 1:dim(lev3suptable)[2])
     lev3suptable[,this.col] <- signif(lev3suptable[,this.col],3)
   
 write.csv(lev3suptable,
-          file="tables/SupTable-Level3.txt")
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES+1,
+          "-Level3.txt",sep=""))
 
 ```
 

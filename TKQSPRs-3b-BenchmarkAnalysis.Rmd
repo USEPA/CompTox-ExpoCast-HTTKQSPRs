@@ -42,12 +42,18 @@ load("data/chemicallists.RData")
   level3tab <- level3tab[!names(level3tab) %in% c("HTPBTK-InVitro-AltClear","HTPBTK-InVitro-Rat")]
 ```
 
-Load custom code 
+# Load custom code 
 ```{r load_code, eval = TRUE}
 source("tkstats.R")
 ```
 
-Set the time stamp:
+# Keep table numbering straight:
+```{r load_code, eval = TRUE}
+PREV.TABLES <- 4
+PREV.SUP.TABLES <- 7
+```
+
+# Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time stamp:
 output.prefix <- "Mar2025"
@@ -91,8 +97,12 @@ for (this.col in 1:dim(bench.table)[2])
                                               function(x) x[1]))
 }
 kable(bench.table)
-write.csv(bench.table, 
-          file="tables/Table6-Benchmark-stats.txt")
+write.csv(bench.table,
+          file=paste(
+          "tables/Table",
+          PREV.TABLES + 1,
+          "-Benchmark-stats.txt",
+          sep=""))
 save(bench.table,
      file="data/benchmarkstats.RData")
 ```

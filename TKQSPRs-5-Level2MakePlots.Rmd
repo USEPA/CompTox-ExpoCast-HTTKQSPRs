@@ -46,6 +46,11 @@ Load custom code
 source("tkstats.R")
 ```
 
+# Keep table numbering straight:
+```{r load_code, eval = TRUE}
+PREV.TABLES <- 6
+PREV.SUP.TABLES <- 9
+```
 
 Set the time stamp:
 ```{r time_stamp, eval = TRUE}
@@ -853,12 +858,19 @@ egg::ggarrange(FigLev2RMSE+
 Need to do invivo vs invitro/insilco plots for AUC & Cmax
 Need heatmap of RMSE x chemical, can add phys-chem
 ```{r analyze_admet, eval = TRUE}
-qsprbychem.table3 <- dcast(qsprbychem.table,Compound~QSPR,value.var="RMSLE")
+qsprbychem.table3 <- dcast(qsprbychem.table,
+                           Compound~QSPR,
+                           value.var="RMSLE")
 chems <- qsprbychem.table3$Compound
-qsprbychem.table3 <- apply(qsprbychem.table3[,2:dim(qsprbychem.table3)[2]],2,function(x) signif(as.numeric(x),3))
+qsprbychem.table3 <- apply(qsprbychem.table3[,2:dim(qsprbychem.table3)[2]],
+                           2,
+                           function(x) signif(as.numeric(x),3))
 rownames(qsprbychem.table3) <- chems
 #colnames(qsprbychem.table2) <- c("FitsToData","ADMET","Dawson","InVitro","OPERA","Pradeep","Y-Random")
-write.csv(signif(qsprbychem.table3,3),file="tables/SupTable-RMSLEbyChem.txt")
+write.csv(signif(qsprbychem.table3,3),
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES + 1,
+          "-RMSLEbyChem.txt",sep=""))
 kable(qsprbychem.table3)
 ```
 
