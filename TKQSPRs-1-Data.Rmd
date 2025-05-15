@@ -84,11 +84,11 @@ CVTCONC.COL <- "invivPK_conc"
 CVTDOSE.COL <- "invivPK_dose_level"
 CVTROUTE.COL <- "administration_route_normalized"
 CVTLOQ.COL <- "invivPK_loq"
-CVTDTXSID.COL <- "analyte_dtxsid"
-CVTCAS.COL <- "analyte_casrn"
+CVTDTXSID.COL <- "analyzed_chem_dtxsid"
+CVTCAS.COL <- "analyzed_chem_casrn"
 CVTREFERENCE.COL <- "pmid"
 
-series_res_set <- read.csv("CvTdb/CvTdb_fullData_2025April.csv")
+series_res_set <- read.csv("CvTdb/CvTdb_selectData_2025May.csv")
 series_res_set$Species <- series_res_set[,CVTSPECIES.COL]
 series_res_set$Media <- series_res_set[,CVTMEDIA.COL]
 series_res_set$Time_Days <- series_res_set[,CVTTIME.COL] / 24 # hours -> days
@@ -98,6 +98,7 @@ series_res_set$Route <- series_res_set[,CVTROUTE.COL]
 series_res_set$calc_loq <- series_res_set[,CVTLOQ.COL] # mg/L
 series_res_set$DTXSID <- series_res_set[,CVTDTXSID.COL]
 
+# selectData is already filtered, number of chemicals shouldn't change
 series_res_set <- merge(
   series_res_set, test.chems.dashboard[c("DTXSID", "PREFERRED_NAME")],
   all.x = TRUE,
@@ -110,7 +111,6 @@ series_res_set[is.na(series_res_set$Reference), "Reference"] <- "NTP"
 series_res_set$Source <- series_res_set$Reference
 cat("Number of rows of CvT data for DTXSID3032179:")
 dim(subset(series_res_set, DTXSID == "DTXSID3032179"))
-# No records for this in CvTdb anymore
 
 # Only want human and rat:
 series_res_set <- subset(series_res_set,
@@ -119,6 +119,7 @@ series_res_set <- subset(series_res_set,
 ```
 
 ```{r baddose, eval=FALSE}
+# Please double check!
 # Looks like a problem with the extraction here:
 # series_res_set <- subset(series_res_set, !(DTXSID %in% c("DTXSID3032179")))
 ```
@@ -126,23 +127,37 @@ series_res_set <- subset(series_res_set,
 ```{r organize_eval_chems, eval = TRUE}
 # A list of the chemicals in the evaluation:
 # There are 101 chemicals with CvT data for which the collaborators have been asked
-# to make predictions
+# to make predictions, only 81 have enough data
 eval.cas <- unique(series_res_set$CAS)
-cat("Number of unique CAS with CvT data:")
-length(eval.cas)
+
+message(
+  sprintf("Number of unique CAS with CvT data: %d",
+          length(eval.cas))
+)
 
 # We have both human and rat:
 series_res_set$Species <- tolower(series_res_set$Species)
-unique(series_res_set$Species)
+message(
+  sprintf("Unique species: %s",
+          paste(unique(series_res_set$Species), collapse = ", "))
+)
 
 # Although CvTdb has expanded, keep focus on human and rat:
 series_res_set <- subset(series_res_set, tolower(Species) %in%
                            c("rat", "human"))
-unique(series_res_set$Species)
+message(
+  sprintf("Unique species (updated): %s",
+          paste(unique(series_res_set$Species), collapse = ", "))
+)
 
-# We habe both blood and plasma:
+# We have both blood and plasma:
 series_res_set$Media <- tolower(series_res_set$Media)
-unique(series_res_set$Media)
+
+message(
+  sprintf("Unique Media collected: %s",
+          paste(unique(series_res_set$Media), collapse = ", "))
+)
+
 
 # Significant figures:
 series_res_set$Time_Days <- suppressWarnings(signif(
@@ -152,8 +167,11 @@ series_res_set$Conc_mgpL <- suppressWarnings(signif(
 
 CvT.data <- series_res_set
 CvT.chems <- unique(CvT.data$DTXSID)
-cat("Number of unique DTXSIDs with CvT data:")
-length(CvT.chems)
+
+message(
+  sprintf("Number of unique DTXSIDs with CvT data: %d",
+          length(CvT.chems))
+)
 
 CvT.data[,"Dose"] <- signif(as.numeric(CvT.data[,"Dose"]), 3)
 CvT.data[,"Time_Days"] <- signif(as.numeric(CvT.data[,"Time_Days"]), 3)
@@ -203,12 +221,17 @@ CvT.data <- subset(CvT.data,!is.infinite(calc_loq))
 cat("Number of unique DTXSID's with CvT data:")
 length(unique(CvT.data$DTXSID))
 
-cat("Number of unique DTXSIDs in the test set with CvT data")
-length(unique(
-  intersect(test.chems.dashboard$DTXSID, CvT.data$DTXSID)
-))
+message(
+  sprintf("Number of unique DTXSIDs in the test set with CvT data: %d",
+          length(unique(
+            intersect(test.chems.dashboard$DTXSID, CvT.data$DTXSID)
+          ))
+  )
+)
 ```
+
 # Write the CvT data:
+
 ```{r write_cvt_data, eval=TRUE}
 CvT.data.all <- CvT.data
 write.csv(CvT.data,
@@ -222,18 +245,18 @@ write.csv(CvT.data,
 # Load empirical fits to Cvt data:
 ```{r load_empirical_fits, eval = TRUE}
 fittable <- as.data.frame(read_excel(
-  "CvTdb/evalTKstats_bakeoff_2025April.xlsx",
+  "CvTdb/evalTKstats_bakeoff_2025May.xlsx",
   sheet=1))
 
-KELIM.COL <- "kelim.tkstats"
+KELIM.COL <- "kelim"
 HALFLIFE.COL <- "halflife.tkstats"
 MODEL.COL <- "model"
 VDIST.COL <- "Vss.tkstats"
-V1.COL <- "V1.tkstats"  
-K12.COL <- "k12.tkstats"
-K21.COL <- "k21.tkstats"
-KGUTABS.COL <- "kgutabs.tkstats"
-FGUTABS.COL <- "Fgutabs.tkstats"
+V1.COL <- "V1"  
+K12.COL <- "k12"
+K21.COL <- "k21"
+KGUTABS.COL <- "kgutabs"
+FGUTABS.COL <- "Fgutabs"
 TIMEUNITS.COL <- "Time.Units"
 DTXSID.COL <- "Chemical"
 SIGFIGS <- 4
