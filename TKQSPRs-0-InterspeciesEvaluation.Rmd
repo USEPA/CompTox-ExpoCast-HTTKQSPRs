@@ -317,6 +317,7 @@ rathum.table["Non-Restrictive CvT","AUC"] <- calc_RMSLE(
                                pred.col = "RatHum_AUC_NR",
                                obs.col="Rat_AUC_NR")
 rathum.table <- signif(rathum.table,2)
+write.csv(rathum.table, file="tables/SupTable-RatHumanError.txt")
 kable(rathum.table)
 ```
 

@@ -1,6 +1,6 @@
 "","Num.Clint.Compared","Median.Clint.AbsFE","Median.Clint.FE","Min.Clint.FE","Max.Clint.FE","Num.fup.Compared","Median.fup.AbsFE","Median.fup.FE","Min.fup.FE","Max.fup.FE"
-"ADMET",49,0.545,0.291,-6.94,Inf,41,0.292,-0.134,-1.47,6.27
-"Dawson",6,0.45,0.0419,-6.76,0.767,13,0.256,-0.0206,-1.23,0.838
+"ADMET",42,0.507,0.348,-6.94,Inf,36,0.294,-0.108,-1.47,6.27
+"Dawson",3,0.524,0.376,-6.76,0.524,10,0.289,-0.0603,-0.297,0.838
 "Pradeep",0,NA,NA,Inf,-Inf,1,0.226,0.226,0.226,0.226
-"OPERA",4,1.24,-1.24,-6.22,-0.134,4,3.4,-1.56,-3.68,7.1
-"IVBP",50,0.391,0.271,-2.53,Inf,0,NA,NA,Inf,-Inf
+"OPERA",4,3.42,-0.379,-6.22,Inf,4,3.4,-1.56,-3.68,7.1
+"IVBP",46,0.415,0.312,-1.48,Inf,0,NA,NA,Inf,-Inf
