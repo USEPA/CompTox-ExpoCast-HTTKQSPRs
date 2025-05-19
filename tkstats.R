@@ -615,7 +615,7 @@ maketkstatpreds <- function(
         thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"])) # h
         kelim.obs <- unlist(as.numeric(this.subset2[,"kelim"])) # 1/h
         cl.obs <- signif(vd.obs*kelim.obs,3) # L / kg BW / h
-        css.obs <- signif(unlist(as.numeric(this.subset2[,"Fgutabs.tkstats"]))/cl.obs,3)
+        css.obs <- signif(unlist(as.numeric(this.subset2[,"Fgutabs"]))/cl.obs,3)
         fbio.pred <- calc_hep_bioavailability(chem.cas=this.cas,                               # Css = fbio/ Cltot
                                               species=this.species,
                                               default.to.human=TRUE,

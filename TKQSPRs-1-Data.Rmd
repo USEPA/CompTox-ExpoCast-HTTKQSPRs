@@ -66,7 +66,7 @@ PREV.SUP.TABLES <- 0
 # Set the time stamp:
 ```{r time_stamp, eval = TRUE}
 # Time_Days stamp:
-output.prefix <- "April2025"
+output.prefix <- "May2025"
 ```
 
 
@@ -87,6 +87,7 @@ CVTLOQ.COL <- "invivPK_loq"
 CVTDTXSID.COL <- "analyzed_chem_dtxsid"
 CVTCAS.COL <- "analyzed_chem_casrn"
 CVTREFERENCE.COL <- "pmid"
+CVTCOMPOUNDNAME.COL <- "PREFERRED_NAME"
 
 series_res_set <- read.csv("CvTdb/CvTdb_selectData_2025May.csv")
 series_res_set$Species <- series_res_set[,CVTSPECIES.COL]
@@ -116,6 +117,9 @@ dim(subset(series_res_set, DTXSID == "DTXSID3032179"))
 series_res_set <- subset(series_res_set,
                          tolower(series_res_set[,CVTSPECIES.COL]) %in% 
                            c("human","rat"))
+
+# Other code looks for a column named "Compound":
+series_res_set[,"Compound"] <- series_res_set[,CVTCOMPOUNDNAME.COL]
 ```
 
 ```{r baddose, eval=FALSE}
@@ -339,9 +343,9 @@ cat(paste(length(unique(fittable$DTXSID)),
 cat(paste(length((unique(CvT.data$DTXSID))),
           "chemicals with Cvt data.\n"))
 nofit.table <- subset(CvT.data, !(DTXSID %in% fittable$DTXSID))[,c(
-  "DTXSID",
-  "Compound",                               
-  "CAS")]
+  CVTCOMPOUNDNAME.COL,
+  CVTCAS.COL,                               
+  CVTDTXSID.COL)]
 nofit.table <- subset(nofit.table, !duplicated(nofit.table))
 write.csv(nofit.table, 
           row.names=FALSE,
@@ -633,23 +637,24 @@ cat(paste("Among the",
           "had data in rat and",
           length(unique(subset(CvT.data, CAS %in% CvT.chems$CASRN & Species=="human")$DTXSID)),
           "in human.\n"))
-unique(subset(CvT.data, CAS %in% CvT.chems$CASRN & Species=="human")$Compound)  
 
+cat(paste("The",
+          length(unique(CvT.chems$CASRN)),
+          "chemicals included (according to lists accessed 12/9/24)",
+          length(unique(subset(CvT.chems, CASRN %in% pharma$CASRN)$CASRN)),
+          "pharmaceuticals.\n"))
 
-cat(paste(dim(subset(CvT.chems, CASRN %in% pharma$CASRN))[1],
-          "of the evaluation chemicals were pharmaceuticals.\n"))
-
-cat(paste("The evaluation chemicals included:",
+cat(paste("Additionally, the evaluation chemicals included:",
             dim(subset(CvT.chems, CASRN %in% TSCA$CASRN))[1],
-          "from the non-confidential Toxic Substances Control Act (TSCA) active inventory,",
+          "from the non-confidential Toxic Substances Control Act (TSCA) active inventory (https://comptox.epa.gov/dashboard/chemical-lists/TSCA_ACTIVE_NCTI_0224),",
             dim(subset(CvT.chems, CASRN %in% pest.active$CASRN))[1],
-          "pesticide active ingredients,",
+          "pesticide active ingredients (https://comptox.epa.gov/dashboard/chemical-lists/EPAPCS),",
           dim(subset(CvT.chems, CASRN %in% consumer$CASRN))[1],
-          "that are found in consumer products,",
+          "that are found in consumer products (https://comptox.epa.gov/dashboard/chemical-lists/EPACONS),",
           dim(subset(CvT.chems, CASRN %in% PFAS$CASRN))[1],
-          "per- and poly-fluoroalkyl substances (PFAS), and",
+          "per- and poly-fluoroalkyl substances (PFAS) (https://comptox.epa.gov/dashboard/chemical-lists/PFAS8a7v3), and",
           dim(subset(CvT.chems, CASRN %in% ToxCast$CASRN))[1],
-          "that are part of the ToxCast screening program.\n"))
+          "that are part of the ToxCast screening program (https://comptox.epa.gov/dashboard/chemical-lists/ToxCast_invitroDB_v4_1).\n"))
       
 load("data/interspecies.RData")
 cat(paste(dim(subset(CvT.chems,DTXSID%in%common_chems_all))[1],
