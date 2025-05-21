@@ -1,5 +1,5 @@
 ---
-title: "TK QSPRs: Make CvT Predictions"
+title: "HTTK QSPRs: Make CvT Predictions"
 author: "John Wambaugh and Nisha Sipes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

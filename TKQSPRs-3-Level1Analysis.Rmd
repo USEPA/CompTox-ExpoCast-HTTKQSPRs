@@ -1,5 +1,5 @@
 ---
-title: "TK QSPRs: Level 1 Analysis"
+title: "HTTK QSPRs: Level 1 Analysis"
 author: "John Wambaugh and Nisha Sipes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -840,7 +840,7 @@ for (this.col in seq(fup.col,last.col,2)) CvT.chems.scale[,this.col] <-
     cexCol=1,
     trace="none",
     col=mypalette)
-  png(paste("figs/Fig2-physchemandpredictors-heatmap-",
+  png(paste("figs/Fig3-physchemandpredictors-heatmap-",
            output.prefix,
            ".tiff",sep=""),
           width=800, height=750)
@@ -1045,8 +1045,8 @@ FigLev1a <- ggplot(data=level1tab) +
   theme_bw()+
   theme( text  = element_text(size=16))
 print(FigLev1a)
-ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
-       width=6, height=4, dpi=300)
+#ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
+#       width=6, height=4, dpi=300)
 ```
 
 ```{r clint_scatter_train, eval = TRUE}
@@ -1080,7 +1080,7 @@ FigLev1apanel2 <- ggplot(data=level1tab.trainingonly) +
   theme( text  = element_text(size=16))
 print(FigLev1apanel2)
 ggarrange(FigLev1a,FigLev1apanel2,labels=c("A","B"),common.legend=TRUE)
-ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/Fig4-Clint-obsvspred",output.prefix,".tiff",sep=""), 
        width=8, height=4.5, dpi=300)
 ```
 
@@ -1240,8 +1240,8 @@ FigLev1c <- ggplot(data=subset(level1tab,!(QSPR %in% "IVBP"))) +
   theme_bw()+
   theme( text  = element_text(size=20))
 print(FigLev1c)
-ggsave(paste("figs/Fig4-Lev1c-Fup-obsvpred-",output.prefix,".tiff",sep=""), 
-       width=6, height=4, dpi=300)
+#ggsave(paste("figs/Fig4-Lev1c-Fup-obsvpred-",output.prefix,".tiff",sep=""), 
+#       width=6, height=4, dpi=300)
 ```
 
 ```{r fup_rpe_scatterall_training, eval = TRUE}
@@ -1273,7 +1273,7 @@ FigLev1cpanel2 <- ggplot(data=subset(level1tab.trainingonly,!(QSPR %in% "IVBP"))
   theme( text  = element_text(size=20))
 print(FigLev1cpanel2)
 ggarrange(FigLev1c,FigLev1cpanel2,labels=c("A","B"),common.legend=TRUE)
-ggsave(paste("figs/Fig4-Lev1c-Fup-obsvpred-twopanel",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/Fig5-Fup-obsvpred-twopanel",output.prefix,".tiff",sep=""), 
        width=8, height=4, dpi=300)
 ```
 

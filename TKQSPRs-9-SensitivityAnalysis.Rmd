@@ -1,5 +1,5 @@
 ---
-title: "Level 4 Analysis QSAR Bake-Off"
+title: "HTTK QSPRs: Sensitivity Analysis"
 author: "Gilberto Padilla Mercado"
 date: "`r Sys.Date()`"
 output: html_document
@@ -21,6 +21,7 @@ To use the code in this vignette, you'll first need to load a few packages (if y
 library(httk)
 library(DescTools)
 library(gridExtra)
+library(ComplexHeatmap)
 ```
 
 Load custom code 
@@ -364,9 +365,10 @@ FigSensitivity <- ggplot(data = lv4_df %>%
        aes(x = QSPR,
            y = RMSLE)) +
   geom_boxplot(width = 0.5) +
-  ggtitle(expression("Replacing"~italic("In Vivo")~"Estimates with QSPR-Based HTTK"))+
+ # ggtitle(expression("Replacing"~italic("In Vivo")~"Estimates with QSPR-Based HTTK"))+
+  ylab(bquote("Chemical-Specific RMSLE for In Vivo CvT Data"))+
   scale_x_discrete(labels=c("In Vivo" = expression("All"~italic("In Vivo")),
-                             "In Vivo-HTTK_Vdist"= expression(italic("In Vivo")~"+"~"V"["dist"]),
+                             "In Vivo-HTTK_Vdist"= expression(italic("In Vivo")~"+"~"V"["d"]),
                              "In Vivo-HTTK_Fgutabs"= expression(italic("In Vivo")~"+"~"F"["bio"]),
                              "In Vivo-HTTK_kelim"= expression(italic("In Vivo")~"+"~"k"["elim"]),
                               "HTPBTK-Consensus"= "All Consensus"
@@ -425,7 +427,6 @@ which gives one cluster (4) that are greatly affected by kelim substitution,
 and another cluster (5) that are fairly improved in the consensus model.
 
 ```{r clustering_analysis, eval=TRUE}
-library(ComplexHeatmap)
 set.seed(2024) # Want to be consistent here
 # The order is fine... but it would be nice to cluster these automatically
 # Need wide format for that

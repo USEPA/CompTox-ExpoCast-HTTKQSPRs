@@ -1,5 +1,5 @@
 ---
-title: "TK QSPRs: Make Level 2 Plots"
+title: "HTTK QSPRs: Make Level 2 Plots"
 author: "John Wambaugh and Nisha Sipes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -824,7 +824,7 @@ ggsave(paste("figs/SupFigLev2_RMSEbyChemLAte",output.prefix,".tiff",sep=""),
 ```
 
 ```{r RMSE_combined_plot}
-tiff(file=paste("figs/Fig6-Lev2_RMSEbyChem_all",output.prefix,".tiff",sep=""), 
+tiff(file=paste("figs/Fig8-Lev2_RMSEbyChem_all",output.prefix,".tiff",sep=""), 
      width=1200*0.5, height=1600*0.5)
 egg::ggarrange(FigLev2RMSE + 
                theme(axis.text.x = element_blank(),
@@ -947,8 +947,8 @@ FigLev2 <- ggplot(data = level2tab) +
               linetype="dashed", 
               colour="gray22",
               size=0.3) +
-  xlab(bquote('Predicted Concentraion (mg/L)')) +
-  ylab(expression(paste("Observed Conc. ",
+  xlab(bquote('Predicted Concentration (mg/L)')) +
+  ylab(expression(paste("Observed Concentration ",
                         italic("In Vivo"),
                         " (mg/L)"))) +
   facet_wrap(~QSPR)+
@@ -960,7 +960,7 @@ FigLev2 <- ggplot(data = level2tab) +
         axis.text.x = element_text(size=10),
         axis.text.y = element_text(size=10))
 print(FigLev2)
-ggsave(paste("figs/Fig5-Lev2_Conc_scatter",output.prefix,".tiff",sep=""), 
+ggsave(paste("figs/Fig6-Lev2_Conc_scatter",output.prefix,".tiff",sep=""), 
        width=6, 
        height=6, 
        dpi=300)

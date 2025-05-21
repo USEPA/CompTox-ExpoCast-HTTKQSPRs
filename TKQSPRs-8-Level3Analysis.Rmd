@@ -1,5 +1,5 @@
 ---
-title: "TK QSPRs: Level 3 Analysis"
+title: "HTTK QSPRs: Level 3 Analysis"
 author: "John Wambaugh and Nisha Sipes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
