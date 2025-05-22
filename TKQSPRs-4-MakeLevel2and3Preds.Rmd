@@ -76,7 +76,7 @@ Predictors evaluated:
 * HTTK PBTK with Pradeep
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
-* HTTK PBTK with Consensus QSPR
+* HTTK PBTK with Ensemble QSPR
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-compartment fits to CvT data
 
@@ -110,7 +110,7 @@ length(unique(CvT.data$DTXSID))
 length(unique(CvT.chems.nobad$DTXSID))
 ```
 
-```{r create_consensus_preds, eval=TRUE}
+```{r create_ensemble_preds, eval=TRUE}
 clint.cols <- colnames(CvT.chems.nobad)[
   regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
 CvT.chems.nobad$Human.Clint.Max<- signif(apply(
@@ -147,7 +147,7 @@ CvT.chems.nona <- subset(CvT.chems.nona,DTXSID %in% CvT.data$DTXSID)
 
 ## Randomize the in vitro descriptors as a sort of prediction "floor"
 ```{r cvt_yrandomize_desc, eval = TRUE}
-NUM.YRANDOM <- 10
+NUM.YRANDOM <- 25
 #invitro.subset.rows <- which(!(is.na(CvT.chems.nona$Human.Clint.httk)) &
 #                         !(is.na(CvT.chems.nona$Human.Fup.httk)))
 # Just do yrandom for all chemicals:
@@ -192,6 +192,7 @@ for (i in 1:NUM.YRANDOM) # Ten sets of parameters
     invitro.meas[yrandom.ids, "Human.Funbound.plasma"]
 }
 ```
+
 ```{r initialize_lists}
 level2tab.cvt <- 
 level2tab.stats <-
@@ -443,9 +444,9 @@ level2tab.afe.late[[this.label]] <- out$level2tab.afe.late
 level3tab[[this.label]] <- out$level3tab
 ```
 
-## Add consensus predictions:
-```{r cvt_compare_consensus, eval = TRUE}
-this.label <- "HTPBTK-Consensus" 
+## Add ensemble predictions:
+```{r cvt_compare_ensemble, eval = TRUE}
+this.label <- "HTPBTK-Ensemble" 
 out <- make_cvt_comparisons(this.label, 
                             "Human.Clint.Max", 
                             "Human.Fup.Mean",

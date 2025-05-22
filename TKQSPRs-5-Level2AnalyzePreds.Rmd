@@ -67,7 +67,7 @@ Predictors evaluated:
 * HTTK PBTK with Pradeep
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
-* HTTK PBTK with Consensus QSPR
+* HTTK PBTK with Ensemble QSPR
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-compartment fits to CvT data
 

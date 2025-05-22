@@ -80,7 +80,7 @@ Predictors evaluated:
 * HTTK PBTK with Pradeep
 * HTTK PBTK with Dawson
 * HTTK PBTK with OPERA
-* HTTK PBTK with Consensus QSPR
+* HTTK PBTK with Ensemble QSPR
 * HTTK PBTK with y-randomized in vitro measured values
 * Empirical one- and two-comaprtment fits to CvT data
 
@@ -495,7 +495,7 @@ level2tab.stats$QSPR <- factor(level2tab.stats$QSPR, levels=c("HTPBTK-InVitro",
                                                   "HTPBTK-Dawson", 
                                                   "HTPBTK-OPERA", 
                                                   "HTPBTK-Pradeep",
-                                                  "HTPBTK-Consensus",
+                                                  "HTPBTK-Ensemble",
                                                   "HTPBTK-YRandom",
                                                   "In Vivo Fits"))
 ggshapes <- c(21, 21, 22, 23, 24, 22, 23, 24, 25)
@@ -686,7 +686,7 @@ for (this.qspr in unique(qsprbychem.table2$QSPR))
     mean(subset(qsprbychem.table2,QSPR==this.qspr)$RMSLE) 
 
 qsprs.order <- names(sort(qsprs.rmsle.bychem))
-firstpreds <- c("In Vivo Fits", "HTPBTK-InVitro", "HTPBTK-Consensus")
+firstpreds <- c("In Vivo Fits", "HTPBTK-InVitro", "HTPBTK-Ensemble")
 qsprs.order <- c(firstpreds, qsprs.order[!(qsprs.order %in% firstpreds)])
 qsprbychem.table$QSPR <- factor(qsprbychem.table$QSPR,
                                    levels = qsprs.order)
@@ -914,7 +914,7 @@ level2tab$QSPR <- factor(level2tab$QSPR, levels=c("HTPBTK-InVitro",
                                                   "HTPBTK-Dawson", 
                                                   "HTPBTK-OPERA", 
                                                   "HTPBTK-Pradeep",
-                                                  "HTPBTK-Consensus",
+                                                  "HTPBTK-Ensemble",
                                                   "HTPBTK-YRandom",
                                                   "In Vivo Fits"))
 FigLev2 <- ggplot(data = level2tab) +

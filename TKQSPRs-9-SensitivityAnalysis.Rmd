@@ -95,7 +95,7 @@ length(unique(CvT.data$DTXSID))
 length(unique(CvT.chems.nobad$DTXSID))
 ```
 
-```{r create_consensus_preds, eval=TRUE}
+```{r create_ensemble_preds, eval=TRUE}
 clint.cols <- colnames(CvT.chems.nobad)[
   regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
 CvT.chems.nobad$Human.Clint.Max<- signif(apply(
@@ -120,7 +120,7 @@ CvT.chems.nobad$Human.Fup.Mean <- apply(
 ```
 
 
-## Make a version of the prediction matrix where we've replaced QSPR-chemical combinations with no predictions with the consensus predictions:
+## Make a version of the prediction matrix where we've replaced QSPR-chemical combinations with no predictions with the ensemble predictions:
 ### Stop doing this -- we will assign mean RMSLE to each QSPR's output, no need to predict with mean predictions
 ```{r dont_remove_missing_predictions}
 CvT.chems.nona <- CvT.chems.nobad
@@ -137,9 +137,9 @@ level2tab.rmsle.late <-
 level2tab.aafe.late <-
 level3tab <- list()
 ```
-## Add consensus predictions:
-```{r cvt_compare_consensus, eval = TRUE}
-this.label <- "HTPBTK-Consensus" 
+## Add ensemble predictions:
+```{r cvt_compare_ensemble, eval = TRUE}
+this.label <- "HTPBTK-Ensemble" 
 out <- make_cvt_comparisons(this.label, 
                             "Human.Clint.Max", 
                             "Human.Fup.Mean",
@@ -186,7 +186,7 @@ level3tab[[this.label]] <- out$level3tab
 ## Level Four Analysis, an introduction
 
 We finally now want to see how changing particular values for `fittable` to
-the consensus predicted values changes the values. 
+the ensemble predicted values changes the values. 
 Another aspect of this is testing the sensitivity of certain values changing,
 and describing any comparisons between chemicals that are more or less
 sensitive to this value change.
@@ -195,11 +195,11 @@ sensitive to this value change.
 library(tidyverse)
 
 # This is for new fittables where some of the values in fittable are replaced by
-# HTPBTK-Consensus predictions found in level3tab$`HTPBTK-Consensus`
+# HTPBTK-Ensemble predictions found in level3tab$`HTPBTK-Ensemble`
 # Get names for fittable
 fit_names <- names(fittable)
 # For Vdist
-fittable_Vd <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+fittable_Vd <- inner_join(fittable, level3tab$`HTPBTK-Ensemble`,
                           by = c(
                             "DTXSID",
                             "PREFERRED_NAME" = "Compound",
@@ -210,7 +210,7 @@ fittable_Vd <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
   select(all_of(fit_names))
   
 # For kelim
-fittable_kelim <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+fittable_kelim <- inner_join(fittable, level3tab$`HTPBTK-Ensemble`,
                           by = c(
                             "DTXSID",
                             "PREFERRED_NAME" = "Compound",
@@ -221,7 +221,7 @@ fittable_kelim <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
   select(all_of(fit_names))
 
 # For Fgutabs
-fittable_Fgutabs <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+fittable_Fgutabs <- inner_join(fittable, level3tab$`HTPBTK-Ensemble`,
                           by = c(
                             "DTXSID",
                             "PREFERRED_NAME" = "Compound",
@@ -298,8 +298,8 @@ To get a better sense of this, why don't we plot it!
 ```{r RMSLE_plots}
 
 lv4_df <- data.frame(
-  QSPR = c(rep("HTPBTK-Consensus",
-               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+  QSPR = c(rep("HTPBTK-Ensemble",
+               length(unlist(level2tab.rmsle$`HTPBTK-Ensemble`))),
            rep("In Vivo",
                length(unlist(level2tab.rmsle$`In Vivo Fits`))),
            rep("In Vivo-HTTK_Vdist",
@@ -308,12 +308,12 @@ lv4_df <- data.frame(
                length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`))),
            rep("In Vivo-HTTK_kelim",
                length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`)))),
-  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Ensemble`)),
              names(unlist(level2tab.rmsle$`In Vivo Fits`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`))),
-  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Ensemble`),
             unlist(level2tab.rmsle$`In Vivo Fits`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`),
@@ -326,7 +326,7 @@ ggplot(data = lv4_df %>%
                                                "In Vivo-HTTK_Vdist",
                                                "In Vivo-HTTK_Fgutabs",
                                                "In Vivo-HTTK_kelim",
-                                               "HTPBTK-Consensus"
+                                               "HTPBTK-Ensemble"
                                                ),
                               ordered=TRUE)),
        aes(x = QSPR,
@@ -346,7 +346,7 @@ qsprs.order <- c("In Vivo",
                                                "In Vivo-HTTK_Vdist",
                                                "In Vivo-HTTK_Fgutabs",
                                                "In Vivo-HTTK_kelim",
-                                               "HTPBTK-Consensus"
+                                               "HTPBTK-Ensemble"
                                                )
 
 RMSLE.table <- data.frame()
@@ -371,7 +371,7 @@ FigSensitivity <- ggplot(data = lv4_df %>%
                              "In Vivo-HTTK_Vdist"= expression(italic("In Vivo")~"+"~"V"["d"]),
                              "In Vivo-HTTK_Fgutabs"= expression(italic("In Vivo")~"+"~"F"["bio"]),
                              "In Vivo-HTTK_kelim"= expression(italic("In Vivo")~"+"~"k"["elim"]),
-                              "HTPBTK-Consensus"= "All Consensus"
+                              "HTPBTK-Ensemble"= "All Ensemble"
                               ))+
       annotation_custom(
     tableGrob(stat.labels, theme = ttheme_minimal(base_size = 8)),
@@ -406,7 +406,7 @@ ggplot(data = lv4_df %>%
                                                "In Vivo-HTTK_Vdist",
                                                "In Vivo-HTTK_Fgutabs",
                                                "In Vivo-HTTK_kelim",
-                                               "HTPBTK-Consensus"
+                                               "HTPBTK-Ensemble"
                                                ),
                               ordered=TRUE)),
        aes(x = QSPR,
@@ -421,10 +421,10 @@ ggplot(data = lv4_df %>%
 ```
 
 Next I want to cluster these such that they will group together based on 
-the RMSLE when Fgutabs, kelim, or Vdist values from Consensus 
+the RMSLE when Fgutabs, kelim, or Vdist values from Ensemble 
 are substituted into the In Vivo parameters. Here I chose a k-means of 5,
 which gives one cluster (4) that are greatly affected by kelim substitution,
-and another cluster (5) that are fairly improved in the consensus model.
+and another cluster (5) that are fairly improved in the ensemble model.
 
 ```{r clustering_analysis, eval=TRUE}
 set.seed(2024) # Want to be consistent here
@@ -467,7 +467,7 @@ cluster_df <- inner_join(cluster_df, fittable)
 
 cluster_df %>%
   select(DTXSID, Clust) %>%
-  inner_join(level3tab$`HTPBTK-Consensus` %>% select(-Compound)) %>%
+  inner_join(level3tab$`HTPBTK-Ensemble` %>% select(-Compound)) %>%
   pivot_longer(cols = Vd.obs:cl.pred, 
                names_to = "Measurement", values_to = "Values") %>%
   ggplot(aes(x = Measurement, y = log10(Values))) +
@@ -658,12 +658,12 @@ dev.off()
 
 
 Next what I want to do is test how quickly the RMSLE changes. I will
-start at the In Vivo value and head towards the Consensus value in 10% increments.
+start at the In Vivo value and head towards the Ensemble value in 10% increments.
 
 
 ```{r sensitivity_analysis, eval = TRUE}
 # For Vdist
-fittable_Vdist <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+fittable_Vdist <- inner_join(fittable, level3tab$`HTPBTK-Ensemble`,
                           by = c(
                             "DTXSID",
                             "PREFERRED_NAME" = "Compound",
@@ -710,8 +710,8 @@ for (this_pct in seq(10, 90, by = 10)) {
 
 
 lv4_df2 <- data.frame(
-  QSPR = c(rep("HTPBTK-Consensus",
-               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+  QSPR = c(rep("HTPBTK-Ensemble",
+               length(unlist(level2tab.rmsle$`HTPBTK-Ensemble`))),
            rep("In Vivo-HTTK_Vdist10",
                length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist10`))),
            rep("In Vivo-HTTK_Vdist20",
@@ -734,7 +734,7 @@ lv4_df2 <- data.frame(
                length(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`))),
            rep("In Vivo",
                length(unlist(level2tab.rmsle$`In Vivo Fits`)))),
-  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Ensemble`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist10`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist20`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist30`)),
@@ -746,7 +746,7 @@ lv4_df2 <- data.frame(
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist90`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist`)),
              names(unlist(level2tab.rmsle$`In Vivo Fits`))),
-  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Ensemble`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist10`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist20`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_Vdist30`),
@@ -764,7 +764,7 @@ lv4_df2 <- data.frame(
 ggplot(data = lv4_df2 %>%
          mutate(QSPR = factor(QSPR,
                               levels = c(
-                                "HTPBTK-Consensus",
+                                "HTPBTK-Ensemble",
                                 "In Vivo",
                                 "In Vivo-HTTK_Vdist10",
                                 "In Vivo-HTTK_Vdist20",
@@ -794,7 +794,7 @@ lv4_df2 %>%
                values_to = "RMSLE") %>%
   mutate(QSPR = factor(QSPR,
                        levels = c(
-                         "HTPBTK-Consensus",
+                         "HTPBTK-Ensemble",
                          "In Vivo",
                          "In Vivo-HTTK_Vdist10",
                          "In Vivo-HTTK_Vdist20",
@@ -820,7 +820,7 @@ lv4_df2 %>%
 ```{r kelim_sensitivity, eval = TRUE}
 # For kelim
 
-fittable_kelim <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+fittable_kelim <- inner_join(fittable, level3tab$`HTPBTK-Ensemble`,
                           by = c(
                             "DTXSID",
                             "PREFERRED_NAME" = "Compound",
@@ -867,8 +867,8 @@ for (this_pct in seq(10, 90, by = 10)) {
 
 
 lv4_df3 <- data.frame(
-  QSPR = c(rep("HTPBTK-Consensus",
-               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+  QSPR = c(rep("HTPBTK-Ensemble",
+               length(unlist(level2tab.rmsle$`HTPBTK-Ensemble`))),
            rep("In Vivo-HTTK_kelim10",
                length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim10`))),
            rep("In Vivo-HTTK_kelim20",
@@ -891,7 +891,7 @@ lv4_df3 <- data.frame(
                length(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`))),
            rep("In Vivo",
                length(unlist(level2tab.rmsle$`In Vivo Fits`)))),
-  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Ensemble`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim10`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim20`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim30`)),
@@ -903,7 +903,7 @@ lv4_df3 <- data.frame(
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim90`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_kelim`)),
              names(unlist(level2tab.rmsle$`In Vivo Fits`))),
-  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Ensemble`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_kelim10`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_kelim20`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_kelim30`),
@@ -921,7 +921,7 @@ lv4_df3 <- data.frame(
 ggplot(data = lv4_df3 %>%
          mutate(QSPR = factor(QSPR,
                               levels = c(
-                                "HTPBTK-Consensus",
+                                "HTPBTK-Ensemble",
                                 "In Vivo",
                                 "In Vivo-HTTK_kelim10",
                                 "In Vivo-HTTK_kelim20",
@@ -954,7 +954,7 @@ lv4_df3 %>%
                                          Reference, param_range)) %>%
   mutate(QSPR = factor(QSPR,
                        levels = c(
-                         "HTPBTK-Consensus",
+                         "HTPBTK-Ensemble",
                          "In Vivo",
                          "In Vivo-HTTK_kelim10",
                          "In Vivo-HTTK_kelim20",
@@ -989,12 +989,12 @@ In Vivo values, I just assume values from 0.1-0.9 at ten percent intervals,
 and the In Vivo value is somewhere in that range.
 What is interesting is that there is some
 chemicals where there is an improvement in RMSLE with lower _Fgutabs_
-that is not the Consensus Value.
+that is not the Ensemble Value.
 
 ```{r Fgutabs_sensitivity}
 # For Fgutabs
 
-fittable_Fgutabs <- inner_join(fittable, level3tab$`HTPBTK-Consensus`,
+fittable_Fgutabs <- inner_join(fittable, level3tab$`HTPBTK-Ensemble`,
                           by = c(
                             "DTXSID",
                             "PREFERRED_NAME" = "Compound",
@@ -1040,8 +1040,8 @@ for (this_pct in seq(10, 90, by = 10)) {
 
 
 lv4_df3 <- data.frame(
-  QSPR = c(rep("HTPBTK-Consensus",
-               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+  QSPR = c(rep("HTPBTK-Ensemble",
+               length(unlist(level2tab.rmsle$`HTPBTK-Ensemble`))),
            rep("In Vivo-HTTK_Fgutabs10",
                length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs10`))),
            rep("In Vivo-HTTK_Fgutabs20",
@@ -1064,7 +1064,7 @@ lv4_df3 <- data.frame(
                length(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`))),
            rep("In Vivo",
                length(unlist(level2tab.rmsle$`In Vivo Fits`)))),
-  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Ensemble`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs10`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs20`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs30`)),
@@ -1076,7 +1076,7 @@ lv4_df3 <- data.frame(
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs90`)),
              names(unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs`)),
              names(unlist(level2tab.rmsle$`In Vivo Fits`))),
-  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Ensemble`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs10`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs20`),
             unlist(level2tab.rmsle$`In Vivo-HTTK_Fgutabs30`),
@@ -1094,7 +1094,7 @@ lv4_df3 <- data.frame(
 ggplot(data = lv4_df3 %>%
          mutate(QSPR = factor(QSPR,
                               levels = c(
-                                "HTPBTK-Consensus",
+                                "HTPBTK-Ensemble",
                                 "In Vivo",
                                 "In Vivo-HTTK_Fgutabs10",
                                 "In Vivo-HTTK_Fgutabs20",
@@ -1139,7 +1139,7 @@ lv4_df3 %>%
                          "In Vivo-HTTK_Fgutabs90",
                          "In Vivo-HTTK_Fgutabs",
                          "In Vivo",
-                         "HTPBTK-Consensus"
+                         "HTPBTK-Ensemble"
                        ))) %>%
   ggplot(aes(x = QSPR,
            y = RMSLE)) +
@@ -1166,7 +1166,7 @@ this.label <- "HTTK-In Vivo kelim_fup"
 
 CvT.chems.nona.kelim <- kelim_substitution(data = CvT.chems.nona,
                                            invivo = fittable,
-                                           Vd_data = level3tab$`HTPBTK-Consensus`,
+                                           Vd_data = level3tab$`HTPBTK-Ensemble`,
                                            clint_column = "Human.Clint.Max",
                                            fup_column = "Human.Fup.Mean")
 
@@ -1206,19 +1206,19 @@ level3tab[[this.label]] <- out$level3tab
 
 
 level2_tab <- data.frame(
-  QSPR = c(rep("HTPBTK-Consensus",
-               length(unlist(level2tab.rmsle$`HTPBTK-Consensus`))),
+  QSPR = c(rep("HTPBTK-Ensemble",
+               length(unlist(level2tab.rmsle$`HTPBTK-Ensemble`))),
            rep("In Vivo",
                length(unlist(level2tab.rmsle$`In Vivo Fits`))),
            rep("HTTK-In Vivo_kelim_Clint",
                length(unlist(level2tab.rmsle$`HTTK-In Vivo kelim_Clint`))),
            rep("HTTK-In Vivo_kelim_fup",
                length(unlist(level2tab.rmsle$`HTTK-In Vivo kelim_fup`)))),
-  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Consensus`)),
+  DTXSID = c(names(unlist(level2tab.rmsle$`HTPBTK-Ensemble`)),
              names(unlist(level2tab.rmsle$`In Vivo Fits`)),
              names(unlist(level2tab.rmsle$`HTTK-In Vivo kelim_Clint`)),
              names(unlist(level2tab.rmsle$`HTTK-In Vivo kelim_fup`))),
-  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Consensus`),
+  RMSLE = c(unlist(level2tab.rmsle$`HTPBTK-Ensemble`),
             unlist(level2tab.rmsle$`In Vivo Fits`),
             unlist(level2tab.rmsle$`HTTK-In Vivo kelim_Clint`),
             unlist(level2tab.rmsle$`HTTK-In Vivo kelim_fup`))
@@ -1236,7 +1236,7 @@ ggplot(level2_tab %>% filter(DTXSID %in% common_ids),
        aes(x = factor(QSPR,
                       levels = c("HTTK-In Vivo_kelim_Clint",
                                  "HTTK-In Vivo_kelim_fup",
-                                 "HTPBTK-Consensus",
+                                 "HTPBTK-Ensemble",
                                  "In Vivo")),
            y = RMSLE)) +
   ggbeeswarm::geom_beeswarm() +

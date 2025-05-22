@@ -115,21 +115,21 @@ level3tab.arnot2[tolower(level3tab.arnot2$Species)=="rat", "thalf.pred"] <-
   signif(level3tab.arnot2[tolower(level3tab.arnot1$Species)=="rat", 
                           "thalf.pred"]*(0.25/70)^(0.75), # allometric scaling by body weight
          3)
-# Pull in the consensus Vd's so we can calculated clearance:
-consensus.results <- level3tab.old[["HTPBTK-Consensus"]]
+# Pull in the ensemble Vd's so we can calculated clearance:
+ensemble.results <- level3tab.old[["HTPBTK-Ensemble"]]
 for (this.chem in level3tab.arnot1$DTXSID)
-  if (this.chem %in% consensus.results$DTXSID)
+  if (this.chem %in% ensemble.results$DTXSID)
 {
   level3tab.arnot1[level3tab.arnot1$DTXSID==this.chem,"Vd.pred"] <- 
-    consensus.results[consensus.results$DTXSID==this.chem,"Vd.pred"]
+    ensemble.results[ensemble.results$DTXSID==this.chem,"Vd.pred"]
 }
 for (this.chem in level3tab.arnot2$DTXSID)
-    if (this.chem %in% consensus.results$DTXSID)
+    if (this.chem %in% ensemble.results$DTXSID)
 {
   level3tab.arnot2[level3tab.arnot2$DTXSID==this.chem,"Vd.pred"] <- 
-    consensus.results[consensus.results$DTXSID==this.chem,"Vd.pred"]
+    ensemble.results[ensemble.results$DTXSID==this.chem,"Vd.pred"]
 }
-# Calculate the clearance using the consensus Vd
+# Calculate the clearance using the ensemble Vd
 level3tab.arnot1$cl.pred <- signif(level3tab.arnot1$Vd.pred * log(2) / 
                                      level3tab.arnot1$thalf.pred,
                                    3)
@@ -180,7 +180,7 @@ level3tab$QSPR <- factor(level3tab$QSPR, levels=c("HTPBTK-InVitro",
                                                   "HTPBTK-Dawson", 
                                                   "HTPBTK-OPERA", 
                                                   "HTPBTK-Pradeep",
-                                                  "HTPBTK-Consensus",
+                                                  "HTPBTK-Ensemble",
                                                   "HTPBTK-YRandom",
                                                   "Papa 2018",
                                                   "IFS-QSAR"))
