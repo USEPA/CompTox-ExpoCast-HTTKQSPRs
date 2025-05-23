@@ -1,6 +1,6 @@
-"","In Vivo Fits NA","In Vitro Non-Restrictive NA","In Vitro Restrictive NA","Rat In Vitro NA","Y-Randomized NA"
-"CvT RMSLE",NA,NA,NA,NA,NA
+"","In Vivo Fits (41)","In Vitro Non-Restrictive (48)","In Vitro Restrictive (48)","Rat In Vitro (30)","Y-Randomized (48)"
+"CvT RMSLE",0.3,1,1.3,1,1.3
 "Early CvT RMSLE",0.27,0.87,0.98,0.86,0.97
 "Late CvT RMSLE",0.29,1.1,1.5,1.1,1.3
-"AUC RMSLE",0.14,0.94,1.4,0.95,1.4
-"Cmax RMSLE",0.25,0.78,0.95,0.88,0.8
+"AUC RMSLE",0.15,0.94,1.4,0.97,1.7
+"Cmax RMSLE",0.29,0.78,0.95,0.92,0.96

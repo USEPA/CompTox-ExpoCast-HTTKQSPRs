@@ -164,7 +164,7 @@ write.csv(stats.table,
           sep=""),
           row.names=TRUE)
 kable(stats.table)
-rmsle.stats.table <- stats.table
+max.rmsle.stats.table <- stats.table
 ```
 
 ```{r create_rmsle_summary_table_early_late, eval=TRUE}
@@ -238,6 +238,7 @@ Cmax.stats.table <- stats.table
 
 ```{r write_level2_results}
 save(rmsle.stats.table,
+     max.rmsle.stats.table,
      aafe.stats.table,
      afe.stats.table,
      earlylate.stats.table,

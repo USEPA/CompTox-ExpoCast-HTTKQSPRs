@@ -66,7 +66,7 @@ which.cols <- c("In Vivo Fits",
                 "HTPBTK-InVitro-AltClear",
                 "HTPBTK-InVitro-Rat",
                 "HTPBTK-YRandom") 
-bench.table  <- rmsle.stats.table["In Vitro RMSLE", which.cols]
+bench.table  <- rmsle.stats.table["In Vitro", which.cols]
 rownames(bench.table) <- c("CvT RMSLE")
 #rownames(bench.table) <- c("CvT RMSLE","CvT AAFE","CvT AFE")
 # Add early vs. late CvT breakdown:
@@ -76,12 +76,12 @@ rownames(next.rows) <- c("Early CvT RMSLE","Late CvT RMSLE")
 bench.table <- rbind(bench.table,next.rows)
 # Add AUC breakdown:
 next.rows <- AUC.stats.table[, which.cols]
-next.rows <- next.rows[c("RMSLE Maximal"),]
+next.rows <- next.rows[c("RMSLE In Vitro"),]
 rownames(next.rows) <- c("AUC RMSLE")
 bench.table <- rbind(bench.table,next.rows)
 # Add Cmax breakdown:
 next.rows <- Cmax.stats.table[, which.cols]
-next.rows <- next.rows[c("RMSLE Maximal"),]
+next.rows <- next.rows[c("RMSLE In Vitro"),]
 rownames(next.rows) <- c("Cmax RMSLE")
 bench.table <- rbind(bench.table,next.rows)
 colnames(bench.table) <- c("In Vivo Fits",
