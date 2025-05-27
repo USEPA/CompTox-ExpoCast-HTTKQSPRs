@@ -1,6 +1,6 @@
 ---
 title: "HTTK QSPRs: Benchmark Analysis"
-author: "John Wambaugh and Nisha Sipes"
+author: "John Wambaugh"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -106,6 +106,7 @@ write.csv(bench.table,
 save(bench.table,
      file="data/benchmarkstats.RData")
 ```
+
 ```{r paper_text}
 cat(paste(
   "It appears clear from the median error for HT-PBTK simulations that the ",

@@ -47,11 +47,13 @@ make_cvt_comparisons <- function(this.label,
                                  this.label,
                                  model.args = model.args
                                  )                                       
+  cat(paste0(length(level2tab.list),"sets of level2 predictions from makeCvTpreds.\n"))
   
   level3tab <- maketkstatpreds(CvT.data, 
                                fittable, 
                                this.label,
                                model.args=model.args)
+  cat(paste0(length(level3tab),"sets of level3 predictions from maketkstatpreds.\n"))
   
   return(list(level2tab.cvt = level2tab.list$cvt,
               level2tab.stats = level2tab.list$stats,
@@ -89,7 +91,7 @@ makeCvTpreds <- function(CvT.data,
     #else if (this.cas %in% vol.chems) this.model <- "solve_gas_pbtk"
     # Just use gas_pbtk for everything:
     this.model <- "solve_gas_pbtk"
-    
+
     if (!is.null(this.model))
     {
       print(paste(label,": ",this.cas,sep=""))

@@ -1,0 +1,225 @@
+---
+title: "HTTK QSPRs: Text for Manuscript"
+author: "John Wambaugh"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{HTTK QSPRs: Text for Manuscript}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir= "C:/Users/jwambaug/git/CompTox-ExpoCast-HTTKQSPRs/")
+```
+
+```{r clear_memory, eval=TRUE}
+rm(list=ls()) 
+```
+
+```{r load_libraries, eval=TRUE}
+library(httk)
+```
+
+```{r load_data, eval= TRUE}
+load("data/interspecies.RData")
+load("data/Cvt-chems.RData")
+load("data/Cvt-data.RData")
+load("data/fittable.RData")
+load("data/level3-tables.RData")
+load("data/level2stats.RData")
+load("data/httk-goodchems.RData")
+load("data/chemicallists.RData")
+load("data/benchmarkstats.RData")
+  # Can't work with NA's:
+  level3tab <- level3tab[!names(level3tab) %in% c("HTPBTK-InVitro-AltClear","HTPBTK-InVitro-Rat")]
+```
+
+# Abstract
+```{r textforabstract}
+cat(paste0("We estimate that using rat in vivo data to evaluate QSPR models trained on human in vitro measured data might inflate error estimates by as much as root mean squared log10 (RMSLE) ",
+  signif(max(rathum.table["Non-Restrictive",]), 1),
+  ".\n"))
+cat(paste0("We estimate that AUC can be predicted by HTTK with RMSLE ",
+  signif(as.numeric(strsplit(AUC.stats.table["RMSLE In Vitro","HTPBTK-InVitro"]," ")[[1]][1]),1),
+  " for in vitro measurements and ",
+  signif(min(sapply(AUC.stats.table["RMSLE In Vitro",4:8],
+                    function(x) as.numeric(strsplit(x," ")[[1]][1]))
+                    ),1),
+  "-",
+  signif(max(sapply(AUC.stats.table["RMSLE In Vitro",4:8],
+                    function(x) as.numeric(strsplit(x," ")[[1]][1]))
+                    ),1),
+  " for QSPR models.\n"))
+```
+# Highlights
+```{r textforhighlights}
+cat(paste0("Using rat in vivo data to evaluate human HTTK may have increased the error by as much as RMSLE ",
+  signif(max(rathum.table["Non-Restrictive",]), 1),
+  ".\n"))    
+cat(paste0("A physiologically based toxicokinetic model using QSPR model predictions performed similarly to when in vitro values are used (RMSLE ~",
+  signif(as.numeric(strsplit(rmsle.stats.table["In Vitro","HTPBTK-InVitro"]," ")[[1]][1]),1),
+  ").\n"))
+```
+# Results
+
+## Evaluation Chemicals and Predictions
+```{r text_for_eval_chems_and_preds}
+cat(paste0("There were ",
+           length(unique(subset(fittable,is.na(Vdist))$DTXSID)),
+           " chemicals where we could not estimate Vd.\n"))
+cat(paste0("There were ",
+           length(unique(subset(fittable,is.na(Fgutabs))$DTXSID)),
+           " chemicals where we could not estimate Fgutabs.\n"))
+cat(paste0("Among the ",
+           length(unique(fittable$DTXSID)),
+           " remaining evaluation chemicals, ",
+           length(unique(subset(fittable,Species=="rat")$DTXSID)),
+           " had data in rat and ",
+           length(unique(subset(fittable,Species=="human")$DTXSID)),
+           " in human.\n")) 
+
+cat(paste("The three chemicals with the shortest half-lives in rat were",
+      paste(CvT.chems[order(CvT.chems$Thalf.fit)[1:3],]$PREFERRED_NAME,collapse=", "),
+      "-- mean of",
+      signif(mean(CvT.chems[order(CvT.chems$Thalf.fit)[1:3],"Thalf.fit"]),1),
+      "hours.\n"))
+
+cat(paste("The three chemicals with longest half-lives in rat were",
+      paste(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:3],]$PREFERRED_NAME,collapse=", "),
+      "-- mean of",
+      signif(mean(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:3],"Thalf.fit"]),1),
+      "hours.\n"))
+
+pharma <- read.csv("ccd_data/Chemical List ZINC15PHARMA-2024-09-09.csv")
+cat(paste(sum(CvT.chems$CASRN%in%pharma$CASRN),
+      "of the chemicals with in vitro HTTK data and in vivo concentration vs. time data were pharmaceuticals.\n"))
+
+```
+```{r describe_chemicals, eval=TRUE}
+pharma <- read.csv("ccd_data/Chemical List ZINC15PHARMA-2024-09-09.csv")
+pest.active<- read.csv("ccd_data/Chemical List EPAPCS-2024-12-09.csv")
+PFAS <- read.csv("ccd_data/Chemical List PFAS8a7v3-2024-12-09.csv")
+ToxCast <- read.csv("ccd_data/Chemical List ToxCast_invitroDB_v4_1-2024-12-09.csv")
+TSCA <- read.csv("ccd_data/Chemical List TSCA_ACTIVE_NCTI_0224-2024-12-09.csv")
+consumer <- read.csv("ccd_data/Chemical List EPACONS-2024-12-09.csv")
+
+cat(paste("Among the",
+          dim(CvT.chems)[1],
+          "evaluation chemicals,",
+          length(unique(subset(CvT.data, DTXSID %in% CvT.chems$DTXSID & Species=="rat")$DTXSID)),
+          "had data in rat and",
+          length(unique(subset(CvT.data, DTXSID %in% CvT.chems$DTXSID & Species=="human")$DTXSID)),
+          "in human.\n"))
+
+cat(paste("The",
+          length(unique(CvT.chems$DTXSID)),
+          "chemicals included (according to lists accessed 12/9/24)",
+          length(unique(subset(CvT.chems, CASRN %in% pharma$CASRN)$CASRN)),
+          "pharmaceuticals.\n"))
+
+cat(paste("Additionally, the evaluation chemicals included:",
+            dim(subset(CvT.chems, CASRN %in% TSCA$CASRN))[1],
+          "from the non-confidential Toxic Substances Control Act (TSCA) active inventory (https://comptox.epa.gov/dashboard/chemical-lists/TSCA_ACTIVE_NCTI_0224),",
+            dim(subset(CvT.chems, CASRN %in% pest.active$CASRN))[1],
+          "pesticide active ingredients (https://comptox.epa.gov/dashboard/chemical-lists/EPAPCS),",
+          dim(subset(CvT.chems, CASRN %in% consumer$CASRN))[1],
+          "that are found in consumer products (https://comptox.epa.gov/dashboard/chemical-lists/EPACONS),",
+          dim(subset(CvT.chems, CASRN %in% PFAS$CASRN))[1],
+          "per- and poly-fluoroalkyl substances (PFAS) (https://comptox.epa.gov/dashboard/chemical-lists/PFAS8a7v3), and",
+          dim(subset(CvT.chems, CASRN %in% ToxCast$CASRN))[1],
+          "that are part of the ToxCast screening program (https://comptox.epa.gov/dashboard/chemical-lists/ToxCast_invitroDB_v4_1).\n"))
+```
+
+## Interspecies concondrdance
+```{r textforpaper}
+cat(paste("Only",
+          dim(subset(CvT.chems,DTXSID%in%common_chems_all))[1],
+          "evaluation chemicals had both human and rat in vitro HTTK data.\n"))
+cat(paste("However, there are",
+      length(unique(common_chems)),
+      "chemicals with in vitro measured fup and Clint for both human and rat.\n"))
+
+cat(paste0("The rat-human differences were RMSLE ",
+           signif(fup_rmsle,2),
+           " for fup and ",
+           signif(clint_rmsle,2),
+           " for Clint.\n"))
+
+cat(paste0("As shown in Figure 2, RMSLE for Css was ",
+           signif(rathum.table["Non-Restrictive","Css"], 2),
+           ", RMSLE for Cmax was ",
+           signif(rathum.table["Non-Restrictive","Cmax"], 2),
+           ", and for AUC RMSLE was ",
+           signif(rathum.table["Non-Restrictive","AUC"], 2),
+           ".\n"))
+
+cat(paste0("Errors were slightly smaller for the ",
+           dim(subset(CvT.chems,DTXSID%in%common_chems_all))[1],
+           " chemicals with CvT data used in subsequent evaluations – RMSLE for Css was ",
+           signif(rathum.table["Non-Restrictive CvT","Css"], 2),
+           ", Cmax was ",
+           signif(rathum.table["Non-Restrictive CvT","Cmax"], 2),
+           ", and AUC was ",
+           signif(rathum.table["Non-Restrictive CvT","AUC"], 2),
+           ".\n")) 
+```
+## Performance Benchmarks
+
+```{r text_for_performance_benchmarks}
+good.chems <- get_cheminfo(info="dtxsid",model="gas_pbtk",class.exclude=FALSE)
+good.cvt.chems <- CvT.chems$DTXSID[CvT.chems$DTXSID %in% good.chems]
+invitro.clint <- subset(chem.physical_and_invitro.data,!is.na(Human.Clint))$DTXSID
+invitro.fup <- subset(chem.physical_and_invitro.data,!is.na(Human.Funbound.plasma))$DTXSID
+
+cat(paste0("There were ",
+           sum(CvT.chems$DTXSID%in%invitro.clint),
+           " evaluation chemicals with in vitro measured Clint and ",
+           sum(CvT.chems$DTXSID%in%invitro.fup),
+           " chemicals with in vitro measured fup, for a total of ",
+           sum(CvT.chems$DTXSID%in%invitro.fup | CvT.chems$DTXSID%in%invitro.clint),
+           " unique chemicals. However, since there were only ",
+           dim(subset(get_cheminfo(info=c("DTXSID","Funbound.plasma"),model="gas_pbtk",class.exclude=FALSE),
+       DTXSID %in% CvT.chems$DTXSID & Human.Funbound.plasma>0))[1],
+           " chemicals where fup > 0, which is required for the HT-PBTK model, ",
+           "in vitro-based predictions could only be evaluated for this set of ",
+           sum(CvT.chems$DTXSID%in%good.chems),
+           " chemicals.\n")) 
+cat(paste(
+  "It appears clear from the median error for HT-PBTK simulations that the ",
+  "majority of chemicals in this set are non-restrictive (RMSLE ",
+  bench.table["CvT RMSLE","In Vitro Non-Restrictive (48)"],
+  ") rather than restrictive (",
+  bench.table["CvT RMSLE","In Vitro Restrictive (48)"],
+  ").\n",
+  sep=""))
+cat(paste(
+  "For example, the difference for AUC is a factor of ",
+  signif(bench.table["AUC RMSLE","Y-Randomized (48)"]/
+         bench.table["AUC RMSLE","In Vitro Non-Restrictive (48)"],
+         2),
+  "-fold (or ",
+  signif(10^(bench.table["AUC RMSLE","Y-Randomized (48)"]-
+         bench.table["AUC RMSLE","In Vitro Non-Restrictive (48)"]),
+         2),
+  " times) between the appropriate in vitro value (",
+  bench.table["AUC RMSLE","In Vitro Non-Restrictive (48)"],
+  ") and the y-randomized value (",
+  bench.table["AUC RMSLE","Y-Randomized (48)"],
+  ").\n",
+  sep=""))
+cat(paste(
+  "In contrast, there is little difference for early CvT data -- a factor of ",
+  signif(bench.table["Early CvT RMSLE","Y-Randomized (89)"]/
+         bench.table["Early CvT RMSLE","In Vitro Non-Restrictive (56)"],
+         2),
+  "-fold between the appropriate in vitro value (",
+  bench.table["Early CvT RMSLE","In Vitro Non-Restrictive (56)"],
+  ") and the y-randomized value (",
+  bench.table["Early CvT RMSLE","Y-Randomized (89)"],
+  ").\n",
+  sep=""))
+
+cat(paste0("Note that the performance for Y-Randomization with non-restrictive clearance in Table X is not directly comparable to the performance of restrictive clerance. Both can be compared to the performance of non-restrictive clearance, but are not meaningfully compared to each other. Instead, since y-randomization is X larger we would expect..."))
+```

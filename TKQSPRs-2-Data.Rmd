@@ -69,7 +69,10 @@ PREV.SUP.TABLES <- 0
 output.prefix <- "May2025"
 ```
 
-
+Set restrictive vs. non-restrictive metabolic clearance:
+```{r time_stamp, eval = TRUE}
+RESTRICTIVE.CLEARANCE <- FALSE
+```
 
 # Load in vivo concentration vs. time data
 ```{r load_cvt_data, eval = TRUE}
@@ -120,6 +123,16 @@ series_res_set <- subset(series_res_set,
 
 # Other code looks for a column named "Compound":
 series_res_set[,"Compound"] <- series_res_set[,CVTCOMPOUNDNAME.COL]
+```
+```{r add_missing_CAS, eval=TRUE}
+subset(series_res_set,is.na(CAS))
+# Needs its CAS:
+series_res_set[series_res_set$DTXSID == "DTXSID6021117", "CAS"] <- "60-80-0"
+# Sodium valproate is valproic acid:
+series_res_set[series_res_set$DTXSID == "DTXSID5037072", "DTXSID"] <- "DTXSID6023733"
+# Needs its CAS:
+series_res_set[series_res_set$DTXSID == "DTXSID6023733", "CAS"] <- "99-66-1"
+length(unique(series_res_set$DTXSID))==length(unique(series_res_set$CAS))
 ```
 
 ```{r baddose, eval=FALSE}
@@ -599,7 +612,8 @@ for (this.chem in CvT.chems$DTXSID)
     CvT.chems[this.index,"Thalf.httk"] <- calc_half_life(dtxsid=this.chem,
                                                     species="rat",
                                                     default.to.human = TRUE,
-                                                    suppress.messages=TRUE)
+                                                    suppress.messages=TRUE,
+                              restrictive.clearance=RESTRICTIVE.CLEARANCE)
     CvT.chems[this.index,"Thalf.fit"] <- fittable[fittable$DTXSID==this.chem,
                                                   "halflife.tkstats"][1]
   }
@@ -669,6 +683,21 @@ CvT.chems <- merge(CvT.chems,
 ```
 
 ```{r write_out_data, eval= TRUE}
+cat(paste0("There are ",
+           length(unique(CvT.chems$DTXSID)),
+           " CvT evaluation chemicals.\n"))
+cat(paste0("There are ",
+           length(unique(fittable$DTXSID)),
+           " chemicals with suitable evaluation data.\n"))
+cat(paste0("There are ",
+           length(unique(CvT.data$DTXSID)),
+           " chemicals with CvT data.\n"))
+cat(paste0("There are ",
+           length(unique(subset(CvT.data,Species=="human")$DTXSID)),
+           " chemicals with human CvT data.\n"))
+cat(paste0("There are ",
+           length(unique(subset(CvT.data,Species=="rat")$DTXSID)),
+           " chemicals with rat CvT data.\n"))
 invitro <- httk.data
 save(invitro,file="data/httkinvitro.RData")
 save(CvT.chems,file="data/Cvt-chems.RData")

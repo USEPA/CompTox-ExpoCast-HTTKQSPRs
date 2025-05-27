@@ -82,9 +82,9 @@ chem_properties %>%
                    rfup = median(Rat.Funbound.plasma)) -> tidy_summary
 
 tidy_summary %>%
-  dplyr::mutate(SE = (hfup - rfup)^2) %>% 
+  dplyr::mutate(SE = (log10(hfup) - log10(rfup))^2) %>% 
   dplyr::ungroup() %>% dplyr::pull(SE) %>%
-  {sqrt(sum(.)/length(.))} -> fup_rmse
+  {sqrt(sum(.)/length(.))} -> fup_rmsle
 ```
 
 ```{r make_fupplot}
@@ -92,7 +92,7 @@ plotA <- ggplot(tidy_summary,
                 aes(x = hfup, y = rfup)) +
   geom_point() +
   geom_abline() +
-  annotate(label = paste0("RMSE\n = ", signif(fup_rmse, 2)),
+  annotate(label = paste0("RMSLE\n = ", signif(fup_rmsle, 2)),
            geom = "text",
            x = 5*10^-3/3, y = 0.85/5,
     size = 6
@@ -430,6 +430,8 @@ ggsave(filename = "figs/Fig2-human_rat_eval.png",
 save(common_chems,
      common_chems_all,
      rathum.table,
+     fup_rmsle,
+     clint_rmsle,
      file="data/interspecies.RData")
 write.csv(rathum.table,
           file="tables/SupTable-Interspecies.txt")
