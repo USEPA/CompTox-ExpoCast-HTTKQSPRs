@@ -565,7 +565,7 @@ httk.data$Human.Funbound.plasma <-
 
 # Treat fup = 0 as non-measurment:
 httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma == 0] <- NA
-httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma==0.005] <- NA
+#httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma==0.005] <- NA
 
 # Which chemicals would we normally use with HTTK PBTK:
 httk.both <- httk.data[,"CAS"][(apply(httk.data,1,function(x) 
