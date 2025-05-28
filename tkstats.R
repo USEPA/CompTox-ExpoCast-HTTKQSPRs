@@ -47,13 +47,13 @@ make_cvt_comparisons <- function(this.label,
                                  this.label,
                                  model.args = model.args
                                  )                                       
-  cat(paste0(length(level2tab.list),"sets of level2 predictions from makeCvTpreds.\n"))
+  cat(paste0(length(level2tab.list$rmsle)," sets of level2 predictions from makeCvTpreds.\n"))
   
   level3tab <- maketkstatpreds(CvT.data, 
                                fittable, 
                                this.label,
                                model.args=model.args)
-  cat(paste0(length(level3tab),"sets of level3 predictions from maketkstatpreds.\n"))
+  cat(paste0(length(level3tab$DTXSID)," sets of level3 predictions from maketkstatpreds.\n"))
   
   return(list(level2tab.cvt = level2tab.list$cvt,
               level2tab.stats = level2tab.list$stats,
@@ -82,7 +82,7 @@ makeCvTpreds <- function(CvT.data,
   
   cvt.table <- NULL
   stats.table <- NULL
-  for (this.cas in unique(CvT.data$CAS))
+  for (this.cas in sort(unique(CvT.data$CAS)))
   if (this.cas %in% #c(nonvol.chems, 
                       vol.chems)#)
   {

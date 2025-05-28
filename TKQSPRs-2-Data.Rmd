@@ -563,7 +563,7 @@ httk.data$Human.Funbound.plasma <-
   unlist(lapply(strsplit(httk.data$Human.Funbound.plasma,","),
   function(x) as.numeric(x[1])))
 
-# Treat fup = 0 as non-measurment:
+# Treat fup = 0 as non-measurement:
 httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma == 0] <- NA
 #httk.data$Human.Funbound.plasma[httk.data$Human.Funbound.plasma==0.005] <- NA
 
