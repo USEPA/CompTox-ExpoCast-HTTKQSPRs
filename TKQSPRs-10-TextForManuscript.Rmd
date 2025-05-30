@@ -307,11 +307,71 @@ cat(paste0("However, there were ",
 ```
 ## Level 2 Analysis
 ```{r text_for_level_2_analysis}
+cat(paste0("The QSPR models perform roughly equally, with RMSLE generally ",
+           "ranging between ",
+           1.1,
+           "and ",
+           1.3,
+           "in Table 7.\n"))
+
+cat(paste0("In Table 8 we compare the RMSLE, AAFE, and AFE. AFE indicates ",
+           "bias, with tendency to over-estimate – the AFE of ",
+           0.69,
+           "for predictions based on measured in vitro parameters corresponds ",
+           "to an average over-estimation of ",
+           4.9,
+           "-fold. The empirical fits to the in vivo data slightly "
+           "underestimated the observations.\n"))
+
+cat(paste0("Based on the full time series, the ensemble QSPR model ",
+           "predictions, using the most rapid predicted clearance, shows a ",
+           "slightly reduced average RMSLE of ",
+           1.1,
+           " compared to the in vitro measured data; however, the OPERA QSPR ",
+           "shows an even smaller average RMSLE of 1.0. When considering only ",
+           "the later timepoints, the ensemble QSPR and OPERA QSPR have the ",
+           "lowest average RMSLE values (",
+           1.2,
+           "),\n"))
+
+
+```
+
+## Level 3 Analysis
+```{r text_for_level_3_analysis}
+In vitro measured Clint and fup data predict AUC with an RMSLE of 1.3, while the QSPR models range from RMSLE 1.1 to 1.4. The ensemble and OPERA QSPR model predictions have the lowest RMSLE of 1.1, but the ensemble QSPR provides predictions for more chemicals. 
+
+From the AFE in Table 8, we see that there is a tendency to over-predict concentrations. All 
+
+
+Most of the QSPR models and the in vitro measured Clint and fup data were unsuccessful for predicting t½, with RMSLE indicating errors between 1.5 and 1.8 (32- to 63-fold). The QSPR models that were trained specifically to t½, data (rather than in vitro measured Clint and fup) produce better predictions except when compared with the ensemble QSPR model. 
 
 ```
 
 # Discussion
 ```{r text_for_discussion}
+Because the CvT data are also limited (81 chemicals), we have included training set chemicals in the Level 2 and 3 evaluations.
+
+. Comparison of the HT-PBTK predictions made with rat in vitro TK parameters against predictions made with human in vitro TK parameters indicated that species differences could inflate RMSLE by as much as 0.9 (Figure 9)
+
+TK model parameters estimated empirically from the full time course of in vivo data had mean RMSLE of 0.30 (AAFE 1.7) across all chemicals, while HT-PBTK model simulations based on in vitro Clint and fup measurements had a mean RMSLE of 1.2 (AAFE 38). 
+Across the full time course, both the in vitro measured data and QSPR model predictions only performed slightly better than the y-randomized predictions (RMSLE 1.3, AAFE 78).
+
+For the elimination phase, the HT-PBTK models parameterized using in vitro measurements had a mean RMSLE of 1.4, while the RMSLE values for HT-PBTK models parameterized using individual QSPR model predictions ranged from 1.2 – 1.4. In comparison, the HT-PBTK models parameterized using y-randomized values had a mean RMSLE of 1.5.
+
+An ensemble prediction using the maximum clearance predicted across all QSPR models had an RMSLE of 1.1 and 1.2 for the full time-course and elimination phase, respectively. 
+
+cat(paste0("However, the AFE suggests that the non-restrictive assumption is ",
+           "still slightly conservative from a human health risk assessment ",
+           "perspective (",
+           0.69,
+           "restrictive versus ",
+           0.09,
+           "non-restrictive; Suppl Table 7).\n"))
+
+
+
+
 reset_httk()
 tot.zero <- sum(sapply(get_cheminfo(info="Clint",
                                     median.only = TRUE,
@@ -335,4 +395,20 @@ cat(paste(sum(invitro$Human.Clint%in% 0),
           "percent) in the httk data set as whole.\n"
           ))
 cat("\n")
+
+Here we observe that empirical one- or two-compartment fits to the CvT data can predicted Cmax with RMSLE 0.7 (5-fold) and AUC with RMSLE 0.62 (4-fold) (Table 9), (Padilla Mercado et al. 2025)). 
+
+As summarized in Table 9, here we found that Cmax could be predicted with an RMSLE of 0.82 with in vitro measured data and an RMSLE of 0.81 with the ensemble QSPR model. AUC could be predicted with RMSLE of 1.3 using in vitro measured data and 1.1 using the ensemble QSPR model. 
+
+For AUC predicted with in vitro parameters, we observe an RMSLE of 1.1 for pharmaceutical compounds (13-fold) and 1.5 (32-fold) for non-pharmaceuticals
+
+Using chemicals with Clint and fup measured both in human and rat, we found that predictions of Cmax had mean RMSLE of 0.24 across chemicals when human data were used instead of rat. AUC had RMSLE of 0.31. 
+
+. The observed error for AUC was 1.3 (in Table 9), while the interspecies error was estimated to be 0.307. 
+
+For AUC, optimized empirical TK model fits to the in vivo data indicated an RMSLE of 0.16 while the HT-PBTK model parameterized using in vitro values for random (incorrect) chemicals had an AUC RMSLE of 1.8. 
+
+Using chemical-specific in vitro measured data in the HT-PBTK model simulated the AUC with an RMSLE 1.3, while HT-PBTK model simulations using QSPR model predictions ranged in RMSLE values from 1.1-1.4. HT-PBTK models simulations base on the ensemble QSAR model predictions, using the maximum clearance predicted across all QSPR models, predicted the AUC with an RMSLE of 1.1 – this is better than using the in vitro measured data for the evaluation chemicals. Using the ensemble QSPR model parameter predictions, the total clearance CLtot RMSLE is 1.4. For Cmax, the empirical TK model fits had an RMSLE 0.21, while HT-PBTK models parameterized using Clint and fup for random chemicals had an RMSLE of 0.88. Note that physico-chemical properties, which largely determine Cmax, were not randomized, which is why the sensitivity analysis in Figure 9 shows Cmax is insensitive to Clint and fup. HT-PBTK model simulations using in vitro measured data had an RMSLE of 0.84 for Cmax QSPR models, while the HT-PBTK models parameterized using QSPR model predictions showed RMSLE values for Cmax ranging from 0.72-0.89, with the ensemble QSPR model predictions being 0.77. Overall, predictions of Vd had RMSLE ranging between 0.81-1.1, with the random model yielding 1.0. Here, we have assumed that Fbio only depends on first-pass metabolism, as informed by Clint. This bioavailability assumption does not appear to explain the observed discrepancies with in vivo data. The uncertainty analysis (Figure 9) confirmed that improving HTTK estimates of the elimination phase would be most likely to enhance prediction accuracy. Two of the QSPR models predicted t1/2, so a QSPR prediction for Vd was needed to compare the predictions to in vivo data. However, as we see in Figure 9, Vd is predicted relatively accurately from physico-chemical properties. For a set of 1352 pharmaceuticals Bouarar et al. (2019) found that they could directly predict Vd (RMSE 0.208), CLtot (RMSE 0.103), and t½ (RMSE 0.154).
+
+
 ```
