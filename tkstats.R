@@ -117,7 +117,8 @@ makeCvTpreds <- function(CvT.data,
             {
               params <- suppressWarnings(do.call("parameterize_pbtk",
                                                  args=c(list(
-                                                   chem.cas=this.cas,,
+                                                   chem.cas=this.cas,
+                                                   class.exclude = FALSE,
                                                    species=this.species),
                                                    model.args)))
             } else if (this.model=="solve_gas_pbtk")
@@ -125,6 +126,7 @@ makeCvTpreds <- function(CvT.data,
               params <- suppressWarnings(do.call("parameterize_gas_pbtk",
                                                  args=c(list(
                                                    chem.cas=this.cas,
+                                                   class.exclude = FALSE,
                                                    species=this.species),
                                                    model.args)))
            #   if (this.cas %in% c("335-67-1", "3871-99-6")) browser()
@@ -145,6 +147,7 @@ makeCvTpreds <- function(CvT.data,
                      iv.dose=(this.route=="iv"),
                      dose=this.dose,
                      suppress.messages=TRUE,
+                     class.exclude = FALSE,
                      input.units='mg/kg',
                      output.units = "mg/L",
                      exp.conc=0),
@@ -613,6 +616,7 @@ maketkstatpreds <- function(
           chem.cas=this.cas,
           species=this.species,
           default.to.human=TRUE,
+          class.exclude = FALSE,
           suppress.messages=TRUE)) 
         thalf.obs <- unlist(as.numeric(this.subset2[,"halflife"])) # h
         kelim.obs <- unlist(as.numeric(this.subset2[,"kelim"])) # 1/h
@@ -621,6 +625,7 @@ maketkstatpreds <- function(
         fbio.pred <- calc_hep_bioavailability(chem.cas=this.cas,                               # Css = fbio/ Cltot
                                               species=this.species,
                                               default.to.human=TRUE,
+                                              class.exclude = FALSE,
                                               suppress.messages = TRUE)
         css.pred <- try(signif(suppressWarnings(
           do.call("calc_css",
@@ -629,6 +634,7 @@ maketkstatpreds <- function(
               species=this.species,             # Dimensional analysis:
               parameterize.args.list=model.args,# [Css] = mg/L / 1 mg/kg/day
               model="gas_pbtk",                 # [Cltot] = L/kg/day
+              class.exclude = FALSE,
               suppress.messages=TRUE,           # day -> hours:
               output.units = "mg/L"
               )

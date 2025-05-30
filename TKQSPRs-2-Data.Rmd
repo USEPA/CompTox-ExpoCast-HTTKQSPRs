@@ -605,6 +605,7 @@ for (this.chem in CvT.chems$DTXSID)
                                   species="rat",
                                   default.to.human=TRUE,
                                   model="3compartment",
+                                  class.exclude = FALSE,
                                   suppress.messages=TRUE) &
       this.chem %in% subset(fittable, Species=="rat")$DTXSID)
   {
@@ -612,6 +613,7 @@ for (this.chem in CvT.chems$DTXSID)
     CvT.chems[this.index,"Thalf.httk"] <- calc_half_life(dtxsid=this.chem,
                                                     species="rat",
                                                     default.to.human = TRUE,
+                                                    class.exclude = FALSE,
                                                     suppress.messages=TRUE,
                               restrictive.clearance=RESTRICTIVE.CLEARANCE)
     CvT.chems[this.index,"Thalf.fit"] <- fittable[fittable$DTXSID==this.chem,

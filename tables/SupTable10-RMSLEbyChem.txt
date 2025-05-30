@@ -1,80 +1,82 @@
 "","In Vivo Fits","HTPBTK-InVitro","HTPBTK-Ensemble","HTPBTK-OPERA","HTPBTK-Dawson","HTPBTK-ADMET","HTPBTK-Pradeep","HTPBTK-YRandom"
-"[4-Chloro-6-(2,3-xylidino)-2-pyrimidinylthio]acetic acid",0.222,0.672,0.779,NA,0.63,0.392,0.679,0.673
-"1-Chloro-2-propanol",NA,NA,0.411,0.89,NA,NA,NA,0.701
-"1-Naphthalenol, 1-(N-methylcarbamate)",0.106,1.76,1.53,NA,1.83,1.57,1.83,2.04
-"1,2-Dichloroethane",0.312,0.66,1.07,NA,NA,NA,NA,0.801
-"2-(Perfluorooctyl)ethanol",0.412,NA,NA,NA,NA,NA,NA,1.24
-"2-Hydroxy-4-methoxybenzophenone",0.423,1.57,1.26,NA,1.44,1.19,1.53,1.88
-"2-Methylimidazole",0.168,NA,0.208,0.65,0.7,0.511,0.209,0.763
-"2-Methyltetrahydrofuran",0.508,NA,0.76,0.76,NA,NA,NA,1.15
-"2,4-Dichlorophenoxyacetic acid",0.366,0.758,2.76,NA,NA,1.99,2.04,1.72
-"4-Methylimidazole",0.24,NA,0.576,0.388,0.434,0.323,0.581,0.771
-"5,5-Diphenylhydantoin",0.15,0.627,0.425,NA,0.425,0.697,0.406,0.634
-"Acrylonitrile",0.241,0.646,0.712,NA,NA,NA,NA,0.968
-"Alachlor",0.448,1.65,1.65,NA,1.89,1.76,1.92,2.15
-"alpha-Thujone",0.341,NA,0.813,0.813,NA,NA,NA,1.15
-"Alprazolam",NA,1.83,0.508,NA,1.11,0.952,1.09,1.2
-"Anthraquinone",0.246,NA,1.17,1.17,1.21,1.33,NA,1.52
-"Bensulide",0.382,0.775,0.698,NA,0.987,0.736,1.17,1.32
-"Benzophenone",0.319,0.488,0.669,NA,0.522,0.478,NA,0.725
-"Bis(2-chloroethoxy)methane",0.161,NA,0.569,0.569,NA,NA,NA,1.42
-"Bisphenol A",0.1,1.03,1.03,NA,1.04,1.69,0.969,1.33
-"Boscalid",0.196,0.614,0.564,NA,0.563,0.756,0.66,0.824
-"Bosentan",0.321,1,1.42,NA,1.38,1.45,1.21,1.28
-"Bromochloroacetic acid",0.386,NA,0.729,NA,NA,1.01,0.662,0.897
-"Bromodichloromethane",0.49,NA,1.17,1.17,NA,NA,NA,1.56
-"C.I. Solvent Red 1",NA,NA,0.937,0.921,0.842,NA,NA,1.52
-"Camphor",0.241,NA,0.555,0.555,NA,NA,NA,0.798
-"Carbon disulfide",0.136,NA,NA,NA,NA,NA,NA,0.456
-"Chloridazon",0.456,0.931,1.4,NA,1.23,0.965,1.15,1.66
-"Cyclanilide",0.232,0.697,1.88,NA,1.52,1.22,1.59,1.43
-"Cyclosporin A",0.11,NA,1.54,1.12,NA,1.33,1.03,1.1
-"Diazoxon",0.268,1.64,1.88,NA,1.58,2.04,1.56,1.76
-"Dibromoacetic acid",0.336,NA,0.733,NA,NA,0.803,0.587,0.968
-"Dichloroacetic acid",0.375,NA,0.897,NA,NA,0.742,0.835,0.947
-"Dichloromethane",NA,0.772,1.08,NA,NA,NA,NA,0.796
-"Diclofenac",NA,NA,0.593,0.574,0.513,NA,NA,0.562
-"Diltiazem",0.439,NA,0.699,0.698,0.847,NA,NA,1.18
-"Ephedrine",0.288,NA,0.755,0.864,0.698,NA,NA,1.1
-"Etoxazole",0.214,NA,0.953,NA,0.696,0.664,0.653,1.05
-"Fenarimol",0.24,0.767,0.492,NA,0.52,0.491,NA,0.975
-"Flufenacet",0.326,1.42,1.34,NA,1.48,1.49,1.54,2.64
-"Formamide",0.19,NA,1.27,NA,NA,0.862,1.27,1.22
-"Hexachlorobenzene",0.121,NA,NA,NA,NA,NA,NA,0.712
-"Ibuprofen",0.167,1.26,1.32,NA,1.3,0.94,1.15,1.21
-"Imidacloprid",NA,1.2,1.37,NA,1.38,1.12,1.32,1.3
-"Imipramine",NA,0.547,0.555,NA,0.691,0.894,1.33,1.48
-"Isoeugenol",0.361,NA,0.655,NA,0.807,0.73,0.826,1.08
-"Methyleugenol",0.413,0.806,0.788,NA,NA,NA,NA,1.31
-"Midazolam",0.0092,0.964,0.487,NA,1.19,NA,NA,1.22
-"Naphthalene",0.308,0.424,0.416,NA,NA,NA,NA,0.645
-"Nilvadipine",0.335,2.48,1.09,1.15,1.04,1.04,1.12,1.25
+"[4-Chloro-6-(2,3-xylidino)-2-pyrimidinylthio]acetic acid",0.222,0.668,0.771,NA,0.605,0.373,0.652,0.669
+"1-Chloro-2-propanol",NA,NA,0.411,0.887,NA,NA,NA,0.773
+"1-Naphthalenol, 1-(N-methylcarbamate)",0.106,1.86,1.56,NA,1.87,1.58,1.88,2.04
+"1,2-Dichloroethane",0.312,0.627,1.03,NA,NA,NA,NA,0.773
+"2-(Perfluorooctyl)ethanol",0.412,NA,1.16,NA,NA,NA,NA,1.39
+"2-Hydroxy-4-methoxybenzophenone",0.423,1.59,1.32,NA,1.54,1.35,1.58,1.98
+"2-Methylimidazole",0.168,NA,0.258,0.65,0.719,0.466,0.271,0.805
+"2-Methyltetrahydrofuran",0.508,NA,0.749,0.749,NA,NA,NA,1.08
+"2,4-Dichlorophenoxyacetic acid",0.366,0.786,2.54,NA,NA,1.47,1.58,1.62
+"4-Methylimidazole",0.24,NA,0.608,0.403,0.45,0.342,0.614,0.85
+"5,5-Diphenylhydantoin",0.15,0.627,0.425,NA,0.425,0.697,0.406,0.531
+"Acrylonitrile",0.241,0.625,0.704,NA,NA,NA,NA,0.832
+"Alachlor",0.448,1.78,1.78,NA,2.03,1.88,2.03,2.42
+"alpha-Thujone",0.341,NA,0.89,0.89,NA,NA,NA,1.3
+"Alprazolam",NA,1.83,0.508,NA,1.11,0.952,1.09,1.32
+"Anthraquinone",0.246,NA,1.23,1.21,1.27,1.4,NA,1.53
+"Bensulide",0.382,0.806,0.76,NA,1.07,0.841,1.23,1.55
+"Benzophenone",0.319,0.466,0.659,NA,0.477,0.48,NA,0.626
+"Bis(2-chloroethoxy)methane",0.161,NA,0.562,0.562,NA,NA,NA,1.34
+"Bisphenol A",0.1,1.03,1.03,NA,1.04,1.69,0.969,1.43
+"Boscalid",0.196,0.65,0.603,NA,0.605,0.777,0.714,0.872
+"Bosentan",0.321,0.756,1.34,NA,1.18,1.39,0.759,1.25
+"Bromochloroacetic acid",0.386,NA,0.72,NA,NA,1.01,0.656,0.93
+"Bromodichloromethane",0.49,NA,1.28,1.28,NA,NA,NA,1.53
+"C.I. Solvent Red 1",NA,NA,0.892,0.894,0.796,NA,NA,1.56
+"Camphor",0.241,NA,0.558,0.558,NA,NA,NA,0.91
+"Carbon disulfide",0.136,NA,NA,NA,NA,NA,NA,0.455
+"Chloridazon",0.456,0.939,1.38,NA,1.2,0.945,1.12,1.9
+"Cyclanilide",0.232,0.572,1.79,NA,1.24,0.918,1.31,1.23
+"Cyclosporin A",0.11,NA,1.53,0.983,NA,1.25,0.828,0.98
+"Diazoxon",0.268,1.58,1.82,NA,1.47,1.97,1.44,1.63
+"Dibromoacetic acid",0.336,NA,0.68,NA,NA,0.798,0.533,0.851
+"Dichloroacetic acid",0.375,NA,0.902,NA,NA,0.749,0.841,0.968
+"Dichloromethane",NA,0.765,1.07,NA,NA,NA,NA,0.898
+"Diclofenac",NA,0.593,0.593,0.574,0.513,NA,NA,0.591
+"Diltiazem",0.439,NA,0.953,0.95,1.14,NA,NA,1.12
+"Ephedrine",0.288,NA,0.845,0.941,0.775,NA,NA,1.15
+"Etoxazole",0.214,NA,0.915,NA,0.698,0.664,0.68,1.1
+"Fenarimol",0.24,0.843,0.542,NA,0.561,0.542,NA,0.932
+"Flufenacet",0.326,1.53,1.43,NA,1.59,1.53,1.66,2.63
+"Formamide",0.19,NA,1.27,NA,NA,0.883,1.27,1.31
+"Hexachlorobenzene",0.121,NA,NA,NA,NA,NA,NA,0.715
+"Ibuprofen",0.167,1.26,1.32,NA,1.3,0.94,1.15,1.08
+"Imidacloprid",NA,1.26,1.39,NA,1.4,1.17,1.33,1.33
+"Imipramine",NA,0.547,0.555,NA,0.691,0.894,1.33,1.31
+"Isoeugenol",0.361,NA,0.692,NA,0.84,0.836,0.92,1.32
+"Methyleugenol",0.413,0.825,0.803,NA,NA,NA,NA,1.37
+"Midazolam",0.0092,0.964,0.487,NA,1.19,NA,NA,1.14
+"Naphthalene",0.308,0.447,0.439,NA,NA,NA,NA,0.711
+"Nilvadipine",0.335,1.29,1.24,1.14,1,1.02,1.07,1.31
 "Nitrite ion",0.247,NA,NA,NA,NA,NA,NA,NA
-"Novaluron",0.173,NA,1.1,NA,1.07,1.08,0.984,0.991
-"Ondansetron",0.212,0.932,0.577,NA,0.57,0.65,0.902,0.754
-"Oxazepam",0.234,0.964,0.845,NA,0.895,0.881,0.915,1.09
-"Oxoacetic acid--water (1/1)",0.0763,NA,0.706,0.706,NA,NA,NA,0.7
-"Oxymetholone",0.182,NA,0.52,0.509,0.533,0.951,0.598,1.08
-"Pentachlorophenol",0.295,0.867,1.39,NA,NA,0.596,1.2,0.843
-"Perfluorodecanoic acid",0.183,1.01,0.44,NA,NA,NA,NA,1.91
-"Perfluorohexanoic acid",0.607,1.46,1.45,NA,NA,NA,NA,1.54
-"Perfluorooctanoic acid",0.694,2.2,2.21,NA,NA,NA,NA,2.15
-"Permethrin",0.296,1.15,1.17,NA,0.916,1.11,NA,1.08
-"Phenacetin",0.198,0.263,0.376,NA,0.251,0.297,0.289,0.575
-"Potassium perfluorobutanesulfonate",0.495,1.24,1.24,1.24,NA,NA,NA,1.57
-"Potassium perfluorohexanesulfonate",0.61,0.704,0.799,NA,NA,NA,NA,2.24
-"Primidone",NA,NA,1.59,0.318,1.46,1.57,1.42,1.49
-"Propamocarb hydrochloride",0.253,2.2,1.94,NA,2.43,1.93,NA,2.08
-"Propylparaben",NA,0.721,1.23,NA,0.582,0.99,0.695,0.947
-"Propyzamide",0.378,0.745,1.07,NA,1.1,1.02,NA,1.34
-"Pyrithiobac sodium",0.18,1.48,1.63,NA,1.35,1.36,1.56,1.52
-"Resmethrin",0.245,NA,1.14,NA,0.89,1.05,0.828,1.05
-"S-Bioallethrin",0.251,0.853,0.784,1.07,0.972,0.907,NA,1.35
-"Simazine",0.321,1.39,0.969,NA,NA,1.08,NA,1.4
-"Tamoxifen",0.056,1.45,0.962,NA,0.923,0.892,0.912,0.99
-"tert-Amyl methyl ether",NA,0.202,0.306,NA,NA,NA,NA,0.65
-"Tetralin",0.197,NA,0.662,0.662,NA,NA,NA,1.31
-"Thiodiglycolic acid",0.204,NA,0.948,1.03,NA,NA,NA,1.1
-"Tolbutamide",0.0942,0.521,0.536,NA,0.536,0.536,0.536,0.494
-"Trichloroethylene",NA,0.692,1.49,NA,NA,NA,NA,0.888
-"Triclosan",0.712,0.964,0.986,NA,0.959,0.963,0.958,1.04
+"Novaluron",0.173,NA,1.08,NA,NA,NA,NA,1.02
+"Ondansetron",0.212,0.975,0.741,NA,0.731,0.815,0.959,0.82
+"Oxazepam",0.234,0.937,0.823,NA,0.882,0.88,0.906,0.967
+"Oxoacetic acid--water (1/1)",0.0763,NA,0.718,0.718,NA,NA,NA,0.75
+"Oxymetholone",0.182,NA,0.613,0.667,0.65,1.08,0.675,1.1
+"Pentachlorophenol",0.295,0.867,1.39,NA,NA,0.596,1.2,1.01
+"Perfluorodecanoic acid",0.183,0.501,0.382,NA,NA,NA,NA,1.34
+"Perfluorohexanoic acid",0.607,1.52,1.48,NA,NA,NA,NA,1.43
+"Perfluorooctanoic acid",0.694,0.967,0.967,NA,NA,NA,NA,1.78
+"Permethrin",0.296,1.06,1.09,NA,0.834,0.997,NA,1.02
+"Phenacetin",0.198,0.267,0.337,NA,0.257,0.335,0.268,0.592
+"Phenazone",0.0451,0.989,0.408,NA,0.438,0.598,0.408,0.797
+"Potassium perfluorobutanesulfonate",0.495,1.05,1.26,1.25,NA,NA,NA,1.6
+"Potassium perfluorohexanesulfonate",0.61,0.704,0.799,NA,NA,NA,NA,2.21
+"Primidone",NA,NA,1.6,0.319,1.46,1.58,1.42,1.58
+"Propamocarb hydrochloride",0.253,2.24,1.93,NA,2.54,1.92,NA,2.26
+"Propylparaben",NA,0.654,1.14,NA,0.529,0.85,0.64,0.96
+"Propyzamide",0.378,0.738,1.04,NA,1.06,0.984,NA,1.19
+"Pyrithiobac sodium",0.18,1.49,1.64,NA,1.37,1.36,1.59,1.31
+"Resmethrin",0.245,NA,1.09,NA,0.86,0.991,0.811,1.13
+"S-Bioallethrin",0.251,0.866,0.776,1.16,1.04,0.963,NA,1.32
+"Simazine",0.321,1.45,1.05,NA,NA,1.15,NA,1.52
+"Tamoxifen",0.056,1.34,0.916,NA,0.982,0.945,1.05,1.2
+"tert-Amyl methyl ether",NA,0.337,0.224,NA,NA,NA,NA,0.582
+"Tetralin",0.197,NA,0.742,0.742,NA,NA,NA,0.957
+"Thiodiglycolic acid",0.204,NA,0.991,1.03,NA,NA,NA,0.973
+"Tolbutamide",0.0942,0.521,0.536,NA,0.536,0.536,0.536,0.469
+"Trichloroethylene",NA,0.734,1.42,NA,NA,NA,NA,0.986
+"Triclosan",0.712,0.983,0.988,NA,0.986,1,0.993,1.07
+"Valproic acid",0.131,0.52,1.12,0.574,0.698,NA,0.997,0.908

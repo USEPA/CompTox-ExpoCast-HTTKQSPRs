@@ -168,10 +168,15 @@ cat(paste0("Errors were slightly smaller for the ",
 ## Performance Benchmarks
 
 ```{r text_for_performance_benchmarks}
-good.chems <- get_cheminfo(info="dtxsid",model="gas_pbtk",class.exclude=FALSE)
+good.chems <- get_cheminfo(info="dtxsid",
+                           model="gas_pbtk",
+                           class.exclude=FALSE,
+                           suppress.messages=TRUE)
 good.cvt.chems <- CvT.chems$DTXSID[CvT.chems$DTXSID %in% good.chems]
-invitro.clint <- subset(chem.physical_and_invitro.data,!is.na(Human.Clint))$DTXSID
-invitro.fup <- subset(chem.physical_and_invitro.data,!is.na(Human.Funbound.plasma))$DTXSID
+invitro.clint <- subset(chem.physical_and_invitro.data,
+                        !is.na(Human.Clint))$DTXSID
+invitro.fup <- subset(chem.physical_and_invitro.data,
+                      !is.na(Human.Funbound.plasma))$DTXSID
 
 cat(paste0("There were ",
            sum(CvT.chems$DTXSID%in%invitro.clint),
@@ -180,46 +185,125 @@ cat(paste0("There were ",
            " chemicals with in vitro measured fup, for a total of ",
            sum(CvT.chems$DTXSID%in%invitro.fup | CvT.chems$DTXSID%in%invitro.clint),
            " unique chemicals. However, since there were only ",
-           dim(subset(get_cheminfo(info=c("DTXSID","Funbound.plasma"),model="gas_pbtk",class.exclude=FALSE),
+           dim(subset(get_cheminfo(info=c("DTXSID","Funbound.plasma"),
+                                   model="gas_pbtk",
+                                   class.exclude=FALSE,
+                                   suppress.messages=TRUE),
        DTXSID %in% CvT.chems$DTXSID & Human.Funbound.plasma>0))[1],
            " chemicals where fup > 0, which is required for the HT-PBTK model, ",
            "in vitro-based predictions could only be evaluated for this set of ",
            sum(CvT.chems$DTXSID%in%good.chems),
            " chemicals.\n")) 
+
+NUM.CHEMS <- length(good.cvt.chems)
 cat(paste(
   "It appears clear from the median error for HT-PBTK simulations that the ",
   "majority of chemicals in this set are non-restrictive (RMSLE ",
-  bench.table["CvT RMSLE","In Vitro Non-Restrictive (48)"],
+  bench.table["CvT RMSLE",
+              paste0("In Vitro Non-Restrictive (",
+              NUM.CHEMS,
+              ")")],
   ") rather than restrictive (",
-  bench.table["CvT RMSLE","In Vitro Restrictive (48)"],
-  ").\n",
-  sep=""))
-cat(paste(
-  "For example, the difference for AUC is a factor of ",
-  signif(bench.table["AUC RMSLE","Y-Randomized (48)"]/
-         bench.table["AUC RMSLE","In Vitro Non-Restrictive (48)"],
-         2),
-  "-fold (or ",
-  signif(10^(bench.table["AUC RMSLE","Y-Randomized (48)"]-
-         bench.table["AUC RMSLE","In Vitro Non-Restrictive (48)"]),
-         2),
-  " times) between the appropriate in vitro value (",
-  bench.table["AUC RMSLE","In Vitro Non-Restrictive (48)"],
-  ") and the y-randomized value (",
-  bench.table["AUC RMSLE","Y-Randomized (48)"],
-  ").\n",
-  sep=""))
-cat(paste(
-  "In contrast, there is little difference for early CvT data -- a factor of ",
-  signif(bench.table["Early CvT RMSLE","Y-Randomized (89)"]/
-         bench.table["Early CvT RMSLE","In Vitro Non-Restrictive (56)"],
-         2),
-  "-fold between the appropriate in vitro value (",
-  bench.table["Early CvT RMSLE","In Vitro Non-Restrictive (56)"],
-  ") and the y-randomized value (",
-  bench.table["Early CvT RMSLE","Y-Randomized (89)"],
+  bench.table["CvT RMSLE",paste0("In Vitro Restrictive (",
+              NUM.CHEMS,
+              ")")],
   ").\n",
   sep=""))
 
-cat(paste0("Note that the performance for Y-Randomization with non-restrictive clearance in Table X is not directly comparable to the performance of restrictive clerance. Both can be compared to the performance of non-restrictive clearance, but are not meaningfully compared to each other. Instead, since y-randomization is X larger we would expect..."))
+
+cat(paste0("Note that the performance for y-randomization with non-restrictive",
+           " clearance (",
+                      bench.table["CvT RMSLE",
+                     paste0("Y-Randomized (",
+                     NUM.CHEMS,
+                     ")")],
+           ") in Table 5 is not directly comparable to the performance of ",
+           "restrictive clearance. Both can be compared to the performance of ",
+           "non-restrictive clearance but are not meaningfully compared to ",
+           "each other since the y-randomization was only conducted for the ",
+           "for the non-restrictive case.",
+           " The error of y-randomized restrictive simulations would be larger.\n"))
+
+AUC.rmsle.nr <- bench.table["AUC RMSLE",
+                     paste0("In Vitro Non-Restrictive (",
+                     NUM.CHEMS,
+                     ")")]
+AUC.rmsle.yrand <- bench.table["AUC RMSLE",
+                     paste0("Y-Randomized (",
+                     NUM.CHEMS,
+                     ")")] 
+AUC.yrand.change <- signif(AUC.rmsle.yrand/AUC.rmsle.nr, 2) 
+cat(paste(
+  "For example, the difference in prediction error for AUC is a factor of ",
+  AUC.yrand.change,
+  "-fold (or ",
+  signif(10^(AUC.yrand.change),2),
+  " times) between the appropriate in vitro value (",
+  bench.table["AUC RMSLE",
+              paste0("In Vitro Non-Restrictive (",
+              NUM.CHEMS,
+              ")")],
+  ") and the y-randomized value (",
+  bench.table["AUC RMSLE",
+              paste0("Y-Randomized (",
+              NUM.CHEMS,
+              ")")],
+  ").\n",
+  sep=""))
+
+early.rmsle.nr <- bench.table["Early CvT RMSLE",
+                     paste0("In Vitro Non-Restrictive (",
+                     NUM.CHEMS,
+                     ")")]
+early.rmsle.yrand <- bench.table["Early CvT RMSLE",
+                     paste0("Y-Randomized (",
+                     NUM.CHEMS,
+                     ")")] 
+early.yrand.change <- signif(early.rmsle.yrand/early.rmsle.nr, 2) 
+
+cat(paste(
+  "In contrast, there is little difference for early CvT data -- a factor of ",
+  early.yrand.change,
+  "-fold between the appropriate in vitro value (",
+  early.rmsle.nr,
+  ") and the y-randomized value (",
+  early.rmsle.yrand,
+  ").\n",
+  sep=""))
+
+```
+## QSPR model predictions
+```{r text_for_manuscript, eval = TRUE}
+cat(paste("Evaluation data for Clint for",
+      sum(sapply(invitro$Human.Clint,function(x) !is.na(x))),
+      "chemicals and fup for",
+      sum(sapply(invitro$Human.Funbound.plasma,function(x) !is.na(x))),
+      ".\n"
+      ))
+cat("\n")
+reset_httk()
+tot.zero <- sum(sapply(get_cheminfo(info="Clint",
+                                    median.only = TRUE,
+                                    class.exclude = FALSE,
+                                    suppress.messages = TRUE),
+                       function(x) 0%in%x))
+tot.clint <- sum(sapply(get_cheminfo(info="Clint",
+                                     median.only = TRUE,
+                                     class.exclude = FALSE,
+                                     suppress.messages=TRUE),
+                        function(x) !is.na(x)))
+cat("\n")
+cat("Discussion\n")
+cat(paste(sum(invitro$Human.Clint%in% 0),
+          "out of",
+          sum(!is.na(invitro$Human.Clint)),
+          "chemicals with in vitro HTTK Clint measured data have no observed clearance (that is, they are metabolically stable) compared with",
+          tot.zero,
+          "out of",
+          tot.clint,
+          "measured Clint values (",
+          signif(tot.zero/tot.clint*100,2),
+          "percent) in the httk data set as whole.\n"
+          ))
+cat("\n")
 ```

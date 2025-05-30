@@ -90,10 +90,12 @@ cat("\n")
 reset_httk()
 tot.zero <- sum(sapply(get_cheminfo(info="Clint",
                                     median.only = TRUE,
+                                    class.exclude = FALSE,
                                     suppress.messages = TRUE),
                        function(x) 0%in%x))
 tot.clint <- sum(sapply(get_cheminfo(info="Clint",
                                      median.only = TRUE,
+                                     class.exclude = FALSE,
                                      suppress.messages=TRUE),
                         function(x) !is.na(x)))
 cat("\n")
