@@ -70,6 +70,7 @@ cat(paste(dim(subset(fittable,!is.na(Vdist) #| !is.na(V1)
                      ))[1],
           "chemicals where volume of distribution could be estimated (iv data available), allowing us to make empirical predictions.\n"))
 ```
+
 ## Get rid of chemical predictions that are possibly just training set lookups:
 ```{r remove_training_chems, eval=TRUE}
 CvT.chems.notraining <- CvT.chems

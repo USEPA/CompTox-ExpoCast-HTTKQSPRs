@@ -1,1 +1,1 @@
-"DTXSID","CAS","Model","Species"
+"DTXSID"	"CAS"	"Model"	"Species"

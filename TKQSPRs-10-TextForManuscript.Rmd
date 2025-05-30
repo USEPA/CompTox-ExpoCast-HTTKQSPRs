@@ -26,6 +26,7 @@ library(httk)
 load("data/interspecies.RData")
 load("data/Cvt-chems.RData")
 load("data/Cvt-data.RData")
+load("data/cvT-chems-nona.RData")
 load("data/fittable.RData")
 load("data/level3-tables.RData")
 load("data/level2stats.RData")
@@ -273,14 +274,44 @@ cat(paste(
 
 ```
 ## QSPR model predictions
-```{r text_for_manuscript, eval = TRUE}
+```{r text_for_QSPR_model_predictions, eval = TRUE}
+if (length(intersect.chems)==0) 
+{
+  cat(paste0("Unfortunately, there were no ",
+    "chemicals with predictions from every QSPR.\n"))
+} else {
+  cat(paste0("There were ",
+                length(intersect.chems)),
+         "chemicals with predictions from every QSPR -- we denote this subset ",
+         "as \"intersection\".\n")
+}
+```
+
+## Level 1 Analysis
+```{r text_for_level_1_analysis}
 cat(paste("Evaluation data for Clint for",
       sum(sapply(invitro$Human.Clint,function(x) !is.na(x))),
       "chemicals and fup for",
       sum(sapply(invitro$Human.Funbound.plasma,function(x) !is.na(x))),
       ".\n"
       ))
-cat("\n")
+
+```
+
+### Ensemble Model
+```{r text_for_ensemble_model}
+cat(paste0("However, there were ",
+           sum(!is.na(CvT.chems.nona$Human.Clint.Max) & !is.na(CvT.chems.nona$Human.Fup.Mean)),
+           " chemicals where at least one of the QSPR models could make a prediction.\n"
+           ))
+```
+## Level 2 Analysis
+```{r text_for_level_2_analysis}
+
+```
+
+# Discussion
+```{r text_for_discussion}
 reset_httk()
 tot.zero <- sum(sapply(get_cheminfo(info="Clint",
                                     median.only = TRUE,
@@ -292,8 +323,6 @@ tot.clint <- sum(sapply(get_cheminfo(info="Clint",
                                      class.exclude = FALSE,
                                      suppress.messages=TRUE),
                         function(x) !is.na(x)))
-cat("\n")
-cat("Discussion\n")
 cat(paste(sum(invitro$Human.Clint%in% 0),
           "out of",
           sum(!is.na(invitro$Human.Clint)),

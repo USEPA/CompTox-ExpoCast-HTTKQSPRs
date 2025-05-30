@@ -74,6 +74,18 @@ Set restrictive vs. non-restrictive metabolic clearance:
 RESTRICTIVE.CLEARANCE <- FALSE
 ```
 
+# Load the challenge chemicals
+```{r load_challenge, eval=TRUE}
+challenge <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
+write.table(challenge, 
+          row.names=FALSE,
+          sep="\t",
+          file=paste("tables/SupTable",
+          PREV.SUP.TABLES + 1,
+          "-ChallengeChemicals.txt",
+          sep=""))
+```
+
 # Load in vivo concentration vs. time data
 ```{r load_cvt_data, eval = TRUE}
 test.chems.dashboard <- read.csv("CvTdb/TestChemsDashboardInfo.csv")
@@ -251,10 +263,11 @@ message(
 
 ```{r write_cvt_data, eval=TRUE}
 CvT.data.all <- CvT.data
-write.csv(CvT.data,
+write.table(CvT.data,
+            sep="\t",
           row.names=FALSE,
           file=paste("tables/SupTable",
-          PREV.SUP.TABLES+2,
+          PREV.SUP.TABLES+3,
           "-CvTData.txt", 
           sep=""))
 ```
@@ -360,7 +373,8 @@ nofit.table <- subset(CvT.data, !(DTXSID %in% fittable$DTXSID))[,c(
   CVTCAS.COL,                               
   CVTDTXSID.COL)]
 nofit.table <- subset(nofit.table, !duplicated(nofit.table))
-write.csv(nofit.table, 
+write.table(nofit.table, 
+          sep="\t",
           row.names=FALSE,
           file="tables/SupTable-CvTDatabutNoEmpiricalFitChems.txt")
 ```
@@ -392,9 +406,10 @@ fittable <- merge(fittable,
 cat("Number of rows in fittable...")
 dim(fittable)[1]
 fittable.all <- fittable
-write.csv(fittable.all,
+write.table(fittable.all,
+            sep="\t",
           file=paste("tables/SupTable",
-          PREV.SUP.TABLES + 3,
+          PREV.SUP.TABLES + 4,
           "-TKFits.txt",
           sep=""),
           row.names=FALSE)
@@ -494,12 +509,13 @@ cat(paste("Of the",
   ))
 cat("\n")
 
-write.csv(subset(fittable, !(DTXSID%in%fittable.noflat$DTXSID))[,
+write.table(subset(fittable, !(DTXSID%in%fittable.noflat$DTXSID))[,
           c("DTXSID","CAS","Model",
             #"AIC",
             "Species"#,
             #"method"
             )],
+          sep="\t",
           row.names=FALSE,
           file="tables/SupTable-NoEmpiricalFitChems.txt")
 fittable <- fittable.noflat

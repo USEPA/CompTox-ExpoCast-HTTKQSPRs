@@ -267,7 +267,8 @@ calc_cvt_stats <- function(cvt.table, stats.table)
   for (this.chem in unique(cvt.table$DTXSID))
   {
     this.data <- subset(cvt.table,DTXSID==this.chem)
-    rmsle[[this.chem]] <- calc_RMSLE(this.data, zeroval = -Inf)
+    min.loq <- min(this.data[,"calc_loq"],na.rm=TRUE)
+    rmsle[[this.chem]] <- calc_RMSLE(this.data, zeroval = min.loq)
     aafe[[this.chem]] <- calc_AAFE(this.data)
     afe[[this.chem]] <- calc_AFE(this.data)
     
@@ -284,10 +285,10 @@ calc_cvt_stats <- function(cvt.table, stats.table)
                               subset(this.sourcedata,
                                      Time_Days >= mid.time))
     }
-    rmsle.early[[this.chem]] <- calc_RMSLE(this.data.early, zeroval = -Inf)
+    rmsle.early[[this.chem]] <- calc_RMSLE(this.data.early, zeroval = min.loq )
     aafe.early[[this.chem]] <- calc_AAFE(this.data.early)
     afe.early[[this.chem]] <- calc_AFE(this.data.early)
-    rmsle.late[[this.chem]] <- calc_RMSLE(this.data.late, zeroval = -Inf)
+    rmsle.late[[this.chem]] <- calc_RMSLE(this.data.late, zeroval = min.loq )
     aafe.late[[this.chem]] <- calc_AAFE(this.data.late)
     afe.late[[this.chem]] <- calc_AFE(this.data.late)
   }
@@ -727,7 +728,8 @@ calc_AAFE <- function(in.table,
 calc_RMSLE <- function(in.table,
                        pred.col="Conc.pred",
                        obs.col="Conc.obs",
-                       sigfig=4,zeroval=1e-6)
+                       sigfig=4,
+                       zeroval=1e-3)
 {
   in.table <- as.data.frame(in.table)
 # Get red of NA's:

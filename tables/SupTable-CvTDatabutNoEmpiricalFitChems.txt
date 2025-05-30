@@ -1,1 +1,1 @@
-"PREFERRED_NAME","analyzed_chem_casrn","analyzed_chem_dtxsid"
+"PREFERRED_NAME"	"analyzed_chem_casrn"	"analyzed_chem_dtxsid"

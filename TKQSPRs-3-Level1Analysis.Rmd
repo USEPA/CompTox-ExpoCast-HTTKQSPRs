@@ -49,7 +49,7 @@ source("tkstats.R")
 # Keep table numbering straight:
 ```{r load_code, eval = TRUE}
 PREV.TABLES <- 3
-PREV.SUP.TABLES <- 0
+PREV.SUP.TABLES <- 1
 ```
 
 # Set the time stamp:
@@ -212,8 +212,9 @@ sup.table <- CvT.chems
 for (this.col in 1:dim(sup.table)[2])
   if (is.numeric(sup.table[1,this.col]))
     sup.table[,this.col] <- signif(sup.table[,this.col],3)
-write.csv(sup.table, 
+write.table(sup.table, 
           row.names=FALSE,
+          sep="\t",
           file=paste("tables/SupTable",
           PREV.SUP.TABLES + 1,
           "-QSPRPredsandInVitroData.txt",
@@ -358,7 +359,8 @@ for (this.qspr in unique(level1tab$QSPR))
 
 kable(pred.counts)
 
-write.csv(pred.counts,
+write.table(pred.counts,
+            sep="\t",
           file=paste("tables/SupTable",
           PREV.SUP.TABLES+4,
           "-QSPRPredCounts.txt",
@@ -549,7 +551,9 @@ level1tab.trainingonly <- level1tab.withtrainingset
 level1tab.trainingonly$Human.Fup.pred[!is.na(level1tab$Human.Fup.pred)] <- NA
 level1tab.trainingonly$Human.Clint.pred[!is.na(level1tab$Human.Clint.pred)] <- NA
 
-write.csv(training.set.table, row.names=FALSE,
+write.table(training.set.table, 
+            sep="\t",
+            row.names=FALSE,
           file="tables/SupTable-TrainingSetChems.txt")
 ```
 
@@ -703,7 +707,9 @@ train.set.sum.table[train.set.sum.table$QSPR=="IVBP","Num.Chems"] <-
   "b"
 
 kable(train.set.sum.table)
-write.csv(train.set.sum.table, row.names=FALSE,
+write.table(train.set.sum.table, 
+            row.names=FALSE,
+            sep="\t",
           file=paste("tables/Table",
           PREV.TABLES+1,
           "-TrainingSetSummary.txt",
@@ -747,7 +753,9 @@ for (this.qspr in unique(direct.retrieval.table$QSPR))
 }
 dim(direct.retrieval.table)
 kable(direct.retrieval.table)
-write.csv(direct.retrieval.table, row.names=FALSE,
+write.table(direct.retrieval.table, 
+            row.names=FALSE,
+            sep="\t",
           file=paste("tables/SupTable",
           PREV.SUP.TABLES + 5,
           "-PossibleDirectRetrievals.txt",
@@ -901,7 +909,8 @@ for (this.qspr in unique(level1tab$QSPR))
 
 kable(pred.counts2)
 
-write.csv(pred.counts2,
+write.table(pred.counts2,
+          sep="\t",
           file="tables/SupTable-QSPRPredCountsPostTrainingRemoval.txt")
 ```
 
@@ -914,6 +923,10 @@ for (this.qspr1 in unique(as.character(level1tab$QSPR)))
   this.subset <-subset(level1tab,QSPR==this.qspr1)
   FE.table[this.qspr1,"Num.Clint.Compared"] <-
     sum(!is.na(this.subset$Human.Clint.AbsFE))
+  FE.table[this.qspr1,"Clint.RMSLE"] <- 
+    calc_RMSLE(this.subset,
+               "Human.Clint.httk",
+               "Human.Clint.pred")
   FE.table[this.qspr1,"Median.Clint.AbsFE"] <- 
     median(this.subset$Human.Clint.AbsFE,na.rm=TRUE)
   FE.table[this.qspr1,"Median.Clint.FE"] <- 
@@ -924,6 +937,10 @@ for (this.qspr1 in unique(as.character(level1tab$QSPR)))
     max(this.subset$Human.Clint.FE,na.rm=TRUE)
   FE.table[this.qspr1,"Num.fup.Compared"] <-
     sum(!is.na(this.subset$Human.fup.AbsFE))
+  FE.table[this.qspr1,"fup.RMSLE"] <- 
+    calc_RMSLE(this.subset,
+               "Human.Fup.httk",
+               "Human.Fup.pred")
   FE.table[this.qspr1,"Median.fup.AbsFE"] <- 
     median(this.subset$Human.fup.AbsFE,na.rm=TRUE)
   FE.table[this.qspr1,"Median.fup.FE"] <- 
@@ -957,17 +974,23 @@ ks.tests.fup <- apply(ks.tests.fup, 2, function(x) signif(x,3))
 kable(FE.table)
 kable(ks.tests.clint)
 kable(ks.tests.fup)
-write.csv(FE.table, file=paste(
+write.table(FE.table, 
+            sep="\t",
+            file=paste(
   "tables/Table",
   PREV.TABLES + 3, # 6
   "-Level1FoldError.txt",
   sep=""))
-write.csv(ks.tests.clint, file=paste(
+write.table(ks.tests.clint, 
+            sep="\t",
+            file=paste(
   "tables/SupTable",
   PREV.SUP.TABLES + 6, #6,
   "-Level1KSCorClint.txt",
   sep=""))
-write.csv(ks.tests.fup, file=paste(
+write.table(ks.tests.fup, 
+          sep="\t",
+          file=paste(
   "tables/SupTable",
   PREV.SUP.TABLES + 7, #7
   "-Level1KSCorFup.txt",
@@ -1174,8 +1197,12 @@ for (this.qspr in unique(level1tab$QSPR))
   }
 kable(Human.Clint.stats.table)
 kable(Human.fup.stats.table)
-write.csv(Human.Clint.stats.table, file="tables/SupTable-ClintStats.txt")
-write.csv(Human.fup.stats.table, file="tables/SupTable-FupStats.txt")
+write.table(Human.Clint.stats.table, 
+            sep="\t",
+            file="tables/SupTable-ClintStats.txt")
+write.table(Human.fup.stats.table, 
+            sep="\t",
+            file="tables/SupTable-FupStats.txt")
 ```
 
 #### add AAFE & RMSLE to the table

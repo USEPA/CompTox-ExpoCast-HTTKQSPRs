@@ -39,7 +39,7 @@ output.prefix <- "May2025"
 # Keep table numbering straight:
 ```{r load_code, eval = TRUE}
 PREV.TABLES <- 6
-PREV.SUP.TABLES <- 7
+PREV.SUP.TABLES <- 8
 ```
 
 # Load custom code 

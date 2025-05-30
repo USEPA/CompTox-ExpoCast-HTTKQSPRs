@@ -1,0 +1,7 @@
+"","In Vivo Fits"
+"In Vitro ","NA (0)"
+"No In Vitro ","1.7 (70)"
+"QSPR Intersection ","1.7 (70)"
+"Maximal ","1.7 (70)"
+"Pharma ","1.6 (18)"
+"Non-Pharma ","1.7 (52)"
