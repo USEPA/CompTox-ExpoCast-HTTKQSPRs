@@ -271,6 +271,8 @@ rownames(level3stats.table) <- c(
   )
 level3stats.table<-apply(level3stats.table,c(1,2),function(x) strsplit(x, " ")[[1]][1])
 kable(level3stats.table)
+save(level3stats.table,
+     file=paste("data/Level3StatsTable.RData"))
 write.csv(level3stats.table,
           file=paste("tables/Table",
           PREV.TABLES+2,
