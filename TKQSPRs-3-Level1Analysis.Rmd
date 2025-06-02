@@ -823,24 +823,36 @@ last.col <- dim(CvT.chems.scale)[2]
 # Make sure everything is numeric:
   for (this.col in 4:last.col) CvT.chems.scale[,this.col] <- 
     as.numeric(CvT.chems.scale[,this.col])
+```
+
+```{r scale_and_center}
 clint.col <- which(colnames(CvT.chems.scale) == "Human.Clint.httk")
 fup.col <- which(colnames(CvT.chems.scale) == "Human.Fup.httk")
 httk.start <- min(clint.col,fup.col) 
-# Scale and center
-  for (this.col in 4:(httk.start-1)) 
-    CvT.chems.scale[,this.col] <- 
-    (CvT.chems.scale[,this.col] - mean(CvT.chems.scale[,this.col],na.rm=TRUE)) / 
+# Non-HTTK Cols:
+for (this.col in 4:(httk.start-1))
+{
+  CvT.chems.scale[,this.col] <- (CvT.chems.scale[,this.col] -
+    mean(CvT.chems.scale[,this.col],na.rm=TRUE)) / 
     sd(CvT.chems.scale[,this.col],na.rm=TRUE)
-# scale and center all predictions by in vitro:
+}
+# HTTK Cols:
+# Log transform:
+CvT.chems.scale[,httk.start:last.col] <- 
+  log10(CvT.chems.scale[,httk.start:last.col]+1e-3)
+# Scale and center
 clint.mean <- mean(CvT.chems.scale[,clint.col], na.rm=TRUE)
 fup.mean <- mean(CvT.chems.scale[,fup.col], na.rm=TRUE)
 clint.sd <- sd(CvT.chems.scale[,clint.col], na.rm=TRUE)
 fup.sd <- sd(CvT.chems.scale[,fup.col], na.rm=TRUE)
+
 for (this.col in seq(clint.col,last.col,2)) CvT.chems.scale[,this.col] <- 
     (CvT.chems.scale[,this.col] - clint.mean) / clint.sd
 for (this.col in seq(fup.col,last.col,2)) CvT.chems.scale[,this.col] <- 
     (CvT.chems.scale[,this.col] - fup.mean) / fup.sd
+```
 
+```{r make_heatmap}
     mypalette<-brewer.pal(11,"RdYlBu")
   heatmap.2(as.matrix(CvT.chems.scale[,4:(dim(CvT.chems.scale)[2])]),
     lwid=c(0.4,1),
@@ -1070,8 +1082,7 @@ FigLev1a <- ggplot(data=level1tab) +
   theme_bw()+
   theme( text  = element_text(size=16))
 print(FigLev1a)
-#ggsave(paste("figs/Fig3-Lev1a-Clint-obsvspred",output.prefix,".tiff",sep=""), 
-#       width=6, height=4, dpi=300)
+
 ```
 
 ```{r clint_scatter_train, eval = TRUE}

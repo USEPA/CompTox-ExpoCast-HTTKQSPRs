@@ -698,7 +698,7 @@ qsprbychem.table2$QSPR <- factor(qsprbychem.table2$QSPR,
 #### add AAFE & RMSLE for all points (not per chemical) to the table
 texty <- 2
 xshift <- -0.1
-these.stats <- "Maximal RMSLE"
+these.stats <- "Maximal"
 stat.labels <- "Mean"
 
      
@@ -824,7 +824,7 @@ ggsave(paste("figs/SupFigLev2_RMSEbyChemLAte",output.prefix,".tiff",sep=""),
 ```
 
 ```{r RMSE_combined_plot}
-tiff(file=paste("figs/Fig8-Lev2_RMSEbyChem_all",output.prefix,".tiff",sep=""), 
+tiff(file=paste("figs/Fig7-Lev2_RMSEbyChem_all",output.prefix,".tiff",sep=""), 
      width=1200*0.5, height=1600*0.5)
 egg::ggarrange(FigLev2RMSE + 
                theme(axis.text.x = element_blank(),
@@ -887,7 +887,7 @@ kable(qsprbychem.table3)
     cexRow=1.0,
     trace="none",
     col=mypalette)
-tiff(paste("figs/Fig7-RMSE-heatmap-",
+tiff(paste("figs/Fig8-RMSE-heatmap-",
            output.prefix,
            ".tiff",sep=""),
 , width=800*3, height=750*2)

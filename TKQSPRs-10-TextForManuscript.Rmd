@@ -407,7 +407,7 @@ cat(paste0("Comparison of the HT-PBTK predictions made with rat in vitro TK ",
            "parameters indicated that species differences could inflate RMSLE ",
            "by as much as ",
            signif(max(rathum.table["Non-Restrictive",]), 1),
-           " (Supplemental Table 7)\n"))
+           " (Supplemental Table 6)\n"))
 cat("\n")
 
 cat(paste0("TK model parameters estimated empirically from the full time ",
@@ -466,7 +466,7 @@ cat(paste0("However, the AFE suggests that the non-restrictive assumption is ",
            " for restrictive versus ",
            strsplit(afe.stats.table["Maximal",
                                     "HTPBTK-InVitro"]," ")[[1]][1],
-           " for non-restrictive; see Supplemental Table 7).\n"))
+           " for non-restrictive; see Supplemental Table 10).\n"))
 cat("\n")
 
 reset_httk()

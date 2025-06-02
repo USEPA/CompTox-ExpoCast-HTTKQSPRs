@@ -396,7 +396,7 @@ for (i in 1:length(qsprs.order))
 }        
 
 print(FigSensitivity)
-ggsave(filename = "figs/Fig8-SensitivityAnalysis.png",
+ggsave(filename = "figs/Fig9-SensitivityAnalysis.png",
        height = 5,
        width = 7)
 ```
