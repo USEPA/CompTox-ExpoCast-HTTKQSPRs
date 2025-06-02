@@ -39,7 +39,7 @@ output.prefix <- "May2025"
 # Keep table numbering straight:
 ```{r load_code, eval = TRUE}
 PREV.TABLES <- 6
-PREV.SUP.TABLES <- 8
+PREV.SUP.TABLES <- 9
 ```
 
 # Load custom code 
@@ -102,7 +102,8 @@ stats.table <- makestatstable2(stats.table,
                 level2tab.rmsle,
                 chem.lists,
                 sigfig=2)
-write.csv(stats.table, 
+write.table(stats.table,
+            sep="\t",
           file=paste("tables/Table",
           PREV.TABLES + 1,
           "-Level2-Cvt-RMSLEstats.txt",sep=""),
@@ -117,7 +118,8 @@ stats.table <- makestatstable2(stats.table,
                 level2tab.aafe,
                 chem.lists,
                 sigfig=2)
-write.csv(stats.table, 
+write.table(stats.table,
+            sep="\t",
           file=paste("tables/SupTable",
           PREV.SUP.TABLES + 1,
           "-Level2-Cvt-AAFEstats.txt", sep=""),
@@ -132,7 +134,8 @@ stats.table <- makestatstable2(stats.table,
                 level2tab.afe,
                 chem.lists,
                 sigfig=2)
-write.csv(stats.table,
+write.table(stats.table,
+            sep="\t",
           file=paste("tables/SupTable",
           PREV.SUP.TABLES + 2,
           "-Level2-Cvt-AFEstats.txt", sep=""),
@@ -157,7 +160,8 @@ stats.table <- makestatstable2(stats.table,
                 chem.lists["Maximal"],
                 label="AFE",
                 sigfig=2)
-write.csv(stats.table,
+write.table(stats.table,
+            sep="\t",
           file=paste("tables/Table",
           PREV.TABLES + 2,
           "-Level2-Cvt-RMSLEAAFEAFEcomp.txt",
@@ -179,7 +183,9 @@ stats.table <- makestatstable2(stats.table,
                 chem.lists,
                 label="Late",
                 sigfig=2)
-write.csv(stats.table,file="tables/SupTable-Level2-Cvt-earlylatestats.txt",row.names=TRUE)
+write.table(stats.table,
+            sep="\t",
+            file="tables/SupTable-Level2-Cvt-earlylatestats.txt",row.names=TRUE)
 kable(stats.table)
 earlylate.stats.table <- stats.table
 ```
@@ -209,7 +215,9 @@ stats.table <- makestatstable(level2tab.stats,
                                        logrsquared = TRUE,
                               average.per.chemical = TRUE
                                        )
-write.csv(stats.table,file="tables/SupTable-Level2-AUCstats.txt",row.names=TRUE)
+write.table(stats.table,
+            sep="\t",
+            file="tables/SupTable-Level2-AUCstats.txt",row.names=TRUE)
 kable(stats.table)
 AUC.stats.table <- stats.table
 ```
@@ -230,7 +238,9 @@ stats.table <- makestatstable(level2tab.stats,
                                        logrsquared = TRUE,
                               average.per.chemical = TRUE
                                        )
-write.csv(stats.table,file="tables/SupTable-Level2-Cmaxstats.txt",row.names=TRUE)
+write.table(stats.table,
+           sep="\t",
+           file="tables/SupTable-Level2-Cmaxstats.txt",row.names=TRUE)
 kable(stats.table)
 Cmax.stats.table <- stats.table
 ```

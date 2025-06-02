@@ -42,6 +42,7 @@ load("data/chemicallists.RData")
   level3tab <- level3tab[!names(level3tab) %in% c("HTPBTK-InVitro-AltClear","HTPBTK-InVitro-Rat")]
 ```
 
+
 Load custom code 
 ```{r load_code, eval = TRUE}
 source("tkstats.R")
@@ -50,7 +51,7 @@ source("tkstats.R")
 # Keep table numbering straight:
 ```{r load_code, eval = TRUE}
 PREV.TABLES <- 8
-PREV.SUP.TABLES <- 11
+PREV.SUP.TABLES <- 12
 ```
 
 Set the time stamp:
@@ -85,6 +86,11 @@ level3tab.old <- level3tab
 level3tab <- longtab 
 ```
 
+```{r remove_duplicates}
+dim(level3tab)
+level3tab <- subset(level3tab, !duplicated(level3tab))
+dim(level3tab)
+```
 ```{r level3_load_arnot, eval = TRUE}
 level3.arnot <- read_excel("qsprs/TK_QSAR_evaluation_set_HumanQSARHLPredictions.xlsx")
 level3.arnot <- subset(level3.arnot,administration_route_normalized=="iv")
@@ -163,7 +169,8 @@ rownames(AUCCmax.table) <- c("Cmax RMSLE",
                              "AUC RMSLE (Pharma)",
                              "AUC RMSLE (Non-Pharma)")
 kable(AUCCmax.table)
-write.csv(AUCCmax.table, 
+write.table(AUCCmax.table,
+            sep="\t",
           file=paste("tables/Table",
           PREV.TABLES + 1,
           "-AUCCmax-stats.txt",sep=""))
@@ -200,7 +207,8 @@ halflife.stats.table <- makestatstable(level3tab,
                                        logrsquared = FALSE
                                        )
 kable(halflife.stats.table)
-write.csv(halflife.stats.table,
+write.table(halflife.stats.table,
+            sep="\t",
           file="tables/SupTable-halflife-stats.txt")
 ```
 
@@ -214,7 +222,8 @@ vd.stats.table <- makestatstable(level3tab,
                                        logrsquared = TRUE
                                        )
 kable(vd.stats.table)
-write.csv(vd.stats.table,
+write.table(vd.stats.table,
+            sep="\t",
           file="tables/SupTable-VD-stats.txt")
 ```
 
@@ -228,7 +237,8 @@ cl.stats.table <- makestatstable(level3tab,
                                        logrsquared = TRUE
                                        )
 kable(cl.stats.table)
-write.csv(cl.stats.table,
+write.table(cl.stats.table,
+            sep="\t",
           file="tables/SupTable-Cl-stats.txt")
 ```
 ```{r steadystate_conc_stats, eval=TRUE}
@@ -244,7 +254,8 @@ css.stats.table <- makestatstable(level3tab,
                                        logrsquared = TRUE
                                        )
 kable(css.stats.table)
-write.csv(css.stats.table,
+write.table(css.stats.table,
+            sep="\t",
           file="tables/SupTable-Cl-stats.txt")
 ```
 
@@ -273,7 +284,8 @@ level3stats.table<-apply(level3stats.table,c(1,2),function(x) strsplit(x, " ")[[
 kable(level3stats.table)
 save(level3stats.table,
      file=paste("data/Level3StatsTable.RData"))
-write.csv(level3stats.table,
+write.table(level3stats.table,        
+            sep="\t",
           file=paste("tables/Table",
           PREV.TABLES+2,
           "-halflifeVdCltot-stats.txt",sep=""))
@@ -439,7 +451,9 @@ for (this.col in 1:dim(lev3suptable)[2])
   if (is.numeric(lev3suptable[1,this.col]))
     lev3suptable[,this.col] <- signif(lev3suptable[,this.col],3)
   
-write.csv(lev3suptable,
+write.table(lev3suptable,
+            sep="\t",
+            row.names=FALSE,
           file=paste("tables/SupTable",
           PREV.SUP.TABLES+1,
           "-Level3.txt",sep=""))

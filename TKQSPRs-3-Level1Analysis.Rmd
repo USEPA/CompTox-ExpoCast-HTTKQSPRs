@@ -985,14 +985,14 @@ write.table(ks.tests.clint,
             sep="\t",
             file=paste(
   "tables/SupTable",
-  PREV.SUP.TABLES + 6, #6,
+  PREV.SUP.TABLES + 7, #6,
   "-Level1KSCorClint.txt",
   sep=""))
 write.table(ks.tests.fup, 
           sep="\t",
           file=paste(
   "tables/SupTable",
-  PREV.SUP.TABLES + 7, #7
+  PREV.SUP.TABLES + 8, #7
   "-Level1KSCorFup.txt",
   sep=""))
 ```

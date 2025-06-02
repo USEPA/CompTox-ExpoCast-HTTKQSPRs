@@ -33,13 +33,13 @@ load("data/level2stats.RData")
 load("data/httk-goodchems.RData")
 load("data/chemicallists.RData")
 load("data/benchmarkstats.RData")
-  # Can't work with NA's:
-  level3tab <- level3tab[!names(level3tab) %in% c("HTPBTK-InVitro-AltClear","HTPBTK-InVitro-Rat")]
+load("data/httkinvitro.RData")
+all.qsprs <- c("HTPBTK-ADMET","HTPBTK-Dawson","HTPBTK-Pradeep","HTPBTK-OPERA")
 ```
 
 # Abstract
 ```{r textforabstract}
-cat(paste0("We estimate that using rat in vivo data to evaluate QSPR models trained on human in vitro measured data might inflate error estimates by as much as root mean squared log10 (RMSLE) ",
+cat(paste0("We estimate that using rat in vivo data to evaluate QSPR models trained on human in vitro measured data might inflate error estimates by as much as root mean squared log10 error (RMSLE) ",
   signif(max(rathum.table["Non-Restrictive",]), 1),
   ".\n"))
 cat(paste0("We estimate that AUC can be predicted by HTTK with RMSLE ",
@@ -72,7 +72,7 @@ cat(paste0("There were ",
            " chemicals where we could not estimate Vd.\n"))
 cat(paste0("There were ",
            length(unique(subset(fittable,is.na(Fgutabs))$DTXSID)),
-           " chemicals where we could not estimate Fgutabs.\n"))
+           " chemicals where we could not estimate Fbio.\n"))
 cat(paste0("Among the ",
            length(unique(fittable$DTXSID)),
            " remaining evaluation chemicals, ",
@@ -191,7 +191,7 @@ cat(paste0("There were ",
                                    class.exclude=FALSE,
                                    suppress.messages=TRUE),
        DTXSID %in% CvT.chems$DTXSID & Human.Funbound.plasma>0))[1],
-           " chemicals where fup > 0, which is required for the HT-PBTK model, ",
+           " chemicals with measured Clint and fup > 0, which are required for the HT-PBTK model, ",
            "in vitro-based predictions could only be evaluated for this set of ",
            sum(CvT.chems$DTXSID%in%good.chems),
            " chemicals.\n")) 
@@ -307,78 +307,128 @@ cat(paste0("However, there were ",
 ```
 ## Level 2 Analysis
 ```{r text_for_level_2_analysis}
-cat(paste0("The QSPR models perform roughly equally, with RMSLE generally ",
+cat(paste0("The QSPR models perform roughly equally for the chemicals with in vitro data, with RMSLE ",
            "ranging between ",
-           1.1,
-           "and ",
-           1.3,
-           "in Table 7.\n"))
+           min(sapply(rmsle.stats.table["In Vitro",
+                                      all.qsprs], function(x) strsplit(x," ")[[1]][1])),
+            " and ",
+           max(sapply(rmsle.stats.table["In Vitro",
+                                      all.qsprs], function(x) strsplit(x," ")[[1]][1])),
+           " in Table 7.\n"))
 
 cat(paste0("In Table 8 we compare the RMSLE, AAFE, and AFE. AFE indicates ",
            "bias, with tendency to over-estimate – the AFE of ",
-           0.69,
-           "for predictions based on measured in vitro parameters corresponds ",
+           strsplit(afe.stats.table["In Vitro","HTPBTK-InVitro"]," ")[[1]][1],
+           " for predictions based on measured in vitro parameters corresponds ",
            "to an average over-estimation of ",
-           4.9,
-           "-fold. The empirical fits to the in vivo data slightly "
+           signif(10^(as.numeric(strsplit(
+             afe.stats.table["In Vitro","HTPBTK-InVitro"]," ")[[1]][1])),2),
+           "-fold.\n"))
+
+if (as.numeric(strsplit(afe.stats.table["In Vitro","In Vivo Fits"]," ")[[1]][1])<0)
+{
+  cat(paste0("The empirical fits to the in vivo data slightly ",
            "underestimated the observations.\n"))
+} else {
+  cat(paste0("The empirical fits to the in vivo data slightly ",
+           "overestimated the observations.\n"))
+}
 
 cat(paste0("Based on the full time series, the ensemble QSPR model ",
            "predictions, using the most rapid predicted clearance, shows a ",
-           "slightly reduced average RMSLE of ",
-           1.1,
-           " compared to the in vitro measured data; however, the OPERA QSPR ",
-           "shows an even smaller average RMSLE of 1.0. When considering only ",
-           "the later timepoints, the ensemble QSPR and OPERA QSPR have the ",
-           "lowest average RMSLE values (",
-           1.2,
-           "),\n"))
+           "average RMSLE similar to the in vitro measured data of ",
+           strsplit(rmsle.stats.table["In Vitro","HTPBTK-Ensemble"]," ")[[1]][1],
+           "; however, the OPERA QSPR ",
+           "shows an even smaller average RMSLE of ",
+           strsplit(rmsle.stats.table["In Vitro","HTPBTK-OPERA"]," ")[[1]][1],
+           ".\n"))
+cat(paste0("When considering only ",
+           "the later timepoints, several QSPRs have a ",
+           "RMSLE comparable to in vitro data (",
+           strsplit(rmsle.stats.table["In Vitro","HTPBTK-InVitro"]," ")[[1]][1],
+           "), while y-randomization has RMSLE ",
+           strsplit(rmsle.stats.table["In Vitro","HTPBTK-YRandom"]," ")[[1]][1],
+           ".\n"))
 
 
 ```
 
 ## Level 3 Analysis
 ```{r text_for_level_3_analysis}
-cat(paste0("In vitro measured Clint and fup data predict AUC with an RMSLE of 1.3, while the QSPR models range from RMSLE 1.1 to 1.4. The ensemble and OPERA QSPR model predictions have the lowest RMSLE of 1.1, but the ensemble QSPR provides predictions for more chemicals.\n"))
+cat(paste0("In vitro measured Clint and fup data predict AUC with an RMSLE of ",
+           strsplit(AUC.stats.table["RMSLE Maximal",
+                                    "HTPBTK-InVitro"]," ")[[1]][1], 
+           " while the QSPR models range from RMSLE ",
+           min(sapply(AUC.stats.table["RMSLE Maximal",
+                                      all.qsprs], function(x) strsplit(x," ")[[1]][1])),
+           " to ",
+           max(sapply(AUC.stats.table["RMSLE Maximal",
+                                      all.qsprs], function(x) strsplit(x," ")[[1]][1])),
+           ".\n"))
+cat("\n")
+
+cat(paste0("The ensemble model predictions have a ",
+           "RMSLE of ",
+           strsplit(AUC.stats.table["RMSLE Maximal",
+                                    "HTPBTK-Ensemble"]," ")[[1]][1], 
+           " but the ensemble QSPR also provides predictions for more chemicals.\n"))
+cat("\n")
 
 cat(paste0("From the AFE in Table 8, we see that there is a tendency to over-predict concentrations.")) 
+cat("\n")
 
+cat(paste0("Most of the QSPR models were less successful for predicting t½, ",
+           "with RMSLE indicating errors between ",
+           min(as.numeric(level3stats.table["Half-Life RMSLE",all.qsprs])),
+           " and ",
+           max(as.numeric(level3stats.table["Half-Life RMSLE",all.qsprs])),
+           " (",
+           signif(10^(min(as.numeric(level3stats.table["Half-Life RMSLE",all.qsprs]))),2),
+           "- to ",
+           signif(10^(max(as.numeric(level3stats.table["Half-Life RMSLE",all.qsprs]))),2),
+           "-fold).\n"))
+cat("\n")
 
-cat(paste0("Most of the QSPR models and the in vitro measured Clint and fup data were unsuccessful for predicting t½, with RMSLE indicating errors between 1.5 and 1.8 (32- to 63-fold). The QSPR models that were trained specifically to t½, data (rather than in vitro measured Clint and fup) produce better predictions except when compared with the ensemble QSPR model.\n"))
+cat(paste0("The QSPR models that were trained specifically to t½, data ",
+           "(rather than in vitro measured Clint and fup) produce better ",
+           "predictions except when compared with the ensemble QSPR model.\n"))
 ```
 
 # Discussion
 ```{r text_for_discussion}
-all.qsprs <- c("HTPBTK-ADMET","HTPBTK-Dawson","HTPBTK-Pradeep","HTPBTK-OPERA")
-
 cat(paste0("Because the CvT data are also limited (",
            length(unique(fittable$DTXSID)),
-           "chemicals), we have included training set chemicals in the Level ",
+           " chemicals), we have included training set chemicals in the Level ",
            "2 and 3 evaluations."))
+cat("\n")
 
 cat(paste0("Comparison of the HT-PBTK predictions made with rat in vitro TK ",
            "parameters against predictions made with human in vitro TK ",
            "parameters indicated that species differences could inflate RMSLE ",
            "by as much as ",
            signif(max(rathum.table["Non-Restrictive",]), 1),
-           "(Figure 9)\n"))
+           " (Supplemental Table 7)\n"))
+cat("\n")
 
 cat(paste0("TK model parameters estimated empirically from the full time ",
            "course of in vivo data had mean RMSLE of ",
            as.numeric(strsplit(rmsle.stats.table["In Vitro","In Vivo Fits"]," ")[[1]][1]),
-           " across all chemicals, while HT-PBTK model simulations based on",
+           " across all chemicals, while HT-PBTK model simulations based on ",
            "in vitro Clint and fup measurements had a mean RMSLE of ",
            as.numeric(strsplit(rmsle.stats.table["In Vitro","HTPBTK-InVitro"]," ")[[1]][1]),
            ".\n"))
+cat("\n")
 
 cat(paste0("Across the full time course, both the in vitro measured data and ",
            "QSPR model predictions only performed slightly better than the ",
-           "y-randomized predictions (RMSLE ",
-           bench.table["CvT RMSLE",
+           "y-randomized predictions (y-randomized predictions were ",
+           signif(10^bench.table["CvT RMSLE",
              paste0("Y-Randomized (",
                     NUM.CHEMS,
-                    ")")],
-           ").\n"))
+                    ")")] / 
+             10^bench.table["CvT RMSLE",2],2),
+           "-times less accurate).\n"))
+cat("\n")
 
 cat(paste0("For the elimination phase, the HT-PBTK models parameterized using ",
            "in vitro measurements had a mean RMSLE of ",
@@ -396,6 +446,7 @@ cat(paste0("For the elimination phase, the HT-PBTK models parameterized using ",
            strsplit(earlylate.stats.table["Maximal Late",
                                     "HTPBTK-YRandom"]," ")[[1]][1],
            ".\n"))
+cat("\n")
 
 cat(paste0("An ensemble prediction using the maximum clearance predicted ",
            "across all QSPR models had an RMSLE of ",
@@ -405,16 +456,18 @@ cat(paste0("An ensemble prediction using the maximum clearance predicted ",
            strsplit(earlylate.stats.table["Maximal Late",
                                     "HTPBTK-Ensemble"]," ")[[1]][1],
            " for the full time-course and elimination phase, respectively.\n"))
+cat("\n")
 
 cat(paste0("However, the AFE suggests that the non-restrictive assumption is ",
            "still slightly conservative from a human health risk assessment ",
            "perspective (",
            strsplit(afe.stats.table["Maximal",
-                                    "HTPBTK-InVitro"]," ")[[1]][1],
-           ") restrictive versus (",
-           strsplit(afe.stats.table["Maximal",
                                     "HTPBTK-InVitro-AltClear"]," ")[[1]][1],
-           ") non-restrictive; Suppl Table 7).\n"))
+           " for restrictive versus ",
+           strsplit(afe.stats.table["Maximal",
+                                    "HTPBTK-InVitro"]," ")[[1]][1],
+           " for non-restrictive; see Supplemental Table 7).\n"))
+cat("\n")
 
 reset_httk()
 tot.zero <- sum(sapply(get_cheminfo(info="Clint",
@@ -427,17 +480,19 @@ tot.clint <- sum(sapply(get_cheminfo(info="Clint",
                                      class.exclude = FALSE,
                                      suppress.messages=TRUE),
                         function(x) !is.na(x)))
-cat(paste(sum(invitro$Human.Clint%in% 0),
-          "out of",
+cat(paste0(sum(invitro$Human.Clint%in% 0),
+          " out of the ",
           sum(!is.na(invitro$Human.Clint)),
-          "chemicals with in vitro HTTK Clint measured data have no observed clearance (that is, they are metabolically stable) compared with",
+          " chemicals with in vitro HTTK Clint measured data have no observed ",
+          "clearance (that is, they are metabolically stable) compared with ",
           tot.zero,
-          "out of",
+          " out of ",
           tot.clint,
-          "measured Clint values (",
+          " measured Clint values (",
           signif(tot.zero/tot.clint*100,2),
-          "percent) in the httk data set as whole.\n"
+          " percent) in the httk data set as a whole.\n"
           ))
+cat("\n")
 
 cat(paste0("Here we observe that empirical one- or two-compartment fits to ",
            "the CvT data can predicted Cmax with RMSLE ",
@@ -453,6 +508,7 @@ cat(paste0("Here we observe that empirical one- or two-compartment fits to ",
            signif(10^(as.numeric(strsplit(AUC.stats.table["RMSLE Maximal",
                                           "In Vivo Fits"]," ")[[1]][1])),2),
            "-fold) (Table 9)\n")) 
+cat("\n")
 
 cat(paste0("As summarized in Table 9, here we found that Cmax could be ",
            "predicted with an RMSLE of ",
@@ -469,6 +525,7 @@ cat(paste0("As summarized in Table 9, here we found that Cmax could be ",
            strsplit(AUC.stats.table["RMSLE Maximal",
                                     "HTPBTK-Ensemble"]," ")[[1]][1],
            " using the ensemble QSPR model.")) 
+cat("\n")
 
 cat(paste0("For AUC predicted with in vitro parameters, we observe an RMSLE of ",
            strsplit(AUC.stats.table["RMSLE Pharma",
@@ -482,7 +539,8 @@ cat(paste0("For AUC predicted with in vitro parameters, we observe an RMSLE of "
            " (",
            signif(10^(as.numeric(strsplit(AUC.stats.table["RMSLE Non-Pharma",
                                           "HTPBTK-InVitro"]," ")[[1]][1])),2),
-           "-fold) for non-pharmaceuticals"))
+           "-fold) for non-pharmaceuticals.\n"))
+cat("\n")
 
 cat(paste0("Using chemicals with Clint and fup measured both in human and rat, ",
            "we found that predictions of Cmax had mean RMSLE of ",
@@ -491,12 +549,14 @@ cat(paste0("Using chemicals with Clint and fup measured both in human and rat, "
            "had RMSLE of ",
            rathum.table["Non-Restrictive","AUC"],
            ".\n")) 
+cat("\n")
 
 cat(paste0("The observed error for AUC was ",
            strsplit(AUC.stats.table["RMSLE In Vitro","HTPBTK-InVitro"]," ")[[1]][1],
            " (in Table 9), while the interspecies error was estimated to be ",
            rathum.table["Non-Restrictive","AUC"],
            ".\n")) 
+cat("\n")
 
 cat(paste0("For AUC, optimized empirical TK model fits to the in vivo data ",
            "indicated an RMSLE of ",
@@ -505,6 +565,7 @@ cat(paste0("For AUC, optimized empirical TK model fits to the in vivo data ",
            "random (incorrect) chemicals had an AUC RMSLE of ",
            strsplit(AUC.stats.table["RMSLE In Vitro","HTPBTK-YRandom"]," ")[[1]][1],
            ".\n")) 
+cat("\n")
 
 cat(paste0("Using chemical-specific in vitro measured data in the HT-PBTK ",
            "model simulated the AUC with an RMSLE ",
@@ -524,6 +585,7 @@ cat(paste0("Using chemical-specific in vitro measured data in the HT-PBTK ",
                                     "HTPBTK-Ensemble"]," ")[[1]][1],
            ".\n" 
            ))
+cat("\n")
 
 cat(paste0("Using the ensemble QSPR model parameter ",
            "predictions, the total clearance CLtot RMSLE is ",
@@ -531,6 +593,7 @@ cat(paste0("Using the ensemble QSPR model parameter ",
                                     "HTPBTK-Ensemble"],
            ".\n"
            ))
+cat("\n")
 
 cat(paste0("For Cmax, the empirical TK model fits had an RMSLE ",
            strsplit(Cmax.stats.table["RMSLE Maximal",
@@ -541,6 +604,7 @@ cat(paste0("For Cmax, the empirical TK model fits had an RMSLE ",
                            "HTPBTK-YRandom"]," ")[[1]][1],
            ".\n"
            ))
+cat("\n")
 
 cat(paste0("HT-PBTK ",
            "model simulations using in vitro measured data had an RMSLE of ",
@@ -559,16 +623,18 @@ cat(paste0("HT-PBTK ",
                            "HTPBTK-Ensemble"]," ")[[1]][1],
            ".\n"
            ))
+cat("\n")
 
 cat(paste0("Overall, predictions of Vd had RMSLE ranging between ",
            min(as.numeric(level3stats.table["Vd RMSLE",all.qsprs])),
            "-",
            max(as.numeric(level3stats.table["Vd RMSLE",all.qsprs])),
            ".\n"))
+cat("\n")
 
 cat(paste0("Here, we have assumed that Fbio only depends on first-pass ",
            "metabolism, as informed by Clint. As shown by Figure 9, ",
-           "bioavailabilit does not appear to be the primary driver of the ",
+           "bioavailability does not appear to be the primary driver of the ",
            "observed discrepancies with in vivo data. Instead, the uncertainty ",
            "analysis (Figure 9) suggests that improving HTTK estimates of the ",
            "elimination phase would be most likely to enhance prediction ",
