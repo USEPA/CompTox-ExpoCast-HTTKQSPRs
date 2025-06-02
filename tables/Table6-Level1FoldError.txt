@@ -1,6 +1,6 @@
-"Num.Clint.Compared"	"Clint.RMSLE"	"Median.Clint.AbsFE"	"Median.Clint.FE"	"Min.Clint.FE"	"Max.Clint.FE"	"Num.fup.Compared"	"fup.RMSLE"	"Median.fup.AbsFE"	"Median.fup.FE"	"Min.fup.FE"	"Max.fup.FE"
-"ADMET"	42	1.61	0.507	0.348	-6.94	Inf	36	0.58	0.294	-0.108	-1.47	6.27
-"Dawson"	3	2.2	0.524	0.376	-6.76	0.524	11	0.406	0.281	-0.0206	-0.297	0.838
-"Pradeep"	0	NA	NA	NA	Inf	-Inf	1	0.226	0.226	0.226	0.226	0.226
-"OPERA"	4	2.78	3.42	-0.379	-6.22	Inf	4	1.28	3.4	-1.56	-3.68	7.1
-"IVBP"	46	1.5	0.415	0.312	-1.48	Inf	0	NA	NA	NA	Inf	-Inf
+"","Num.Clint.Compared","Median.Clint.AbsFE","Median.Clint.FE","Min.Clint.FE","Max.Clint.FE","Num.fup.Compared","Median.fup.AbsFE","Median.fup.FE","Min.fup.FE","Max.fup.FE"
+"ADMET",42,0.507,0.348,-6.94,Inf,36,0.294,-0.108,-1.47,6.27
+"Dawson",3,0.524,0.376,-6.76,0.524,11,0.281,-0.0206,-0.297,0.838
+"Pradeep",0,NA,NA,Inf,-Inf,1,0.226,0.226,0.226,0.226
+"OPERA",4,3.42,-0.379,-6.22,Inf,4,3.4,-1.56,-3.68,7.1
+"IVBP",46,0.415,0.312,-1.48,Inf,0,NA,NA,Inf,-Inf
