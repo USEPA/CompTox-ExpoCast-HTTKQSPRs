@@ -329,7 +329,7 @@ plotCss <- ggplot(rat_df, aes(y = 10^-3 + Rat_Css,
   geom_abline() +
   annotate(
     label = paste0("RMSLE\n = ", 
-                   signif(rathum.table["Restrictive","Css"], 2)),
+                   signif(rathum.table["Non-Restrictive","Css"], 2)),
     geom = "text",
     x = 50*1e-3/3,
     y = 100/7,
@@ -357,7 +357,7 @@ plotCmax <- ggplot(rat_df, aes(y = 10^-3 + Rat_Cmax,
   geom_abline() +
   annotate(
     label = paste0("RMSLE\n = ", 
-                   signif(rathum.table["Restrictive","Cmax"], 2)),
+                   signif(rathum.table["Non-Restrictive","Cmax"], 2)),
     geom = "text",
     x = 50*1e-3/1,
     y = 10/2,
@@ -386,7 +386,7 @@ plotAUC <- ggplot(rat_df, aes(y = 10^-3 + Rat_AUC,
   geom_abline() +
   annotate(
     label = paste0("RMSLE\n = ", 
-                   signif(rathum.table["Restrictive","AUC"], 2)),
+                   signif(rathum.table["Non-Restrictive","AUC"], 2)),
     geom = "text",
     x = 10*1e-1/3,
     y = 100,
@@ -432,6 +432,7 @@ save(common_chems,
      rathum.table,
      fup_rmsle,
      clint_rmsle,
+     rat_df,
      file="data/interspecies.RData")
 write.csv(rathum.table,
           file="tables/SupTable-Interspecies.txt")

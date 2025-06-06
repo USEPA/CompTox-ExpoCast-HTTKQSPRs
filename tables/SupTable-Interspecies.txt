@@ -1,5 +1,5 @@
 "","Css","Cmax","AUC"
-"Restrictive",0.8,0.58,0.78
-"Non-Restrictive",0.73,0.66,0.73
-"Restrictive CvT",0.61,0.43,0.57
-"Non-Restrictive CvT",0.6,0.51,0.6
+"Restrictive",0.8,0.57,0.77
+"Non-Restrictive",0.67,0.68,0.8
+"Restrictive CvT",0.66,0.37,0.53
+"Non-Restrictive CvT",0.61,0.54,0.7
