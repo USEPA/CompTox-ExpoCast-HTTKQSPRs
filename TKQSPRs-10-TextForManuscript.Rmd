@@ -90,8 +90,17 @@ cat(paste("The three chemicals with the shortest half-lives in rat were",
 cat(paste("The three chemicals with longest half-lives in rat were",
       paste(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:3],]$PREFERRED_NAME,collapse=", "),
       "-- mean of",
-      signif(mean(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:3],"Thalf.fit"]),1),
+      signif(mean(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:3],"Thalf.fit"]),2),
       "hours.\n"))
+
+cat(paste("The two chemicals with longest half-lives in rat were",
+      paste(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:2],]$PREFERRED_NAME,collapse=", "),
+      "whose mean of",
+      signif(mean(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:2],"Thalf.fit"]),2),
+      "hours was almost",
+      signif(mean(CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[1:2],"Thalf.fit"])/
+               CvT.chems[order(CvT.chems$Thalf.fit,decreasing=TRUE)[3],"Thalf.fit"],1),
+      "times longer than the chemical with the next longest t1/2.\n"))
 
 pharma <- read.csv("ccd_data/Chemical List ZINC15PHARMA-2024-09-09.csv")
 cat(paste(sum(CvT.chems$CASRN%in%pharma$CASRN),
@@ -289,12 +298,13 @@ if (length(intersect.chems)==0)
 
 ## Level 1 Analysis
 ```{r text_for_level_1_analysis}
-cat(paste("Evaluation data for Clint for",
+cat(paste0("There were evaluation data for Clint for ",
       sum(sapply(invitro$Human.Clint,function(x) !is.na(x))),
-      "chemicals and fup for",
+      " chemicals and fup for ",
       sum(sapply(invitro$Human.Funbound.plasma,function(x) !is.na(x))),
       ".\n"
       ))
+
 
 ```
 

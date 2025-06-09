@@ -112,7 +112,8 @@ length(unique(CvT.chems.nobad$DTXSID))
 
 ```{r create_ensemble_preds, eval=TRUE}
 clint.cols <- colnames(CvT.chems.nobad)[
-  regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
+  regexpr("Clint",colnames(CvT.chems.nobad)) != -1 &
+  regexpr("httk",colnames(CvT.chems.nobad)) == -1]
 CvT.chems.nobad$Human.Clint.Max<- signif(apply(
   CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE)), 4)
 CvT.chems.nobad$Human.Clint.Mean<- signif(apply(
