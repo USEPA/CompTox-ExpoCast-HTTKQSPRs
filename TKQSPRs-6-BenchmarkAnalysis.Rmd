@@ -50,7 +50,7 @@ source("tkstats.R")
 # Keep table numbering straight:
 ```{r load_code, eval = TRUE}
 PREV.TABLES <- 4
-PREV.SUP.TABLES <- 8
+PREV.SUP.TABLES <- 7
 ```
 
 # Set the time stamp:

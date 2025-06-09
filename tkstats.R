@@ -596,7 +596,7 @@ maketkstatpreds <- function(
   cat("Running maketkstatpreds...\n")
   chems.good.1comp <- suppressWarnings(get_cheminfo(model="1compartment"))
   out.table <- NULL
-  for (this.cas in unique(CvT.data$CAS))
+  for (this.cas in sort(unique(CvT.data$CAS)))
     if (this.cas %in% cvtfits$CAS)
   {
     print(paste(label,": ",this.cas,sep=""))  

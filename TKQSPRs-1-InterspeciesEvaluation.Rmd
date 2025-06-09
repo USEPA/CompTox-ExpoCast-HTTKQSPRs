@@ -82,7 +82,7 @@ chem_properties %>%
                    rfup = median(Rat.Funbound.plasma)) -> tidy_summary
 
 tidy_summary %>%
-  dplyr::mutate(SE = (log10(hfup) - log10(rfup))^2) %>% 
+  dplyr::mutate(SE = (log10(hfup+1e-3) - log10(rfup+1e-3))^2) %>% 
   dplyr::ungroup() %>% dplyr::pull(SE) %>%
   {sqrt(sum(.)/length(.))} -> fup_rmsle
 ```
@@ -120,7 +120,7 @@ chem_properties_clintnonzero  %>%
                    rclint = median(Rat.Clint)) -> tidy_summary
 
 tidy_summary %>%
-  dplyr::mutate(SLE = (log10(hclint) - log10(rclint))^2) %>% 
+  dplyr::mutate(SLE = (log10(hclint+1e-3) - log10(rclint+1e-3))^2) %>% 
   dplyr::ungroup() %>% dplyr::pull(SLE) %>%
   {sqrt(sum(.)/length(.))} -> clint_rmsle
 ```
@@ -317,7 +317,7 @@ rathum.table["Non-Restrictive CvT","AUC"] <- calc_RMSLE(
                                pred.col = "RatHum_AUC_NR",
                                obs.col="Rat_AUC_NR")
 rathum.table <- signif(rathum.table,2)
-write.csv(rathum.table, file="tables/SupTable7-RatHumanError.txt")
+write.csv(rathum.table, file="tables/SupTable-RatHumanError.txt")
 kable(rathum.table)
 ```
 
