@@ -98,7 +98,8 @@ length(unique(CvT.chems.nobad$DTXSID))
 
 ```{r create_ensemble_preds, eval=TRUE}
 clint.cols <- colnames(CvT.chems.nobad)[
-  regexpr("Clint",colnames(CvT.chems.nobad))!=-1]
+  regexpr("Clint",colnames(CvT.chems.nobad)) != -1 & # All Clintpredictions
+  regexpr("httk",colnames(CvT.chems.nobad)) == -1]   # Except in vitro datas
 CvT.chems.nobad$Human.Clint.Max<- signif(apply(
   CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE)), 4)
 CvT.chems.nobad$Human.Clint.Mean<- signif(apply(
@@ -113,7 +114,8 @@ for (this.col in c("Human.Clint.Max","Human.Clint.Mean"))
 }
 
 fup.cols <- colnames(CvT.chems.nobad)[
-  regexpr("Fup",colnames(CvT.chems.nobad))!=-1]
+  regexpr("Fup",colnames(CvT.chems.nobad))!=-1 &   # All Fup predictions
+  regexpr("httk",colnames(CvT.chems.nobad)) == -1] # Except in vitro data
 CvT.chems.nobad$Human.Fup.Mean <- apply(
   CvT.chems.nobad[,fup.cols],1,function(x) 
     signif(invlogit(mean(sapply(x, function(y) 
@@ -427,7 +429,7 @@ are substituted into the In Vivo parameters. Here I chose a k-means of 5,
 which gives one cluster (4) that are greatly affected by kelim substitution,
 and another cluster (5) that are fairly improved in the ensemble model.
 
-```{r clustering_analysis, eval=TRUE}
+```{r clustering_analysis, eval=FALSE}
 set.seed(2024) # Want to be consistent here
 # The order is fine... but it would be nice to cluster these automatically
 # Need wide format for that
