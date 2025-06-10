@@ -294,6 +294,17 @@ if (length(intersect.chems)==0)
          "chemicals with predictions from every QSPR -- we denote this subset ",
          "as \"intersection\".\n")
 }
+
+no.ensemble.chems <- subset(CvT.chems.nona,is.na(Human.Clint.Max) | is.na(Human.Fup.Mean))$PREFERRED_NAME
+cat(paste0("There were ",
+           length(no.ensemble.chems),
+           " chemicals with incomplete QSPR predictions (either Clint or Fup missing): ",
+           paste(sort(no.ensemble.chems),collapse=", "),
+           ".\n"))
+cat(paste0(dim(subset(CvT.chems.nona,is.na(Human.Clint.Max)))[1],
+           " chemicals had no QSPR-based Clint predictions, and ",
+           dim(subset(CvT.chems.nona,is.na(Human.Fup.Mean)))[1],
+           " chemicals had no Fup predictions.\n"))
 ```
 
 ## Level 1 Analysis
@@ -304,8 +315,6 @@ cat(paste0("There were evaluation data for Clint for ",
       sum(sapply(invitro$Human.Funbound.plasma,function(x) !is.na(x))),
       ".\n"
       ))
-
-
 ```
 
 ### Ensemble Model
@@ -505,7 +514,7 @@ cat(paste0(sum(invitro$Human.Clint%in% 0),
 cat("\n")
 
 cat(paste0("Here we observe that empirical one- or two-compartment fits to ",
-           "the CvT data can predicted Cmax with RMSLE ",
+           "the CvT data can predict Cmax with RMSLE ",
            strsplit(Cmax.stats.table["RMSLE Maximal",
                                     "In Vivo Fits"]," ")[[1]][1],
            " (",
