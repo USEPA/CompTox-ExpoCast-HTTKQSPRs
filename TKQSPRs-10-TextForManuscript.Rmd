@@ -298,9 +298,13 @@ if (length(intersect.chems)==0)
 no.ensemble.chems <- subset(CvT.chems.nona,is.na(Human.Clint.Max) | is.na(Human.Fup.Mean))$PREFERRED_NAME
 cat(paste0("There were ",
            length(no.ensemble.chems),
-           " chemicals with no QSPR preditictions: ",
-           paste(no.ensemble.chems,collapse=", "),
+           " chemicals with incomplete QSPR predictions (either Clint or Fup missing): ",
+           paste(sort(no.ensemble.chems),collapse=", "),
            ".\n"))
+cat(paste0(dim(subset(CvT.chems.nona,is.na(Human.Clint.Max)))[1],
+           " chemicals had no QSPR-based Clint predictions, and ",
+           dim(subset(CvT.chems.nona,is.na(Human.Fup.Mean)))[1],
+           " chemicals had no Fup predictions.\n"))
 ```
 
 ## Level 1 Analysis
