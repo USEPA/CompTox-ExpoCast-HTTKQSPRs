@@ -112,8 +112,8 @@ length(unique(CvT.chems.nobad$DTXSID))
 
 ```{r create_ensemble_preds, eval=TRUE}
 clint.cols <- colnames(CvT.chems.nobad)[
-  regexpr("Clint",colnames(CvT.chems.nobad)) != -1 &
-  regexpr("httk",colnames(CvT.chems.nobad)) == -1]
+  regexpr("Clint",colnames(CvT.chems.nobad)) != -1 & # All Clintpredictions
+  regexpr("httk",colnames(CvT.chems.nobad)) == -1]   # Except in vitro datas
 CvT.chems.nobad$Human.Clint.Max<- signif(apply(
   CvT.chems.nobad[,clint.cols],1,function(x) max(x,na.rm=TRUE)), 4)
 CvT.chems.nobad$Human.Clint.Mean<- signif(apply(
@@ -128,7 +128,8 @@ for (this.col in c("Human.Clint.Max","Human.Clint.Mean"))
 }
 
 fup.cols <- colnames(CvT.chems.nobad)[
-  regexpr("Fup",colnames(CvT.chems.nobad))!=-1]
+  regexpr("Fup",colnames(CvT.chems.nobad))!=-1 &   # All Fup predictions
+  regexpr("httk",colnames(CvT.chems.nobad)) == -1] # Except in vitro data
 CvT.chems.nobad$Human.Fup.Mean <- apply(
   CvT.chems.nobad[,fup.cols],1,function(x) 
     signif(invlogit(mean(sapply(x, function(y) 
@@ -154,7 +155,7 @@ NUM.YRANDOM <- 25
 # Just do yrandom for all chemicals:
 invitro.subset.rows <- rep(TRUE, dim(CvT.chems.nona)[1])
 
-# Get all chemials with measured HTTK:
+# Get all chemicals with measured HTTK:
 reset_httk()
 invitro.meas <- get_cheminfo(model="pbtk", 
                              median.only=TRUE,
