@@ -221,18 +221,27 @@ cat(paste(
   sep=""))
 
 
-cat(paste0("Note that the performance for y-randomization with non-restrictive",
-           " clearance (",
+cat(paste0("Note that the performance for y-randomization in Table 5 (",
            bench.table["CvT RMSLE",
              paste0("Y-Randomized (",
                     NUM.CHEMS,
                     ")")],
-           ") in Table 5 is not directly comparable to the performance of ",
-           "restrictive clearance. Both can be compared to the performance of ",
-           "non-restrictive clearance but are not meaningfully compared to ",
-           "each other since the y-randomization was only conducted for the ",
-           "for the non-restrictive case.",
-           " The error of y-randomized restrictive simulations would be larger.\n"))
+           ") is with the assumption of non-restrictive clearance. ",
+           "That result is therefore not directly comparable to the ",
+           "performance of restrictive clearance without y-randomization (",
+           bench.table["CvT RMSLE",
+             paste0("Human Restrictive (",
+                    NUM.CHEMS,
+                    ")")],
+           ") ). Both can be compared to the performance of non-restrictive ",
+           " clearance without y-randomization (",
+           bench.table["CvT RMSLE",
+             paste0("Human Non-Restrictive (",
+                    NUM.CHEMS,
+                    ")")],
+           ") but are not meaningfully compared to each other since the ",
+           "y-randomization was only conducted for the non-restrictive case. ",
+           "The error of y-randomized restrictive simulations would be larger.\n"))
 
 AUC.rmsle.nr <- bench.table["AUC RMSLE",
                      paste0("In Vitro Non-Restrictive (",
@@ -298,13 +307,13 @@ if (length(intersect.chems)==0)
 no.ensemble.chems <- subset(CvT.chems.nona,is.na(Human.Clint.Max) | is.na(Human.Fup.Mean))$PREFERRED_NAME
 cat(paste0("There were ",
            length(no.ensemble.chems),
-           " chemicals with incomplete QSPR predictions (either Clint or Fup missing for all QSPRs): ",
+           " chemicals with incomplete QSPR predictions (either Clint or fup missing for all QSPRs): ",
            paste(sort(no.ensemble.chems),collapse=", "),
            ".\n"))
 cat(paste0(dim(subset(CvT.chems.nona,is.na(Human.Clint.Max)))[1],
            " chemicals had no QSPR-based Clint predictions, and ",
            dim(subset(CvT.chems.nona,is.na(Human.Fup.Mean)))[1],
-           " chemicals had no Fup predictions.\n"))
+           " chemicals had no fup predictions.\n"))
 cat("Note that in some cases there were QSPR predictions removed for these chemicals because of their presence in a QSPR’s training set.\n")
 ```
 
@@ -397,7 +406,7 @@ cat("\n")
 cat(paste0("From the AFE in Table 8, we see that there is a tendency to over-predict concentrations.")) 
 cat("\n")
 
-cat(paste0("Most of the QSPR models were less successful for predicting t½, ",
+cat(paste0("The QSPR models for Clint and fup data predicted t½ ",
            "with RMSLE indicating errors between ",
            min(as.numeric(level3stats.table["Half-Life RMSLE",all.qsprs])),
            " and ",

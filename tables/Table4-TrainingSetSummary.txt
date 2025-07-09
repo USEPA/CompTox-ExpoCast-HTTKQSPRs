@@ -7,6 +7,6 @@
 "Dawson 2021"	"fup"	"1305"	"0.35"	50	"38"
 "OPERA"	"Clint"	"1346"	"0.23"	77	"49"
 "OPERA"	"fup"	"3229"	"0.3"	74	"53"
-"IFS-QSAR"	"halflife"	"b"	"b"	58	"b"
+"IFS-QSAR"	"halflife"	"1105"	"0.63"	58	"23"
 "QSAR-INS"	"halflife"	"1105"	"0.63"	58	"23"
 "IVBP"	"Clint"	"b"	"b"	63	"b"

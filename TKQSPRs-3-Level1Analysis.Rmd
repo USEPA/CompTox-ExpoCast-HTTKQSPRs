@@ -627,7 +627,7 @@ train.set.sum.table[train.set.sum.table$QSPR=="IFS-QSAR", "Num.Preds"] <-
 train.set.sum.table[train.set.sum.table$QSPR=="QSAR-INS", "Num.Preds"] <-
   dim(qsar.ins.hl)[1]
 
-# PRadeep fup:
+# Pradeep fup:
 train.set.sum.table[train.set.sum.table$QSPR=="Pradeep 2020" &
                       train.set.sum.table$Endpoint == "fup","Num.Chems"] <-
   dim(pradeep.fup)[1]
@@ -699,9 +699,13 @@ train.set.sum.table[train.set.sum.table$QSPR=="QSAR-INS","Fraction.Pharma"] <-
   signif(sum(papa.hl$DTXSID %in% pharma$DTXSID)/dim(papa.hl)[1], 2)
 train.set.sum.table[train.set.sum.table$QSPR=="QSAR-INS","Num.Eval.Chems"] <-
   sum(training.set.table$"Human.HL.QSAR-INS" == "Training Set")
-# IFS-QSAR:
+# IFS-QSAR (same as Papa 2018):
 train.set.sum.table[train.set.sum.table$QSPR=="IFS-QSAR","Num.Chems"] <-
-  "b"
+  dim(papa.hl)[1]
+train.set.sum.table[train.set.sum.table$QSPR=="IFS-QSAR","Fraction.Pharma"] <-
+  signif(sum(papa.hl$DTXSID %in% pharma$DTXSID)/dim(papa.hl)[1], 2)
+train.set.sum.table[train.set.sum.table$QSPR=="IFS-QSAR","Num.Eval.Chems"] <-
+  sum(training.set.table$"Human.HL.QSAR-INS" == "Training Set")
 # IVBP:
 train.set.sum.table[train.set.sum.table$QSPR=="IVBP","Num.Chems"] <-
   "b"
